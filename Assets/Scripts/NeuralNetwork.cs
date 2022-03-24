@@ -12,6 +12,7 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
 {
     public int[] layers; //layers
     public double[][] neurons; //neuron matix
+    public double[][] neuronError; //calculated error for each neuroon
     public double[][] droppedNeurons; //dropped neuron matix
     public double[][][] weights; //weight matrix
     public double fitness; //fitness of the network
@@ -203,6 +204,47 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
     public static double Sigmoid(double value)
     {
         return 1.0d / (1.0d + (double)Math.Exp(-value));
+    }
+    public static double dSigmoid(double value)
+    {
+        return value * (1.0d - value);
+    }
+    public static double dTanh(double value)
+    {
+        return 1.0d - Math.Pow((double)Math.Tanh(value), 2.0d);
+    }
+    public static double Tanh(double value)
+    {
+        return (double)Math.Tanh(value);
+    }
+    
+    public void BackPropagation(double[] expectedOutput)
+    {
+        neuronError = neurons;
+        
+        ////itterate over output neurons and compute error values
+        //for (int j = 0; j < neurons[neurons.Length-1].Length; j++)
+        //{
+        //    neuronError[neurons.Length-1][j] = dSigmoid(neurons[neurons.Length-1][j]) * (expectedOutput[j] - neurons[neurons.Length-1][j]);
+        //}
+        
+        
+        //itterate over all neurons BACKWARDS and compute error values
+        for (int i = layers.Length - 2; i > 0; i++)
+        {
+            for (int j = 0; j < neurons[i].Length; j++)
+            {
+                double value = 0f;
+                
+                neuronError[i][j] = dSigmoid(neurons[i][j]) * (expectedOutput[j] - neurons[i][j]);
+
+                for (int k = 0; k < neurons[i - 1].Length; k++)
+                {
+                    weights[i-1][j][k] += neuronError[i][j] * (neurons[i-1][j] * weights[i-1][j][k]);
+                    // Also add to   bias[i][j] += neuronError[i][j];
+                }
+            }
+        }
     }
 
     /// <summary>
