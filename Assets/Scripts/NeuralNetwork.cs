@@ -222,21 +222,33 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
     {
         neuronError = neurons;
         
-        ////itterate over output neurons and compute error values
-        //for (int j = 0; j < neurons[neurons.Length-1].Length; j++)
-        //{
-        //    neuronError[neurons.Length-1][j] = dSigmoid(neurons[neurons.Length-1][j]) * (expectedOutput[j] - neurons[neurons.Length-1][j]);
-        //}
+        //itterate over output neurons and compute error values
+        for (int j = 0; j < neurons[neurons.Length-1].Length; j++)
+        {
+            neuronError[neurons.Length-1][j] = dSigmoid(neurons[neurons.Length-1][j]) * (expectedOutput[j] - neurons[neurons.Length-1][j]);
+            for (int k = 0; k < neurons[i - 1].Length; k++)
+            {
+                weights[neurons.Length-1][j][k] += neuronError[i][j] * (neurons[i-1][j] * weights[i-1][j][k]);
+                // Also add to   bias[i][j] += neuronError[i][j];
+            }
+        }
         
         
         //itterate over all neurons BACKWARDS and compute error values
-        for (int i = layers.Length - 2; i > 0; i++)
+        for (int i = layers.Length - 2; i > 0; i--)
         {
             for (int j = 0; j < neurons[i].Length; j++)
             {
                 double value = 0f;
                 
-                neuronError[i][j] = dSigmoid(neurons[i][j]) * (expectedOutput[j] - neurons[i][j]);
+                double allConnectedWeights = 1;
+                for (int k = 0; k < neurons[i - 1].Length; k++)
+                {
+                    allConnectedWeights *= weights[i-1][j][k];
+                }
+                
+                neuronError[i][j] = dSigmoid(neurons[i][j]) * (neuronError[i+1][j] * weights[i-1][j][k]);
+                //neuronError[i][j] = dSigmoid(hiddenNeuron1.output) * outputNeuron.error * outputNeuron.weights[0];
 
                 for (int k = 0; k < neurons[i - 1].Length; k++)
                 {
