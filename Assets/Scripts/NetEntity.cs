@@ -17,7 +17,8 @@ public class Sense
     public bool intersectingDistance;
     [Header("Optional Variables")]
     public string objectToSenseForTag;
-    private Transform objectToSenseFor;
+    [HideInInspector]
+    public Transform objectToSenseFor;
     public LayerMask intersectionMask;
     public float initialDistance = 10.0f;
 
@@ -100,10 +101,18 @@ public class NetEntity : MonoBehaviour
             outputs = net.FeedForward(inputs);
 
             //transform.position += new Vector3((float)outputs[0]*2.0f-1.0f, (float)outputs[1] * 2.0f - 1.0f) / 100.0f;
-            Vector3 directionVector = new Vector2((float)Math.Cos((float)outputs[0] * 360.0f * Mathf.PI / 180.0f), (float)Math.Sin((float)outputs[0] * 360.0f * Mathf.PI / 180.0f));
-            transform.position += directionVector * (float)outputs[1] / 100.0f;
+            Vector3 directionVector = new Vector2((float)Math.Cos((float)outputs[0] * 6.28319f), (float)Math.Sin((float)outputs[0] * 6.28319f));
+            transform.position += directionVector / 100.0f;
 
+            Vector3 dir = (transform.position - senses[0].objectToSenseFor.position).normalized;
+            //net.AddFitness(Vector3.Distance(dir, directionVector));
             net.AddFitness(senses[0].GetSensorValue(0, gameObject));
+
+            if (timeElapsed % 100 == 0)
+            {
+                double[] correct = { Mathf.Atan2(dir.y, dir.x) / 6.28319f };
+                net.BackPropagation(correct);
+            }
 
             //if (transform.position.y > 0)
             //    net.AddFitness(10);
@@ -137,6 +146,13 @@ public class NetEntity : MonoBehaviour
             mainSprite.color = new Color32((byte)UnityEngine.Random.Range(0, 256),
                 (byte)UnityEngine.Random.Range(0, 256),
                 (byte)UnityEngine.Random.Range(0, 256), 255);
+    }
+
+    public void End()
+    {
+        double[] correct = { 0, 0 };
+        net.BackPropagation(correct);
+        networkRunning = false;
     }
 }
 

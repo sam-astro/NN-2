@@ -18,9 +18,9 @@ public class NetManager : MonoBehaviour
 
     private int timeBetweenSave = 1;
     private int timeBetweenGenerationProgress = 1;
-    private int waitBetweenTestResults = 1;
+    //private int waitBetweenTestResults = 1;
 
-    public int[] layers = new int[] { 1, 8, 12, 2 }; // No. of inputs and No. of outputs
+    public int[] layers = new int[] { 1, 8, 12, 1 }; // No. of inputs and No. of outputs
 
     public float learningRate = 0.1f;
 

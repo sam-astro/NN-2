@@ -17,7 +17,7 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
     public double[][][] weights; //weight matrix
     public double fitness; //fitness of the network
 
-    public float learningRate = 0.0f;
+    public float learningRate = 1f;
 
 
     /// <summary>
@@ -226,20 +226,20 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
         for (int j = 0; j < neurons[neurons.Length-1].Length; j++)
         {
             neuronError[neurons.Length-1][j] = dSigmoid(neurons[neurons.Length-1][j]) * (expectedOutput[j] - neurons[neurons.Length-1][j]);
-            for (int k = 0; k < neurons[i - 1].Length; k++)
+            for (int k = 0; k < weights[neurons.Length - 2][j].Length; k++)
             {
-                weights[neurons.Length-1][j][k] += neuronError[i][j] * (neurons[i-1][j] * weights[i-1][j][k]);
+                weights[neurons.Length-2][j][k] += neuronError[neurons.Length - 1][j] * (neurons[neurons.Length - 1][j] * weights[neurons.Length - 2][j][k]);
                 // Also add to   bias[i][j] += neuronError[i][j];
             }
         }
         
         
         //itterate over all neurons BACKWARDS and compute error values
-        for (int i = layers.Length - 2; i > 0; i--)
+        for (int i = neurons.Length - 2; i > 0; i--)
         {
             for (int j = 0; j < neurons[i].Length; j++)
             {
-                double value = 0f;
+                //double value = 0f;
                 
                 double allConnectedWeights = 1;
                 for (int k = 0; k < neurons[i - 1].Length; k++)
@@ -247,12 +247,12 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
                     allConnectedWeights *= weights[i-1][j][k];
                 }
                 
-                neuronError[i][j] = dSigmoid(neurons[i][j]) * (neuronError[i+1][j] * weights[i-1][j][k]);
+                neuronError[i][j] = dSigmoid(neurons[i][j]) * (neuronError[neurons.Length - 1][0] * allConnectedWeights);
                 //neuronError[i][j] = dSigmoid(hiddenNeuron1.output) * outputNeuron.error * outputNeuron.weights[0];
 
                 for (int k = 0; k < neurons[i - 1].Length; k++)
                 {
-                    weights[i-1][j][k] += neuronError[i][j] * (neurons[i-1][j] * weights[i-1][j][k]);
+                    weights[i-1][j][k] += neuronError[i][j] * (neuronError[i - 1][k] * weights[i - 1][j][k]);
                     // Also add to   bias[i][j] += neuronError[i][j];
                 }
             }
