@@ -111,71 +111,68 @@ public class NetEntity : MonoBehaviour
     public SpriteRenderer mainSprite;
     public bool randomizeSpriteColor = true;
 
-    public bool Elapse()
+    double[] correctData;
+
+    public bool Elapse(bool testing)
     {
         if (networkRunning == true)
         {
-            //string weightLengths = "";
-            //for (int i = 0; i < net.weights.Length; i++)
-            //{
-            //    weightLengths += net.weights[i].Length * net.weights[i][0].Length + ", ";
-            //}
-            //Debug.Log(weightLengths);
-
-            double[] inputs = new double[senses.Length];
-
-            for (int p = 0; p < inputs.Length; p++)
+            if (testing)
             {
-                inputs[p] = senses[p].GetSensorValue(gameObject);
-            }
+                double[] inputs = new double[1];
 
-            outputs = net.FeedForward(inputs);
+                inputs[0] = (double)timeElapsed / (double)correctData.Length;
 
+                outputs = net.FeedForward(inputs);
 
-            if (senses[2].GetSensorValue(gameObject) <= 0.25d) // If touching ground
-            {
-                if (Mathf.Abs((float)outputs[0]) > 0.25f)
-                    transform.position += transform.right / ((1.0f - (float)outputs[0]) * 100.0f);
+                net.customAnswer[timeElapsed] = outputs[0];
+
+                net.error += Mathf.Pow((float)correctData[timeElapsed] - (float)outputs[0], 2) / 2.0f;
+
+                timeElapsed += 1;
             }
             else
-                transform.position -= new Vector3(0, 0.01f);
-
-
-            ////transform.position += new Vector3((float)outputs[0]*2.0f-1.0f, (float)outputs[1] * 2.0f - 1.0f) / 100.0f;
-            //Vector3 directionVector = new Vector2((float)Math.Cos((float)outputs[0] * 6.28319f), (float)Math.Sin((float)outputs[0] * 6.28319f));
-            //transform.position += directionVector / 100.0f;
-
-            //Vector3 dir = (transform.position - senses[0].objectToSenseFor.position).normalized;
-            //net.AddFitness(Vector3.Distance(dir, directionVector));
-            //net.error += (senses[0].GetSensorValue(0, gameObject));
-
-            if (timeElapsed % 50 == 0)
             {
-                double[] correct = { 1.0f };
-                net.BackProp(correct);
+                double[] inputs = new double[1];
+
+                inputs[0] = (double)timeElapsed / (double)correctData.Length;
+
+                outputs = net.FeedForward(inputs);
+
+                net.customAnswer[timeElapsed] = outputs[0];
+
+                if (timeElapsed % 10 == 0)
+                {
+                    double[] correct = { correctData[timeElapsed] };
+                    net.BackProp(correct);
+                }
+
+                net.error += Mathf.Pow((float)correctData[timeElapsed] - (float)outputs[0], 2) / 2.0f;
+
+                timeElapsed += 1;
+
             }
-
-            timeElapsed += 1;
-
             return true;
         }
         return false;
     }
 
-    public void Init(NeuralNetwork net, int generation)
+    public void Init(NeuralNetwork net, int generation, double[] correctData)
     {
         transform.position = Vector3.zero;
         transform.rotation = Quaternion.identity;
         this.net = net;
         this.generation = generation;
+        this.correctData = correctData;
         networkRunning = true;
-        //net.error = 0;
+        net.error = 0;
         timeElapsed = 0;
 
         foreach (var s in senses)
         {
             s.Initialize(gameObject);
         }
+
 
         if (randomizeSpriteColor)
             mainSprite.color = new Color32((byte)UnityEngine.Random.Range(0, 256),

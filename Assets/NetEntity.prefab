@@ -257,7 +257,7 @@ SpriteRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7647521876100407775}
-  m_Enabled: 1
+  m_Enabled: 0
   m_CastShadows: 0
   m_ReceiveShadows: 0
   m_DynamicOccludee: 1
@@ -313,119 +313,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7823a1df336f8c241aebcf7238cac853, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  senses:
-  - name: DistanceToGoal
-    distanceToObject: 1
-    horizontalDifference: 0
-    verticalDifference: 0
-    intersectingTrueFalse: 0
-    intersectingDistance: 0
-    objectToSenseForTag: goal
-    objectToSenseFor: {fileID: 0}
-    intersectionMask:
-      serializedVersion: 2
-      m_Bits: 0
-    initialDistance: 0
-  - name: GroundDistance1
-    distanceToObject: 0
-    horizontalDifference: 0
-    verticalDifference: 0
-    intersectingTrueFalse: 0
-    intersectingDistance: 1
-    objectToSenseForTag: 
-    objectToSenseFor: {fileID: 3666513846738028067}
-    intersectionMask:
-      serializedVersion: 2
-      m_Bits: 64
-    initialDistance: 2
-  - name: GroundDistance2
-    distanceToObject: 0
-    horizontalDifference: 0
-    verticalDifference: 0
-    intersectingTrueFalse: 0
-    intersectingDistance: 1
-    objectToSenseForTag: 
-    objectToSenseFor: {fileID: 3391282529441331521}
-    intersectionMask:
-      serializedVersion: 2
-      m_Bits: 64
-    initialDistance: 2
-  - name: GroundDistance3
-    distanceToObject: 0
-    horizontalDifference: 0
-    verticalDifference: 0
-    intersectingTrueFalse: 0
-    intersectingDistance: 1
-    objectToSenseForTag: 
-    objectToSenseFor: {fileID: 1744401284500682393}
-    intersectionMask:
-      serializedVersion: 2
-      m_Bits: 64
-    initialDistance: 2
-  - name: GroundDistance4
-    distanceToObject: 0
-    horizontalDifference: 0
-    verticalDifference: 0
-    intersectingTrueFalse: 0
-    intersectingDistance: 1
-    objectToSenseForTag: 
-    objectToSenseFor: {fileID: 4020998430060400800}
-    intersectionMask:
-      serializedVersion: 2
-      m_Bits: 64
-    initialDistance: 2
-  - name: GroundDistance5
-    distanceToObject: 0
-    horizontalDifference: 0
-    verticalDifference: 0
-    intersectingTrueFalse: 0
-    intersectingDistance: 1
-    objectToSenseForTag: 
-    objectToSenseFor: {fileID: 3959167755576264701}
-    intersectionMask:
-      serializedVersion: 2
-      m_Bits: 64
-    initialDistance: 2
-  - name: GroundDistance6
-    distanceToObject: 0
-    horizontalDifference: 0
-    verticalDifference: 0
-    intersectingTrueFalse: 0
-    intersectingDistance: 1
-    objectToSenseForTag: 
-    objectToSenseFor: {fileID: 5243317418827100340}
-    intersectionMask:
-      serializedVersion: 2
-      m_Bits: 64
-    initialDistance: 2
-  - name: GroundDistance7
-    distanceToObject: 0
-    horizontalDifference: 0
-    verticalDifference: 0
-    intersectingTrueFalse: 0
-    intersectingDistance: 1
-    objectToSenseForTag: 
-    objectToSenseFor: {fileID: 2037512825968897748}
-    intersectionMask:
-      serializedVersion: 2
-      m_Bits: 64
-    initialDistance: 2
-  - name: GroundDistance8
-    distanceToObject: 0
-    horizontalDifference: 0
-    verticalDifference: 0
-    intersectingTrueFalse: 0
-    intersectingDistance: 1
-    objectToSenseForTag: 
-    objectToSenseFor: {fileID: 2045146956392664397}
-    intersectionMask:
-      serializedVersion: 2
-      m_Bits: 64
-    initialDistance: 2
+  senses: []
   networkRunning: 0
   generation: 0
-  mainSprite: {fileID: 3063841270716931953}
-  randomizeSpriteColor: 1
+  mainSprite: {fileID: 0}
+  randomizeSpriteColor: 0
 --- !u!1 &8181683490782484313
 GameObject:
   m_ObjectHideFlags: 0

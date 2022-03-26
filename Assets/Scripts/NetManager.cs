@@ -11,6 +11,9 @@ using System.Collections.Specialized;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Runtime.Serialization;
 using UnityEngine;
+using Microsoft.VisualBasic;
+using TMPro;
+using UnityEngine.UI;
 
 public class NetManager : MonoBehaviour
 {
@@ -40,6 +43,13 @@ public class NetManager : MonoBehaviour
     //        new double[1]{0.8011526357},
     //    };
 
+    public TMP_Text genTxt;
+    public TMP_Text errTxt;
+
+    public Slider progressBar;
+
+    public Toggle justTest;
+    public bool test;
 
     #region Internal Variables
     public int amntLeft;
@@ -61,24 +71,44 @@ public class NetManager : MonoBehaviour
     bool startup = true;
 
     public GameObject netEntityPrefab;
+
+    AudioMgr audMgr;
+
+    double[] correctData;
+
     #endregion
 
     private void Start()
     {
-        InitEntityNeuralNetworks();
-        CreateEntityBodies();
+        double[] l = new double[0];
+        double[] r = new double[0];
+        audMgr = new AudioMgr();
+        audMgr.openWav("./Assets/inAudio2.wav", out l, out r);
+        correctData = l;
+
+        maxIterations = l.Length;
+
+        justTest.isOn = test;
+
 
         iterations = maxIterations;
+        InitEntityNeuralNetworks();
+        CreateEntityBodies();
     }
 
     public void Update()
     {
+        test = justTest;
+
         if (iterations <= 0)
         {
             nets.Sort();
 
             bestError = nets[nets.Count - 1].error;
             worstError = nets[0].error;
+
+            genTxt.text = generationNumber.ToString();
+            errTxt.text = Math.Round(bestError, 2).ToString();
 
             if (generationNumber % timeBetweenSave == 0 && timeBetweenSave != -1)
             {
@@ -92,24 +122,27 @@ public class NetManager : MonoBehaviour
                 persistence.Close();
             }
 
-            if ((bestError < lastBest || queuedForUpload == true) && generationNumber % timeBetweenGenerationProgress == 0)
+            if (((bestError < lastBest || queuedForUpload == true) && generationNumber % timeBetweenGenerationProgress == 0) || test)
             {
                 using (StreamWriter sw = File.AppendText("./Assets/dat/hist.txt"))
                 {
                     sw.WriteLine((generationNumber).ToString() + ", " + bestError);
                 }
 
-                Console.Write("╚═ Generation: " + generationNumber + "  |  Population: " + populationSize);
-                Console.Write("  |  ");
+                Debug.Log("╚═ Generation: " + generationNumber + "  |  Population: " + populationSize);
+                Debug.Log("  |  ");
                 Console.ForegroundColor = ConsoleColor.Green;
-                Console.Write("Error Rate: " + bestError + "\n");
+                Debug.Log("Error Rate: " + bestError + "\n");
                 Console.ResetColor();
+
+                if (nets[0].customAnswer != null)
+                    audMgr.SaveAudio(nets[0].customAnswer, bestError);
             }
             else if (generationNumber % timeBetweenGenerationProgress == 0)
             {
-                Console.Write("╚═ Generation: " + generationNumber + "  |  Population: " + populationSize);
-                Console.Write("  |  ");
-                Console.Write("Error Rate: " + (bestError) + "\n");
+                Debug.Log("╚═ Generation: " + generationNumber + "  |  Population: " + populationSize);
+                Debug.Log("  |  ");
+                Debug.Log("Error Rate: " + (bestError) + "\n");
 
                 using (StreamWriter sw = File.AppendText("./Assets/dat/hist.txt"))
                 {
@@ -117,7 +150,7 @@ public class NetManager : MonoBehaviour
                 }
             }
 
-            //Finalizer();
+            Finalizer();
 
             lastBest = bestError;
             lastWorst = worstError;
@@ -129,6 +162,8 @@ public class NetManager : MonoBehaviour
         else
         {
             iterations -= 1;
+
+            progressBar.value = ((float)maxIterations - (float)iterations)/(float)maxIterations;
 
             if (IterateNetEntities() == false || iterations <= 0)
                 iterations = 0;
@@ -144,14 +179,14 @@ public class NetManager : MonoBehaviour
             for (int i = 0; i < populationSize; i++)
             {
                 GameObject tempEntity = Instantiate(netEntityPrefab, new Vector3(0, 0, 0), Quaternion.identity);
-                tempEntity.GetComponent<NetEntity>().Init(nets[i], generationNumber);
+                tempEntity.GetComponent<NetEntity>().Init(nets[i], generationNumber, correctData);
                 entityList.Add(tempEntity);
             }
         }
         else
             for (int i = 0; i < entityList.Count; i++)
             {
-                entityList[i].GetComponent<NetEntity>().Init(nets[i], generationNumber);
+                entityList[i].GetComponent<NetEntity>().Init(nets[i], generationNumber, correctData);
             }
     }
 
@@ -159,7 +194,7 @@ public class NetManager : MonoBehaviour
     {
         bool outbool = true;
         for (int i = 0; i < entityList.Count; i++)
-            outbool = entityList[i].GetComponent<NetEntity>().Elapse();
+            outbool = entityList[i].GetComponent<NetEntity>().Elapse(test);
         return outbool;
     }
 
@@ -167,7 +202,7 @@ public class NetManager : MonoBehaviour
     {
         //for (int i = 0; i < populationSize - 12; i++)
         //{
-        //    nets[i] = new NeuralNetwork(nets[populationSize - 1]);     //Copies weight values from top half networks to worst half
+        //    nets[i] = nets[populationSize - 1];     //Copies weight values from top half networks to worst half
         //    nets[i].Mutate();
         //    nets[populationSize - 1] = new NeuralNetwork(nets[populationSize - 1]); //too lazy to write a reset neuron matrix values method....so just going to make a deepcopy lol
         //    nets[populationSize - 2] = new NeuralNetwork(nets[populationSize - 2]); //too lazy to write a reset neuron matrix values method....so just going to make a deepcopy lol
@@ -191,10 +226,10 @@ public class NetManager : MonoBehaviour
     {
         GatherPersistence();
 
-        if (populationSize % 2 != 0)
-        {
-            populationSize++;
-        }
+        //if (populationSize % 2 != 0)
+        //{
+        //    populationSize++;
+        //}
 
         nets = new List<NeuralNetwork>();
 
@@ -202,6 +237,7 @@ public class NetManager : MonoBehaviour
         for (int i = 0; i < populationSize; i++)
         {
             NeuralNetwork net = new NeuralNetwork(layers, preLoadLayers);
+            net.customAnswer = new double[correctData.Length];
             Console.WriteLine("* Creating net: " + i + " of " + populationSize);
 
             //net.learningRate = learningRate;
@@ -219,11 +255,11 @@ public class NetManager : MonoBehaviour
         Console.Clear();
         Console.ForegroundColor = ConsoleColor.Green;
         Console.WriteLine("✓ EVERYTHING READY ✓");
-        Console.Write("Just let this program process and learn, and only exit if ");
+        Debug.Log("Just let this program process and learn, and only exit if ");
         Console.ForegroundColor = ConsoleColor.Blue;
-        Console.Write("BLUE ");
+        Debug.Log("BLUE ");
         Console.ForegroundColor = ConsoleColor.Green;
-        Console.Write("text isn't getting printed to screen. (that is when it is saving or loading data). I have finally implemented networking! Now, as long as you have an internet connection, the weights data will automatically be sent to my server! Hooray!\n");
+        Debug.Log("text isn't getting printed to screen. (that is when it is saving or loading data). I have finally implemented networking! Now, as long as you have an internet connection, the weights data will automatically be sent to my server! Hooray!\n");
         Console.ResetColor();
     }
 
@@ -365,3 +401,94 @@ public class NetManager : MonoBehaviour
         Console.ResetColor();
     }
 }
+
+class AudioMgr
+{
+    //static Audio myAudio = new Audio();
+    private static byte[] myWaveData;
+
+    // Sample rate (Or number of samples in one second)
+    private const int SAMPLE_FREQUENCY = 44100;
+
+    public void SaveAudio(double[] input, double errorRate)
+    {
+        List<Byte> tempBytes = new List<byte>();
+
+        WaveHeader header = new WaveHeader();
+        FormatChunk format = new FormatChunk();
+        DataChunk data = new DataChunk();
+
+        SoundGenerator ldat = new SoundGenerator(SAMPLE_FREQUENCY, input);
+        SoundGenerator rdat = new SoundGenerator(SAMPLE_FREQUENCY, input);
+
+        data.AddSampleData(ldat.Data, rdat.Data);
+
+        header.FileLength += format.Length() + data.Length();
+
+        tempBytes.AddRange(header.GetBytes());
+        tempBytes.AddRange(format.GetBytes());
+        tempBytes.AddRange(data.GetBytes());
+
+        myWaveData = tempBytes.ToArray();
+
+        System.IO.File.WriteAllBytes("./Assets/outputAudioFiles/" + errorRate + ".wav", myWaveData);
+    }
+
+    // convert two bytes to one double in the range -1 to 1
+    static double bytesToDouble(byte firstByte, byte secondByte)
+    {
+        // convert two bytes to one short (little endian)
+        //short s = (secondByte << 8) | firstByte;
+        short s = BitConverter.ToInt16(new byte[2] { (byte)firstByte, (byte)secondByte }, 0);
+        // convert to range from -1 to (just below) 1
+        return s / 32760.0;
+    }
+
+    // Returns left and right double arrays. 'right' will be null if sound is mono.
+    public void openWav(string filename, out double[] left, out double[] right)
+    {
+        byte[] wav = File.ReadAllBytes(filename);
+
+        // Determine if mono or stereo
+        int channels = wav[22];     // Forget byte 23 as 99.999% of WAVs are 1 or 2 channels
+
+        // Get past all the other sub chunks to get to the data subchunk:
+        int pos = 12;   // First Subchunk ID from 12 to 16
+
+        // Keep iterating until we find the data chunk (i.e. 64 61 74 61 ...... (i.e. 100 97 116 97 in decimal))
+        while (!(wav[pos] == 100 && wav[pos + 1] == 97 && wav[pos + 2] == 116 && wav[pos + 3] == 97))
+        {
+            pos += 4;
+            int chunkSize = wav[pos] + wav[pos + 1] * 256 + wav[pos + 2] * 65536 + wav[pos + 3] * 16777216;
+            pos += 4 + chunkSize;
+        }
+        pos += 8;
+
+        // Pos is now positioned to start of actual sound data.
+        int samples = (wav.Length - pos) / 2;     // 2 bytes per sample (16 bit sound mono)
+        if (channels == 2) samples /= 2;        // 4 bytes per sample (16 bit stereo)
+
+        // Allocate memory (right will be null if only mono sound)
+        left = new double[samples];
+        if (channels == 2)
+            right = new double[samples];
+        else
+            right = null;
+
+        // Write to double array/s:
+        int i = 0;
+        while (pos < samples * 4)
+        {
+            left[i] = bytesToDouble(wav[pos], wav[pos + 1]);
+            //Console.WriteLine(left[i]);
+            pos += 2;
+            if (channels == 2)
+            {
+                right[i] = bytesToDouble(wav[pos], wav[pos + 1]);
+                pos += 2;
+            }
+            i++;
+        }
+    }
+}
+

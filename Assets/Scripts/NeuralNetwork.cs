@@ -10,6 +10,8 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
     public Layer[] layers; // layers in the network
     public double error; // error of the network
 
+    public double[] customAnswer;
+
     /// <summary>
     /// Constructor setting up layers
     /// </summary>
