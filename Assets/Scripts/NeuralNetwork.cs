@@ -145,14 +145,14 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
                 //itterate over all neurons in this current layer
                 for (int j = 0; j < neurons[i].Length; j++)
                 {
-                    double[] neuronWeights = new double[neuronsInPreviousLayer]; //neruons weights
+                    double[] neuronWeights = new double[neuronsInPreviousLayer]; //neurons weights
 
                     //itterate over all neurons in the previous layer and set the weights randomly between 0.5f and -0.5
                     for (int k = 0; k < neuronsInPreviousLayer; k++)
                     {
                         //give random weights to neuron weights
-                        //neuronWeights[k] = UnityEngine.Random.Range(-0.5f,0.5f);
-                        neuronWeights[k] = new Random().Next(-50, 50) / 100.0d;
+                        neuronWeights[k] = UnityEngine.Random.Range(-0.5f, 0.5f);
+                        //neuronWeights[k] = new Random().Next(-50, 50) / 100.0d;
                     }
 
                     layerWeightsList.Add(neuronWeights); //add neuron weights of this current layer to layer weights
@@ -179,16 +179,21 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
         }
 
         //itterate over all neurons and compute feedforward values 
-        for (int i = 1; i < layers.Length; i++)
+        for (int i = 1; i < layers.Length; i++) // For each layer
         {
-            for (int j = 0; j < neurons[i].Length; j++)
+            for (int j = 0; j < neurons[i].Length; j++) // For each neuron in that layer
             {
                 double value = 0f;
 
-                for (int k = 0; k < neurons[i - 1].Length; k++)
+                for (int k = 0; k < neurons[i - 1].Length; k++) // For all synapses connected to that neuron
                 {
-                    value += (weights[i - 1][j][k] * neurons[i - 1][k]); //sum off all weights connections of this neuron weight their values in previous layer
+                    value += (weights[i - 1][j][k] * neurons[i - 1][k]);
                 }
+
+                //for (int jj = 0; jj < neurons[i - 1].Length; jj++) // For all neurons in previous layer
+                //{
+                //    value += neurons[i - 1][jj] * weights[i-1][jj][j];
+                //}
 
                 if (droppedNeurons[i][j] == 10)
                     neurons[i][j] = 0;

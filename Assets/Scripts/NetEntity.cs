@@ -91,6 +91,13 @@ public class NetEntity : MonoBehaviour
     {
         if (networkRunning == true)
         {
+            //string weightLengths = "";
+            //for (int i = 0; i < net.weights.Length; i++)
+            //{
+            //    weightLengths += net.weights[i].Length * net.weights[i][0].Length + ", ";
+            //}
+            //Debug.Log(weightLengths);
+
             double[] inputs = new double[senses.Length];
 
             for (int p = 0; p < inputs.Length; p++)
@@ -108,11 +115,11 @@ public class NetEntity : MonoBehaviour
             //net.AddFitness(Vector3.Distance(dir, directionVector));
             net.AddFitness(senses[0].GetSensorValue(0, gameObject));
 
-            if (timeElapsed % 100 == 0)
-            {
-                double[] correct = { Mathf.Atan2(dir.y, dir.x) / 6.28319f };
-                net.BackPropagation(correct);
-            }
+            //if (timeElapsed % 100 == 0)
+            //{
+            //    double[] correct = { Mathf.Atan2(dir.y, dir.x) / 6.28319f };
+            //    net.BackPropagation(correct);
+            //}
 
             //if (transform.position.y > 0)
             //    net.AddFitness(10);
