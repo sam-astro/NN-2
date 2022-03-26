@@ -162,11 +162,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 02e2081876c99244fa317519acbd4d62, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  populationSize: 200
+  populationSize: 20
   layers: 0300000014000000140000001400000001000000
   learningRate: 0
   iterations: 0
-  maxIterations: 2000
+  maxIterations: 800
   amntLeft: 0
   bestError: 0
   netEntityPrefab: {fileID: 7647521876100407775, guid: 1a697f95b04bb3c49a95245d48113a8b, type: 3}

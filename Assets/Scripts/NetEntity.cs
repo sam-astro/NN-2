@@ -107,19 +107,22 @@ public class NetEntity : MonoBehaviour
 
             outputs = net.FeedForward(inputs);
 
-            //transform.position += new Vector3((float)outputs[0]*2.0f-1.0f, (float)outputs[1] * 2.0f - 1.0f) / 100.0f;
-            Vector3 directionVector = new Vector2((float)Math.Cos((float)outputs[0] * 6.28319f), (float)Math.Sin((float)outputs[0] * 6.28319f));
-            transform.position += directionVector / 100.0f;
+            transform.rotation = Quaternion.Euler(0, 0, (float)outputs[0] * 360.0f);
+            transform.position += -transform.right / 100.0f;
+
+            ////transform.position += new Vector3((float)outputs[0]*2.0f-1.0f, (float)outputs[1] * 2.0f - 1.0f) / 100.0f;
+            //Vector3 directionVector = new Vector2((float)Math.Cos((float)outputs[0] * 6.28319f), (float)Math.Sin((float)outputs[0] * 6.28319f));
+            //transform.position += directionVector / 100.0f;
 
             Vector3 dir = (transform.position - senses[0].objectToSenseFor.position).normalized;
             //net.AddFitness(Vector3.Distance(dir, directionVector));
-            net.AddFitness(senses[0].GetSensorValue(0, gameObject));
+            //net.error += (senses[0].GetSensorValue(0, gameObject));
 
-            //if (timeElapsed % 100 == 0)
-            //{
-            //    double[] correct = { Mathf.Atan2(dir.y, dir.x) / 6.28319f };
-            //    net.BackPropagation(correct);
-            //}
+            if (timeElapsed % 50 == 0)
+            {
+                double[] correct = { Mathf.Atan2(dir.y, dir.x) / 6.28319f };
+                net.BackProp(correct);
+            }
 
             //if (transform.position.y > 0)
             //    net.AddFitness(10);
@@ -141,7 +144,7 @@ public class NetEntity : MonoBehaviour
         this.net = net;
         this.generation = generation;
         networkRunning = true;
-        net.SetFitness(0);
+        //net.error = 0;
         timeElapsed = 0;
 
         foreach (var s in senses)
@@ -158,7 +161,7 @@ public class NetEntity : MonoBehaviour
     public void End()
     {
         double[] correct = { 0, 0 };
-        net.BackPropagation(correct);
+        //net.BackPropagation(correct);
         networkRunning = false;
     }
 }
