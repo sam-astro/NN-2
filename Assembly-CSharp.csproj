@@ -60,6 +60,7 @@
     <Compile Include="Assets\Scripts\NetManager.cs" />
     <Compile Include="Assets\GotoMouse.cs" />
     <Compile Include="Assets\Scripts\NeuralNetwork.cs" />
+    <Compile Include="Assets\Scripts\ShowOnlyAttribute.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\dat\hist.txt" />

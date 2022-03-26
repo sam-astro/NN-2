@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 [System.Serializable]
 public class Sense
 {
+    public string name;
     [Header("What to sense for:")]
     public bool distanceToObject;
     public bool horizontalDifference;
@@ -17,15 +18,20 @@ public class Sense
     public bool intersectingDistance;
     [Header("Optional Variables")]
     public string objectToSenseForTag;
-    [HideInInspector]
     public Transform objectToSenseFor;
     public LayerMask intersectionMask;
     public float initialDistance = 10.0f;
 
+    [ShowOnly] public float lastOutput;
+
     public void Initialize(GameObject gameObject)
     {
-        objectToSenseFor = GameObject.FindGameObjectWithTag(objectToSenseForTag).transform;
-        initialDistance = Vector2.Distance(gameObject.transform.position, objectToSenseFor.position);
+        if (objectToSenseFor == null || objectToSenseForTag != "")
+            objectToSenseFor = GameObject.FindGameObjectWithTag(objectToSenseForTag).transform;
+        if (initialDistance == 0)
+            initialDistance = Vector2.Distance(gameObject.transform.position, objectToSenseFor.position);
+
+        lastOutput = (float)GetSensorValue(gameObject);
     }
 
     public double GetSensorValue(int type, GameObject gameObject)
@@ -37,15 +43,24 @@ public class Sense
         if (type == 2 && verticalDifference)
             return (Mathf.Abs(gameObject.transform.position.y) + Mathf.Abs(objectToSenseFor.position.y)) / initialDistance;
         if (type == 3 && intersectingTrueFalse)
-            if (Physics.Linecast(gameObject.transform.position, objectToSenseFor.position, out RaycastHit sensedInfo, intersectionMask))
+        {
+            RaycastHit2D r = Physics2D.Linecast(gameObject.transform.position, objectToSenseFor.position, intersectionMask);
+            if (r)
                 return 1;
             else
                 return 0;
+        }
         if (type == 4 && intersectingDistance)
-            if (Physics.Linecast(gameObject.transform.position, objectToSenseFor.position, out RaycastHit sensedInfo, intersectionMask))
-                return Vector2.Distance(sensedInfo.point, gameObject.transform.position) / initialDistance;
+        {
+            RaycastHit2D r = Physics2D.Linecast(gameObject.transform.position, objectToSenseFor.position, intersectionMask);
+            if (r)
+            {
+                lastOutput = Vector2.Distance(r.point, gameObject.transform.position) / initialDistance;
+                return lastOutput;
+            }
             else
-                return initialDistance;
+                return 1;
+        }
 
         return 0;
     }
@@ -58,15 +73,24 @@ public class Sense
         if (verticalDifference)
             return (Mathf.Abs(gameObject.transform.position.y) + Mathf.Abs(objectToSenseFor.position.y)) / initialDistance;
         if (intersectingTrueFalse)
-            if (Physics.Linecast(gameObject.transform.position, objectToSenseFor.position, out RaycastHit sensedInfo, intersectionMask))
+        {
+            RaycastHit2D r = Physics2D.Linecast(gameObject.transform.position, objectToSenseFor.position, intersectionMask);
+            if (r)
                 return 1;
             else
                 return 0;
+        }
         if (intersectingDistance)
-            if (Physics.Linecast(gameObject.transform.position, objectToSenseFor.position, out RaycastHit sensedInfo, intersectionMask))
-                return Vector2.Distance(sensedInfo.point, gameObject.transform.position) / initialDistance;
+        {
+            RaycastHit2D r = Physics2D.Linecast(gameObject.transform.position, objectToSenseFor.position, intersectionMask);
+            if (r)
+            {
+                lastOutput = Vector2.Distance(r.point, gameObject.transform.position) / initialDistance;
+                return lastOutput;
+            }
             else
-                return initialDistance;
+                return 1;
+        }
 
         return 0;
     }
@@ -107,29 +131,30 @@ public class NetEntity : MonoBehaviour
 
             outputs = net.FeedForward(inputs);
 
-            transform.rotation = Quaternion.Euler(0, 0, (float)outputs[0] * 360.0f);
-            transform.position += -transform.right / 100.0f;
+
+            if (senses[2].GetSensorValue(gameObject) <= 0.25d) // If touching ground
+            {
+                if (Mathf.Abs((float)outputs[0]) > 0.25f)
+                    transform.position += transform.right / ((1.0f - (float)outputs[0]) * 100.0f);
+            }
+            else
+                transform.position -= new Vector3(0, 0.01f);
+
 
             ////transform.position += new Vector3((float)outputs[0]*2.0f-1.0f, (float)outputs[1] * 2.0f - 1.0f) / 100.0f;
             //Vector3 directionVector = new Vector2((float)Math.Cos((float)outputs[0] * 6.28319f), (float)Math.Sin((float)outputs[0] * 6.28319f));
             //transform.position += directionVector / 100.0f;
 
-            Vector3 dir = (transform.position - senses[0].objectToSenseFor.position).normalized;
+            //Vector3 dir = (transform.position - senses[0].objectToSenseFor.position).normalized;
             //net.AddFitness(Vector3.Distance(dir, directionVector));
             //net.error += (senses[0].GetSensorValue(0, gameObject));
 
             if (timeElapsed % 50 == 0)
             {
-                double[] correct = { Mathf.Atan2(dir.y, dir.x) / 6.28319f };
+                double[] correct = { 1.0f };
                 net.BackProp(correct);
             }
 
-            //if (transform.position.y > 0)
-            //    net.AddFitness(10);
-            //if (transform.position.x < 0)
-            //    net.AddFitness(10);
-
-            //networkRunning = false;
             timeElapsed += 1;
 
             return true;
