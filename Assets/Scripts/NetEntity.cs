@@ -111,43 +111,39 @@ public class NetEntity : MonoBehaviour
     public SpriteRenderer mainSprite;
     public bool randomizeSpriteColor = true;
 
-    double[] correctData;
-
-    public bool Elapse(bool testing)
+    public bool Elapse(bool testing, double[] inputData, double[] correctData)
     {
         if (networkRunning == true)
         {
             if (testing)
             {
-                double[] inputs = new double[1];
-
-                inputs[0] = (double)timeElapsed / (double)correctData.Length;
+                double[] inputs = inputData;
 
                 outputs = net.FeedForward(inputs);
 
-                net.customAnswer[timeElapsed] = outputs[0];
+                net.customAnswer = outputs;
 
-                net.error += Mathf.Pow((float)correctData[timeElapsed] - (float)outputs[0], 2) / 2.0f;
+                for (int i = 0; i < outputs.Length; i++)
+                {
+                    net.error += Mathf.Pow((float)correctData[i] - (float)outputs[i], 2) / 10.0f;
+                }
 
                 timeElapsed += 1;
             }
             else
             {
-                double[] inputs = new double[1];
-
-                inputs[0] = (double)timeElapsed / (double)correctData.Length;
+                double[] inputs = inputData;
 
                 outputs = net.FeedForward(inputs);
 
-                net.customAnswer[timeElapsed] = outputs[0];
+                net.customAnswer = outputs;
 
-                if (timeElapsed % 10 == 0)
+                net.BackProp(correctData);
+
+                for (int i = 0; i < outputs.Length; i++)
                 {
-                    double[] correct = { correctData[timeElapsed] };
-                    net.BackProp(correct);
+                    net.error += Mathf.Pow((float)correctData[i] - (float)outputs[i], 2) / 10.0f;
                 }
-
-                net.error += Mathf.Pow((float)correctData[timeElapsed] - (float)outputs[0], 2) / 2.0f;
 
                 timeElapsed += 1;
 
@@ -157,13 +153,12 @@ public class NetEntity : MonoBehaviour
         return false;
     }
 
-    public void Init(NeuralNetwork net, int generation, double[] correctData)
+    public void Init(NeuralNetwork net, int generation)
     {
         transform.position = Vector3.zero;
         transform.rotation = Quaternion.identity;
         this.net = net;
         this.generation = generation;
-        this.correctData = correctData;
         networkRunning = true;
         net.error = 0;
         timeElapsed = 0;

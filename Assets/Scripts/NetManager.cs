@@ -49,7 +49,13 @@ public class NetManager : MonoBehaviour
     public Slider progressBar;
 
     public Toggle justTest;
-    public bool test;
+    public bool test= false;
+
+    public Texture2D[] classifiedImages;
+    private List<List<double>> pixelArrays = new List<List<double>>();
+
+    public Image[] outputsPreview;
+    public Material inputPreview;
 
     #region Internal Variables
     public int amntLeft;
@@ -72,18 +78,38 @@ public class NetManager : MonoBehaviour
 
     public GameObject netEntityPrefab;
 
-    double[] correctData;
+    double[][] correctData = new double[][] { 
+        new double[] { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+        new double[] { 0, 1, 0, 0, 0, 0, 0, 0, 0, 0 },
+        new double[] { 0, 0, 1, 0, 0, 0, 0, 0, 0, 0 },
+        new double[] { 0, 0, 0, 1, 0, 0, 0, 0, 0, 0 },
+        new double[] { 0, 0, 0, 0, 1, 0, 0, 0, 0, 0 },
+        new double[] { 0, 0, 0, 0, 0, 1, 0, 0, 0, 0 },
+        new double[] { 0, 0, 0, 0, 0, 0, 1, 0, 0, 0 },
+        new double[] { 0, 0, 0, 0, 0, 0, 0, 1, 0, 0 },
+        new double[] { 0, 0, 0, 0, 0, 0, 0, 0, 1, 0 },
+        new double[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
+    };
+    double[] inputData;
 
     #endregion
 
     private void Start()
     {
-        correctData = l;
+        foreach (var img in classifiedImages)
+        {
+            Color[] colors = img.GetPixels(0, 0, 28, 28);
+            List<double> tempPixelArray = new List<double>();
+            for (int i = 0; i < colors.Length; i++)
+            {
+                tempPixelArray.Add((double)colors[i].r);
+            }
+            pixelArrays.Add(tempPixelArray);
+        }
 
-        maxIterations = l.Length;
+        maxIterations = pixelArrays.Count - 1;
 
         justTest.isOn = test;
-
 
         iterations = maxIterations;
         InitEntityNeuralNetworks();
@@ -92,9 +118,9 @@ public class NetManager : MonoBehaviour
 
     public void Update()
     {
-        test = justTest;
+        test = justTest.isOn;
 
-        if (iterations <= 0)
+        if (iterations < 0)
         {
             nets.Sort();
 
@@ -129,8 +155,6 @@ public class NetManager : MonoBehaviour
                 Debug.Log("Error Rate: " + bestError + "\n");
                 Console.ResetColor();
 
-                if (nets[0].customAnswer != null)
-                    audMgr.SaveAudio(nets[0].customAnswer, bestError);
             }
             else if (generationNumber % timeBetweenGenerationProgress == 0)
             {
@@ -152,16 +176,28 @@ public class NetManager : MonoBehaviour
 
             CreateEntityBodies();
             iterations = maxIterations;
+            return;
         }
         else
         {
-            iterations -= 1;
+            //inputPreview.mainTexture = classifiedImages[iterations];
+            inputPreview.SetTexture("_MainTex", classifiedImages[iterations]);
 
-            progressBar.value = ((float)maxIterations - (float)iterations)/(float)maxIterations;
+            inputData = pixelArrays[iterations].ToArray();
 
-            if (IterateNetEntities() == false || iterations <= 0)
-                iterations = 0;
+            progressBar.value = ((float)maxIterations - (float)iterations) / (float)maxIterations;
+
+            if (IterateNetEntities() == false)
+                iterations = -1;
+
+            for (int i = 0; i < nets[nets.Count - 1].publicOutputs.Length; i++)
+            {
+                float val = Mathf.Clamp((float)nets[nets.Count - 1].publicOutputs[i], 0.0f, 1.0f);
+                outputsPreview[i].color = new Color(val, val, val);
+            }
+            //return;
         }
+        iterations -= 1;
     }
 
     private void CreateEntityBodies()
@@ -173,14 +209,14 @@ public class NetManager : MonoBehaviour
             for (int i = 0; i < populationSize; i++)
             {
                 GameObject tempEntity = Instantiate(netEntityPrefab, new Vector3(0, 0, 0), Quaternion.identity);
-                tempEntity.GetComponent<NetEntity>().Init(nets[i], generationNumber, correctData);
+                tempEntity.GetComponent<NetEntity>().Init(nets[i], generationNumber);
                 entityList.Add(tempEntity);
             }
         }
         else
             for (int i = 0; i < entityList.Count; i++)
             {
-                entityList[i].GetComponent<NetEntity>().Init(nets[i], generationNumber, correctData);
+                entityList[i].GetComponent<NetEntity>().Init(nets[i], generationNumber);
             }
     }
 
@@ -188,7 +224,7 @@ public class NetManager : MonoBehaviour
     {
         bool outbool = true;
         for (int i = 0; i < entityList.Count; i++)
-            outbool = entityList[i].GetComponent<NetEntity>().Elapse(test);
+            outbool = entityList[i].GetComponent<NetEntity>().Elapse(test, inputData, correctData[iterations]);
         return outbool;
     }
 

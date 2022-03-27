@@ -10,6 +10,8 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
     public Layer[] layers; // layers in the network
     public double error; // error of the network
 
+    public double[] publicOutputs;
+
     public double[] customAnswer;
 
     /// <summary>
@@ -72,6 +74,7 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
             layers[i].FeedForward(layers[i - 1].outputs);
         }
 
+        publicOutputs = layers[layers.Length - 1].outputs;
         return layers[layers.Length - 1].outputs; //return output of last layer
     }
 
