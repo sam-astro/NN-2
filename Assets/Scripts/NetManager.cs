@@ -62,7 +62,7 @@ public class NetManager : MonoBehaviour
     public Toggle justTest;
     public bool test = false;
 
-    public Classify[] classifiedImages;
+    public List<Classify> classifiedImages;
 
     public Image[] outputsPreview;
     public Material inputPreview;
@@ -108,7 +108,13 @@ public class NetManager : MonoBehaviour
 
     #endregion
 
-    private void Start()
+
+    public void Awake()
+    {
+        justTest.isOn = test;
+    }
+
+    public void Start()
     {
         foreach (var cl in classifiedImages)
         {
@@ -119,32 +125,49 @@ public class NetManager : MonoBehaviour
 
         for (int n = 0; n < 10; n++)
         {
-            byte[] bytes = System.IO.File.ReadAllBytes("");
+            byte[] bytes = System.IO.File.ReadAllBytes("./Assets/LargeInputImages/" + n + ".jpg");
             Texture2D s = new Texture2D(1, 1);
+            s.filterMode = FilterMode.Point;
             s.LoadImage(bytes);
-            for (int i = 0; i < 20; i++)
+            for (int i = 0; i < 40; i++)
             {
                 Classify tC = new Classify();
+
+                tC.tex = new Texture2D(28, 28);
+                tC.tex.filterMode = FilterMode.Point;
+                tC.tex.SetPixels(0, 0, 28, 28, s.GetPixels(28 * i, 0, 28, 28));
+                tC.tex.Apply();
+
+                tC.pixelArray = Texture2DToList(tC.tex);
+
+                tC.classifyAs = n;
 
                 classifiedImages.Add(tC);
             }
         }
 
-        maxIterations = classifiedImages.Length - 1;
+        maxIterations = classifiedImages.Count - 1;
 
-        justTest.isOn = test;
 
+        drawOnTexture = TextureDrawer.Clear(drawOnTexture);
         inputPreview.SetTexture("_MainTex", drawOnTexture);
 
-        // Load best error
-        StreamReader persistence = new StreamReader("./Assets/dat/WeightSaveMeta.mta");
-        string str = persistence.ReadLine();
-        generationNumber = int.Parse(str.Split('#')[0]);
-        genTxt.text = generationNumber.ToString();
-        lastBest = double.Parse(str.Split('#')[1]);
-        bestError = double.Parse(str.Split('#')[1]);
-        bestErrTxt.text = Math.Round(bestError, 3).ToString();
-        persistence.Close();
+        try
+        {
+            // Load best error
+            StreamReader persistence = new StreamReader("./Assets/dat/WeightSaveMeta.mta");
+            string str = persistence.ReadLine();
+            generationNumber = int.Parse(str.Split('#')[0]);
+            genTxt.text = generationNumber.ToString();
+            lastBest = double.Parse(str.Split('#')[1]);
+            bestError = double.Parse(str.Split('#')[1]);
+            bestErrTxt.text = Math.Round(bestError, 3).ToString();
+            persistence.Close();
+        }
+        catch (Exception)
+        {
+            Debug.LogWarning("Save data not found, continuing...");
+        }
 
         iterations = maxIterations;
         InitEntityNeuralNetworks();
@@ -168,65 +191,49 @@ public class NetManager : MonoBehaviour
                 genTxt.text = generationNumber.ToString();
                 errTxt.text = Math.Round(bestError, 3).ToString();
 
-                //if (generationNumber % timeBetweenSave == 0 && timeBetweenSave != -1)
-                //{
-                //    StreamWriter persistence = new StreamWriter("./Assets/dat/WeightSaveMeta.mta");
-                //    persistence.WriteLine((generationNumber).ToString() + "#" + (bestError).ToString());
-
-                //    BinaryFormatter bf = new BinaryFormatter();
-                //    using (FileStream fs = new FileStream("./Assets/dat/WeightSave.dat", FileMode.Create))
-                //        bf.Serialize(fs, nets[nets.Count - 1].layers);
-
-                //    persistence.Close();
-                //}
-
                 if ((bestError < lastBest && generationNumber % timeBetweenGenerationProgress == 0) || test)
                 {
-                    // Save weights
+                    // Save metadata
                     StreamWriter persistence = new StreamWriter("./Assets/dat/WeightSaveMeta.mta");
                     persistence.WriteLine((generationNumber).ToString() + "#" + (bestError).ToString());
                     persistence.Close();
 
+                    // Save weights
                     BinaryFormatter bf = new BinaryFormatter();
                     using (FileStream fs = new FileStream("./Assets/dat/WeightSave.dat", FileMode.Create))
                         bf.Serialize(fs, nets[nets.Count - 1].layers);
 
-
-
-
+                    // Log history
                     using (StreamWriter sw = File.AppendText("./Assets/dat/hist.txt"))
                     {
                         sw.WriteLine((generationNumber).ToString() + ", " + bestError);
                     }
+
+
                     bestErrTxt.text = Math.Round(bestError, 2).ToString();
-
-                    //Debug.Log("╚═ Generation: " + generationNumber + "  |  Population: " + populationSize);
-                    //Debug.Log("  |  ");
-                    //Console.ForegroundColor = ConsoleColor.Green;
-                    //Debug.Log("Error Rate: " + bestError + "\n");
-                    //Console.ResetColor();
-
                     lastBest = bestError;
                 }
                 else if (generationNumber % timeBetweenGenerationProgress == 0)
                 {
-                    //Debug.Log("╚═ Generation: " + generationNumber + "  |  Population: " + populationSize);
-                    //Debug.Log("  |  ");
-                    //Debug.Log("Error Rate: " + (bestError) + "\n");
-
+                    // Log history
                     using (StreamWriter sw = File.AppendText("./Assets/dat/hist.txt"))
                     {
                         sw.WriteLine((generationNumber).ToString() + ", " + bestError);
                     }
                 }
 
-                Finalizer();
+                //Finalizer();
 
                 lastWorst = worstError;
                 generationNumber++;
 
                 CreateEntityBodies();
                 iterations = maxIterations;
+
+
+                // Randomize order of list
+                classifiedImages.Shuffle();
+
                 return;
             }
             else
@@ -274,7 +281,7 @@ public class NetManager : MonoBehaviour
             int greatestIndex = 0;
             for (int i = 0; i < nets[nets.Count - 1].publicOutputs.Length; i++)
             {
-                if((float)nets[nets.Count - 1].publicOutputs[i] > greatestValue)
+                if ((float)nets[nets.Count - 1].publicOutputs[i] > greatestValue)
                 {
                     greatestValue = (float)nets[nets.Count - 1].publicOutputs[i];
                     greatestIndex = i;
@@ -284,7 +291,7 @@ public class NetManager : MonoBehaviour
                 outputsPreview[i].color = new Color(val, val, val);
             }
 
-            bestGuessTxt.text = greatestIndex + "  -  " + Math.Round(greatestValue*100, 2).ToString() + "% confidence";
+            bestGuessTxt.text = greatestIndex + "  -  " + Math.Round(greatestValue * 100, 2).ToString() + "% confidence";
 
             //}
         }
@@ -300,6 +307,17 @@ public class NetManager : MonoBehaviour
         }
 
         return tempPixelArray.ToArray();
+    }
+    private List<double> Texture2DToList(Texture2D tex)
+    {
+        Color[] colors = tex.GetPixels(0, 0, 28, 28);
+        List<double> tempPixelArray = new List<double>();
+        for (int i = 0; i < colors.Length; i++)
+        {
+            tempPixelArray.Add((double)colors[i].r);
+        }
+
+        return tempPixelArray;
     }
 
     private void CreateEntityBodies()
@@ -326,7 +344,8 @@ public class NetManager : MonoBehaviour
     {
         bool outbool = true;
         for (int i = 0; i < entityList.Count; i++)
-            outbool = entityList[i].GetComponent<NetEntity>().Elapse(test, inputData, correctData[classifiedImages[iterations].classifyAs]);
+            if (entityList[i].GetComponent<NetEntity>().Elapse(test, inputData, correctData[classifiedImages[iterations].classifyAs]) == false)
+                outbool = false;
         return outbool;
     }
 
@@ -531,5 +550,23 @@ public class NetManager : MonoBehaviour
         Console.ForegroundColor = ConsoleColor.Green;
         Console.WriteLine("* Synced with server");
         Console.ResetColor();
+    }
+}
+
+static class MyExtensions
+{
+    private static System.Random rng = new System.Random();
+
+    public static void Shuffle<T>(this IList<T> list)
+    {
+        int n = list.Count;
+        while (n > 1)
+        {
+            n--;
+            int k = rng.Next(n + 1);
+            T value = list[k];
+            list[k] = list[n];
+            list[n] = value;
+        }
     }
 }

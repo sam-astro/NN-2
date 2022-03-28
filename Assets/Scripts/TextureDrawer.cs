@@ -74,4 +74,18 @@ public class TextureDrawer : MonoBehaviour
 
         tex.Apply();
     }
+
+    public static Texture2D Clear(Texture2D t)
+    {
+        for (int i = 0; i < t.width; i++)
+        {
+            for (int j = 0; j < t.height; j++)
+            {
+                t.SetPixel(i, j, Color.black);
+            }
+        }
+
+        t.Apply();
+        return t;
+    }
 }
