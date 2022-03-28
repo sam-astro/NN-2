@@ -1,18 +1,19 @@
-﻿using System;
+using System;
 
 /// <summary>
-/// Simple MLP Neural Network
+/// Backpropagation Neural Network
 /// </summary>
 public class NeuralNetwork : IComparable<NeuralNetwork>
 {
+    int[] layer; // Layer sizes and amounts
+    public Layer[] layers; // Actual layers in the network
+    public double error; // Error of the network
 
-    int[] layer; // layer information
-    public Layer[] layers; // layers in the network
-    public double error; // error of the network
-
-    public double[] publicOutputs;
+    public double[] publicOutputs; // Final layer outputs
 
     public double[] customAnswer;
+    
+    public float learningRate = 0.033f; // Learning rate
 
     /// <summary>
     /// Constructor setting up layers
@@ -37,7 +38,7 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
     /// Constructor setting up layers
     /// </summary>
     /// <param name="layer">Layers of this network</param>
-    /// <param name="loadLayers">Layer data to load into network</param>
+    /// <param name="loadLayers">Layer data to load</param>
     public NeuralNetwork(int[] layer, Layer[] loadLayers)
     {
         //deep copy layers
@@ -63,7 +64,7 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
     /// <summary>
     /// High level feedforward for this network
     /// </summary>
-    /// <param name="inputs">Inputs to be feed forwared</param>
+    /// <param name="inputs">Inputs to be fed forward</param>
     /// <returns></returns>
     public double[] FeedForward(double[] inputs)
     {
@@ -79,7 +80,7 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
     }
 
     /// <summary>
-    /// High level back porpagation
+    /// High level back-propagation
     /// Note: It is expected at least one feed forward was done before this back prop.
     /// </summary>
     /// <param name="expected">The expected output form the last feedforward</param>
@@ -125,13 +126,13 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
 
 
     /// <summary>
-    /// Each individual layer in the ML{
+    /// Each individual layer in the network
     /// </summary>
     [System.Serializable]
     public class Layer
     {
-        int numberOfInputs; //# of neurons in the previous layer
-        int numberOfOuputs; //# of neurons in the current layer
+        int numberOfInputs; // Count of neurons in the previous layer
+        int numberOfOuputs; // Count of neurons in the current layer
 
 
         public double[] outputs; //outputs of this layer
@@ -144,7 +145,7 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
         public static Random random = new Random(); //Static random class variable
 
         /// <summary>
-        /// Constructor initilizes vaiour data structures
+        /// Constructor initializes our data structures
         /// </summary>
         /// <param name="numberOfInputs">Number of neurons in the previous layer</param>
         /// <param name="numberOfOuputs">Number of neurons in the current layer</param>
@@ -153,7 +154,7 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
             this.numberOfInputs = numberOfInputs;
             this.numberOfOuputs = numberOfOuputs;
 
-            //initilize datastructures
+            // initialize datastructures
             outputs = new double[numberOfOuputs];
             inputs = new double[numberOfInputs];
             weights = new double[numberOfOuputs, numberOfInputs];
@@ -161,11 +162,11 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
             gamma = new double[numberOfOuputs];
             error = new double[numberOfOuputs];
 
-            InitilizeWeights(); //initilize weights
+            InitilizeWeights(); // initialize weights
         }
 
         /// <summary>
-        /// Initilize weights between -0.5 and 0.5
+        /// Initialize weights between -0.5 and 0.5
         /// </summary>
         public void InitilizeWeights()
         {
@@ -185,7 +186,7 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
         /// <returns></returns>
         public double[] FeedForward(double[] inputs)
         {
-            this.inputs = inputs;// keep shallow copy which can be used for back propagation
+            this.inputs = inputs;// keep shallow copy which can be used for back-propagation
 
             //feed forwards
             for (int i = 0; i < numberOfOuputs; i++)
@@ -203,7 +204,7 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
         }
 
         /// <summary>
-        /// TanH derivate 
+        /// TanH derivative 
         /// </summary>
         /// <param name="value">An already computed TanH value</param>
         /// <returns></returns>
@@ -213,20 +214,20 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
         }
 
         /// <summary>
-        /// Back propagation for the output layer
+        /// Back-propagation for the output layer
         /// </summary>
         /// <param name="expected">The expected output</param>
         public void BackPropOutput(double[] expected)
         {
-            //Error dervative of the cost function
+            // Error derivative of the cost function
             for (int i = 0; i < numberOfOuputs; i++)
                 error[i] = outputs[i] - expected[i];
 
-            //Gamma calculation
+            // Gamma calculation
             for (int i = 0; i < numberOfOuputs; i++)
                 gamma[i] = error[i] * TanHDer(outputs[i]);
 
-            //Caluclating detla weights
+            // Calculating delta weights
             for (int i = 0; i < numberOfOuputs; i++)
             {
                 for (int j = 0; j < numberOfInputs; j++)
@@ -237,13 +238,13 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
         }
 
         /// <summary>
-        /// Back propagation for the hidden layers
+        /// Back-propagation for the hidden layers
         /// </summary>
         /// <param name="gammaForward">the gamma value of the forward layer</param>
         /// <param name="weightsFoward">the weights of the forward layer</param>
         public void BackPropHidden(double[] gammaForward, double[,] weightsFoward)
         {
-            //Caluclate new gamma using gamma sums of the forward layer
+            // Calculate new gamma using gamma sums of the forward layer
             for (int i = 0; i < numberOfOuputs; i++)
             {
                 gamma[i] = 0;
@@ -256,7 +257,7 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
                 gamma[i] *= TanHDer(outputs[i]);
             }
 
-            //Caluclating detla weights
+            // Calculating delta weights
             for (int i = 0; i < numberOfOuputs; i++)
             {
                 for (int j = 0; j < numberOfInputs; j++)
@@ -275,7 +276,7 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
             {
                 for (int j = 0; j < numberOfInputs; j++)
                 {
-                    weights[i, j] -= weightsDelta[i, j] * 0.033f;
+                    weights[i, j] -= weightsDelta[i, j] * learningRate;
                 }
             }
         }
