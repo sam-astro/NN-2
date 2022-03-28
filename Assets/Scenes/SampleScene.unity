@@ -1256,7 +1256,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   populationSize: 1
-  layers: 10030000140000000a0000000a0000001e0000000a000000
+  layers: 10030000640000000a0000000a0000001e0000000a000000
   learningRate: 0
   iterations: 0
   maxIterations: 800
@@ -1266,7 +1266,7 @@ MonoBehaviour:
   bestGuessTxt: {fileID: 1414756133}
   progressBar: {fileID: 1494146889}
   justTest: {fileID: 351002373}
-  test: 1
+  test: 0
   classifiedImages:
   - tex: {fileID: 2800000, guid: 6764b7b8f170b4f4e8aaaeb2af9bd244, type: 3}
     pixelArray: []

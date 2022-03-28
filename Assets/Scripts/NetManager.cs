@@ -34,7 +34,7 @@ public class NetManager : MonoBehaviour
 
     public int[] layers = new int[] { 1, 8, 12, 1 }; // No. of inputs and No. of outputs
 
-    public float learningRate = 0.1f;
+    public float learningRate = 0.033f;
 
     public int iterations;
     public int maxIterations = 1000;
@@ -222,6 +222,28 @@ public class NetManager : MonoBehaviour
                     }
                 }
 
+                Texture2D ttx = new Texture2D(10, 10, TextureFormat.RGB24, false);
+                double[] outs = nets[nets.Count - 1].layers[0].outputs;
+                if (outs == null)
+                    Debug.LogWarning("outputs null");
+                for (int y = 0; y < 10; y++)
+                {
+                    for (int x = 0; x < 10; x++)
+                    {
+                        float colval = (float)outs[y * 9 + x];
+                        Color c;
+                        if (colval < 0)
+                            c = new Color(0, -colval, -colval);
+                        else
+                            c = new Color(colval, 0, colval);
+                        ttx.SetPixel(x, y, c);
+                    }
+                }
+                ttx.Apply();
+                byte[] bytes = ttx.EncodeToPNG();
+                var dirPath = "./Assets/outImage.png";
+                File.WriteAllBytes(dirPath, bytes);
+
                 //Finalizer();
 
                 lastWorst = worstError;
@@ -389,29 +411,13 @@ public class NetManager : MonoBehaviour
         {
             NeuralNetwork net = new NeuralNetwork(layers, preLoadLayers);
             net.customAnswer = new double[correctData.Length];
-            //Console.WriteLine("* Creating net: " + i + " of " + populationSize);
 
-            //net.learningRate = learningRate;
-
-            //if (persistenceNetwork != null)
-            //    net.weights = persistenceNetwork.weights;
-            //else
-            //    net.RandomizeWeights();
+            net.learningRate = learningRate;
 
             nets.Add(net);
         }
-        //Console.ResetColor();
 
         startup = false;
-        //Console.Clear();
-        //Console.ForegroundColor = ConsoleColor.Green;
-        //Console.WriteLine("✓ EVERYTHING READY ✓");
-        //Debug.Log("Just let this program process and learn, and only exit if ");
-        //Console.ForegroundColor = ConsoleColor.Blue;
-        //Debug.Log("BLUE ");
-        //Console.ForegroundColor = ConsoleColor.Green;
-        //Debug.Log("text isn't getting printed to screen. (that is when it is saving or loading data). I have finally implemented networking! Now, as long as you have an internet connection, the weights data will automatically be sent to my server! Hooray!\n");
-        //Console.ResetColor();
     }
 
     double[][] NormalizeData(double[][] input, double min, double max)

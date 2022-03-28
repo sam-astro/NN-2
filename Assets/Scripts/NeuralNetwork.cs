@@ -32,6 +32,7 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
         for (int i = 0; i < layers.Length; i++)
         {
             layers[i] = new Layer(layer[i], layer[i + 1]);
+            layers[i].learningRate = learningRate;
         }
     }
     /// <summary>
@@ -55,6 +56,7 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
             for (int i = 0; i < layers.Length; i++)
             {
                 layers[i] = new Layer(layer[i], layer[i + 1]);
+                layers[i].learningRate = learningRate;
             }
         }
         else
@@ -133,6 +135,8 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
     {
         int numberOfInputs; // Count of neurons in the previous layer
         int numberOfOuputs; // Count of neurons in the current layer
+
+        public float learningRate;
 
 
         public double[] outputs; //outputs of this layer
