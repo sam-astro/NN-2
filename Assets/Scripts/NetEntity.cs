@@ -152,7 +152,7 @@ public class NetEntity : MonoBehaviour
             if (timeElapsed % 50 == 0)
             {
                 double[] correct = { 1.0f };
-                net.BackProp(correct);
+                //net.BackProp(correct);
             }
 
             timeElapsed += 1;
