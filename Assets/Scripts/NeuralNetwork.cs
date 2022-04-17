@@ -1,108 +1,371 @@
-﻿using System;
+﻿
+using System.Collections.Generic;
+using System.IO;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 /// <summary>
-/// Simple MLP Neural Network
+/// Neural Network C# (Unsupervised)
 /// </summary>
 public class NeuralNetwork : IComparable<NeuralNetwork>
 {
+    public int[] layers; //layers
+    public double[][] neurons; //neuron matix
+    public double[][] neuronError; //calculated error for each neuroon
+    public double[][] droppedNeurons; //dropped neuron matix
+    public double[][][] weights; //weight matrix
+    public double fitness; //fitness of the network
 
-    int[] layer; // layer information
-    public Layer[] layers; // layers in the network
-    public double error; // error of the network
+    public float learningRate = 1f;
+
 
     /// <summary>
-    /// Constructor setting up layers
+    /// Initilizes and neural network with random weights
     /// </summary>
-    /// <param name="layer">Layers of this network</param>
-    public NeuralNetwork(int[] layer)
+    /// <param name="layers">layers to the neural network</param>
+    public NeuralNetwork(int[] layers, double[][][] persistenceWeights)
     {
-        //deep copy layers
-        this.layer = new int[layer.Length];
-        for (int i = 0; i < layer.Length; i++)
-            this.layer[i] = layer[i];
-
-        //creates neural layers
-        layers = new Layer[layer.Length - 1];
-
+        //deep copy of layers of this network 
+        this.layers = new int[layers.Length];
         for (int i = 0; i < layers.Length; i++)
         {
-            layers[i] = new Layer(layer[i], layer[i + 1]);
+            this.layers[i] = layers[i];
         }
+
+
+        //generate matrix
+        InitNeurons();
+        InitWeights(persistenceWeights);
     }
+
     /// <summary>
-    /// Constructor setting up layers
+    /// Deep copy constructor 
     /// </summary>
-    /// <param name="layer">Layers of this network</param>
-    /// <param name="loadLayers">Layer data to load into network</param>
-    public NeuralNetwork(int[] layer, Layer[] loadLayers)
+    /// <param name="copyNetwork">Network to deep copy</param>
+    public NeuralNetwork(NeuralNetwork copyNetwork)
     {
-        //deep copy layers
-        this.layer = new int[layer.Length];
-        for (int i = 0; i < layer.Length; i++)
-            this.layer[i] = layer[i];
-
-
-        if (loadLayers == null)
+        this.layers = new int[copyNetwork.layers.Length];
+        for (int i = 0; i < copyNetwork.layers.Length; i++)
         {
-            //creates neural layers
-            layers = new Layer[layer.Length - 1];
+            this.layers[i] = copyNetwork.layers[i];
+        }
 
-            for (int i = 0; i < layers.Length; i++)
+        InitNeurons();
+        InitWeights(null);
+        CopyWeights(copyNetwork.weights);
+    }
+
+    private void CopyWeights(double[][][] copyWeights)
+    {
+        for (int i = 0; i < weights.Length; i++)
+        {
+            for (int j = 0; j < weights[i].Length; j++)
             {
-                layers[i] = new Layer(layer[i], layer[i + 1]);
+                for (int k = 0; k < weights[i][j].Length; k++)
+                {
+                    weights[i][j][k] = copyWeights[i][j][k];
+                }
             }
         }
-        else
-            layers = loadLayers;
     }
 
     /// <summary>
-    /// High level feedforward for this network
+    /// Create neuron matrix
     /// </summary>
-    /// <param name="inputs">Inputs to be feed forwared</param>
+    private void InitNeurons()
+    {
+        //Neuron Initilization
+        List<double[]> neuronsList = new List<double[]>();
+
+        for (int i = 0; i < layers.Length; i++) //run through all layers
+        {
+            neuronsList.Add(new double[layers[i]]); //add layer to neuron list
+        }
+
+        neurons = neuronsList.ToArray(); //convert list to array
+        droppedNeurons = neurons;
+    }
+
+    public void RandomizeWeights()
+    {
+        List<double[][]> weightsList = new List<double[][]>(); //weights list which will later be converted into a weights 3D array
+
+        //itterate over all neurons that have a weight connection
+        for (int i = 1; i < layers.Length; i++)
+        {
+            List<double[]> layerWeightsList = new List<double[]>(); //layer weight list for this current layer (will be converted to 2D array)
+
+            int neuronsInPreviousLayer = layers[i - 1];
+
+            //itterate over all neurons in this current layer
+            for (int j = 0; j < neurons[i].Length; j++)
+            {
+                double[] neuronWeights = new double[neuronsInPreviousLayer]; //neruons weights
+
+                //itterate over all neurons in the previous layer and set the weights randomly between 0.5f and -0.5
+                for (int k = 0; k < neuronsInPreviousLayer; k++)
+                {
+                    //give random weights to neuron weights
+                    //neuronWeights[k] = UnityEngine.Random.Range(-0.5f,0.5f);
+                    neuronWeights[k] = new Random().Next(-50, 50) / 100.0d;
+                }
+
+                layerWeightsList.Add(neuronWeights); //add neuron weights of this current layer to layer weights
+            }
+
+            weightsList.Add(layerWeightsList.ToArray()); //add this layers weights converted into 2D array into weights list
+        }
+
+        weights = weightsList.ToArray(); //convert to 3D array
+    }
+
+    /// <summary>
+    /// Create weights matrix.
+    /// </summary>
+    private void InitWeights(double[][][] persistenceWeights)
+    {
+        //StreamReader streamReader = File.OpenText("./Assets/dat/WeightSave.dat");
+        //string[] lines = streamReader.ReadToEnd().Split('\n');
+        //streamReader.Close();
+
+        if (persistenceWeights != null)
+            weights = persistenceWeights;
+        else
+        {
+            List<double[][]> weightsList = new List<double[][]>(); //weights list which will later be converted into a weights 3D array
+
+            //itterate over all neurons that have a weight connection
+            for (int i = 1; i < layers.Length; i++)
+            {
+                List<double[]> layerWeightsList = new List<double[]>(); //layer weight list for this current layer (will be converted to 2D array)
+
+                int neuronsInPreviousLayer = layers[i - 1];
+
+                //itterate over all neurons in this current layer
+                for (int j = 0; j < neurons[i].Length; j++)
+                {
+                    double[] neuronWeights = new double[neuronsInPreviousLayer]; //neurons weights
+
+                    //itterate over all neurons in the previous layer and set the weights randomly between 0.5f and -0.5
+                    for (int k = 0; k < neuronsInPreviousLayer; k++)
+                    {
+                        //give random weights to neuron weights
+                        neuronWeights[k] = UnityEngine.Random.Range(-0.5f, 0.5f);
+                        //neuronWeights[k] = new Random().Next(-50, 50) / 100.0d;
+                    }
+
+                    layerWeightsList.Add(neuronWeights); //add neuron weights of this current layer to layer weights
+                }
+
+                weightsList.Add(layerWeightsList.ToArray()); //add this layers weights converted into 2D array into weights list
+            }
+
+            weights = weightsList.ToArray(); //convert to 3D array
+        }
+    }
+
+    /// <summary>
+    /// Feed forward this neural network with a given input array
+    /// </summary>
+    /// <param name="inputs">Inputs to network</param>
     /// <returns></returns>
     public double[] FeedForward(double[] inputs)
     {
-        //feed forward
-        layers[0].FeedForward(inputs);
-        for (int i = 1; i < layers.Length; i++)
+        //Add inputs to the neuron matrix
+        for (int i = 0; i < inputs.Length; i++)
         {
-            layers[i].FeedForward(layers[i - 1].outputs);
+            neurons[0][i] = inputs[i];
         }
 
-        return layers[layers.Length - 1].outputs; //return output of last layer
-    }
+        //itterate over all neurons and compute feedforward values 
+        for (int i = 1; i < layers.Length; i++) // For each layer
+        {
+            for (int j = 0; j < neurons[i].Length; j++) // For each neuron in that layer
+            {
+                double value = 0f;
 
-    /// <summary>
-    /// High level back porpagation
-    /// Note: It is expected at least one feed forward was done before this back prop.
-    /// </summary>
-    /// <param name="expected">The expected output form the last feedforward</param>
-    public void BackProp(double[] expected)
+                for (int k = 0; k < neurons[i - 1].Length; k++) // For all synapses connected to that neuron
+                {
+                    value += (weights[i - 1][j][k] * neurons[i - 1][k]);
+                }
+
+                //for (int jj = 0; jj < neurons[i - 1].Length; jj++) // For all neurons in previous layer
+                //{
+                //    value += neurons[i - 1][jj] * weights[i-1][jj][j];
+                //}
+
+                if (droppedNeurons[i][j] == 10)
+                    neurons[i][j] = 0;
+                else if (droppedNeurons[i][j] != 10)
+                    neurons[i][j] = (double)Sigmoid(value);
+
+                //neurons[i][j] = (double)Math.Tanh(value); //Hyperbolic tangent activation
+            }
+        }
+
+        return neurons[neurons.Length - 1]; //return output layer
+    }
+    public static double Sigmoid(double value)
     {
-        // run over all layers backwards
-        for (int i = layers.Length - 1; i >= 0; i--)
+        return 1.0d / (1.0d + (double)Math.Exp(-value));
+    }
+    public static double dSigmoid(double value)
+    {
+        return value * (1.0d - value);
+    }
+    public static double dTanh(double value)
+    {
+        return 1.0d - Math.Pow((double)Math.Tanh(value), 2.0d);
+    }
+    public static double Tanh(double value)
+    {
+        return (double)Math.Tanh(value);
+    }
+
+    public void BackPropagation(double[] expectedOutput)
+    {
+        neuronError = neurons;
+
+        //itterate over output neurons and compute error values
+        for (int j = 0; j < neurons[neurons.Length - 1].Length; j++)
         {
-            if (i == layers.Length - 1)
+            neuronError[neurons.Length - 1][j] = dSigmoid(neurons[neurons.Length - 1][j]) * (expectedOutput[j] - neurons[neurons.Length - 1][j]);
+            for (int k = 0; k < weights[neurons.Length - 2][j].Length; k++)
             {
-                layers[i].BackPropOutput(expected); //back prop output
-            }
-            else
-            {
-                layers[i].BackPropHidden(layers[i + 1].gamma, layers[i + 1].weights); //back prop hidden
+                weights[neurons.Length - 2][j][k] += neuronError[neurons.Length - 1][j] * (neurons[neurons.Length - 1][j] * weights[neurons.Length - 2][j][k]);
+                // Also add to   bias[i][j] += neuronError[i][j];
             }
         }
 
-        //Update weights
-        for (int i = 0; i < layers.Length; i++)
+
+        //itterate over all neurons BACKWARDS and compute error values
+        for (int i = neurons.Length - 2; i > 0; i--)
         {
-            layers[i].UpdateWeights();
+            for (int j = 0; j < neurons[i].Length; j++)
+            {
+                //double value = 0f;
+
+                double allConnectedWeights = 1;
+                for (int k = 0; k < neurons[i - 1].Length; k++)
+                {
+                    allConnectedWeights *= weights[i - 1][j][k];
+                }
+
+                neuronError[i][j] = dSigmoid(neurons[i][j]) * (neuronError[neurons.Length - 1][0] * allConnectedWeights);
+                //neuronError[i][j] = dSigmoid(hiddenNeuron1.output) * outputNeuron.error * outputNeuron.weights[0];
+
+                for (int k = 0; k < neurons[i - 1].Length; k++)
+                {
+                    weights[i - 1][j][k] += neuronError[i][j] * (neuronError[i - 1][k] * weights[i - 1][j][k]);
+                    // Also add to   bias[i][j] += neuronError[i][j];
+                }
+            }
         }
     }
 
+    /// <summary>
+    /// Mutate neural network weights
+    /// </summary>
+    public void Mutate()
+    {
+        Parallel.For(0, weights.Length, i =>
+        {
+            Parallel.For(0, weights[i].Length, j =>
+            {
+                Parallel.For(0, weights[i][j].Length, k =>
+                {
+                    double weight = weights[i][j][k];
+
+                    //mutate weight value 
+                    double randomNumber = new Random().Next(0, 100) * (1d - learningRate);
+
+                    if (randomNumber <= 2f)
+                    { //if 3
+                      //randomly increase by 0% to 1%
+                        double factor = new Random().Next(0, 100) / 10000.0d;
+                        weight += factor;
+                    }
+                    else if (randomNumber <= 4f)
+                    { //if 4
+                      //randomly change by -1% to 1%
+                        double factor = new Random().Next(-100, 100) / 10000.0d;
+                        weight += factor;
+                    }
+                    else if (randomNumber <= 8f)
+                    { //if 5
+                      //randomly increase or decrease weight by tiny amount
+                        double factor = new Random().Next(-1000, 1000) / 100.0d / 10000.0d;
+                        weight += factor;
+                    }
+                    else if (randomNumber <= 10f)
+                    {
+                        //flip sign
+                        weight *= -1;
+                    }
+
+                    weights[i][j][k] = weight;
+                });
+            });
+        });
+        //for (int i = 0; i < weights.Length; i++)
+        //{
+        //    for (int j = 0; j < weights[i].Length; j++)
+        //    {
+        //        for (int k = 0; k < weights[i][j].Length; k++)
+        //        {
+        //            double weight = weights[i][j][k];
+
+        //            //mutate weight value 
+        //            double randomNumber = new Random().Next(0, 100);
+
+        //            if (randomNumber <= 2f)
+        //            { //if 3
+        //              //randomly increase by 0% to 1%
+        //                double factor = new Random().Next(0, 100) / 10000.0f;
+        //                weight += factor;
+        //            }
+        //            else if (randomNumber <= 4f)
+        //            { //if 4
+        //              //randomly decrease by 0% to 1%
+        //                double factor = new Random().Next(-100, 100) / 10000.0f;
+        //                weight -= factor;
+        //            }
+        //            else if (randomNumber <= 8f)
+        //            { //if 5
+        //              //randomly increase or decrease weight by tiny amount
+        //                double factor = new Random().Next(-1000, 1000) / 100.0f / 100000;
+        //                weight += factor;
+        //            }
+        //            //else
+        //            //{
+        //            //    //pick random weight between -1 and 1
+        //            //    weight = new Random().Next(-100, 100) / 100.0f;
+        //            //}
+
+        //            weights[i][j][k] = weight;
+        //        }
+        //    }
+        //}
+    }
+
+    public void AddFitness(double fit)
+    {
+        fitness += fit;
+    }
+
+    public void SetFitness(double fit)
+    {
+        fitness = fit;
+    }
+
+    public double GetFitness()
+    {
+        return fitness;
+    }
 
     /// <summary>
-    /// Compare two neural networks and sort based on error
+    /// Compare two neural networks and sort based on fitness
     /// </summary>
     /// <param name="other">Network to be compared to</param>
     /// <returns></returns>
@@ -110,169 +373,11 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
     {
         if (other == null) return 1;
 
-        if (error > other.error)
+        if (fitness > other.fitness)
             return -1;
-        else if (error < other.error)
+        else if (fitness < other.fitness)
             return 1;
         else
             return 0;
-    }
-
-
-    /// <summary>
-    /// Each individual layer in the ML{
-    /// </summary>
-    [System.Serializable]
-    public class Layer
-    {
-        int numberOfInputs; //# of neurons in the previous layer
-        int numberOfOuputs; //# of neurons in the current layer
-
-
-        public double[] outputs; //outputs of this layer
-        public double[] inputs; //inputs in into this layer
-        public double[,] weights; //weights of this layer
-        public double[,] weightsDelta; //deltas of this layer
-        public double[] gamma; //gamma of this layer
-        public double[] error; //error of the output layer
-
-        public static Random random = new Random(); //Static random class variable
-
-        /// <summary>
-        /// Constructor initilizes vaiour data structures
-        /// </summary>
-        /// <param name="numberOfInputs">Number of neurons in the previous layer</param>
-        /// <param name="numberOfOuputs">Number of neurons in the current layer</param>
-        public Layer(int numberOfInputs, int numberOfOuputs)
-        {
-            this.numberOfInputs = numberOfInputs;
-            this.numberOfOuputs = numberOfOuputs;
-
-            //initilize datastructures
-            outputs = new double[numberOfOuputs];
-            inputs = new double[numberOfInputs];
-            weights = new double[numberOfOuputs, numberOfInputs];
-            weightsDelta = new double[numberOfOuputs, numberOfInputs];
-            gamma = new double[numberOfOuputs];
-            error = new double[numberOfOuputs];
-
-            InitilizeWeights(); //initilize weights
-        }
-
-        /// <summary>
-        /// Initilize weights between -0.5 and 0.5
-        /// </summary>
-        public void InitilizeWeights()
-        {
-            for (int i = 0; i < numberOfOuputs; i++)
-            {
-                for (int j = 0; j < numberOfInputs; j++)
-                {
-                    weights[i, j] = (double)random.NextDouble() - 0.5f;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Feedforward this layer with a given input
-        /// </summary>
-        /// <param name="inputs">The output values of the previous layer</param>
-        /// <returns></returns>
-        public double[] FeedForward(double[] inputs)
-        {
-            this.inputs = inputs;// keep shallow copy which can be used for back propagation
-
-            //feed forwards
-            for (int i = 0; i < numberOfOuputs; i++)
-            {
-                outputs[i] = 0;
-                for (int j = 0; j < numberOfInputs; j++)
-                {
-                    outputs[i] += inputs[j] * weights[i, j];
-                }
-
-                outputs[i] = (double)Math.Tanh(outputs[i]);
-            }
-
-            return outputs;
-        }
-
-        /// <summary>
-        /// TanH derivate 
-        /// </summary>
-        /// <param name="value">An already computed TanH value</param>
-        /// <returns></returns>
-        public double TanHDer(double value)
-        {
-            return 1 - (value * value);
-        }
-
-        /// <summary>
-        /// Back propagation for the output layer
-        /// </summary>
-        /// <param name="expected">The expected output</param>
-        public void BackPropOutput(double[] expected)
-        {
-            //Error dervative of the cost function
-            for (int i = 0; i < numberOfOuputs; i++)
-                error[i] = outputs[i] - expected[i];
-
-            //Gamma calculation
-            for (int i = 0; i < numberOfOuputs; i++)
-                gamma[i] = error[i] * TanHDer(outputs[i]);
-
-            //Caluclating detla weights
-            for (int i = 0; i < numberOfOuputs; i++)
-            {
-                for (int j = 0; j < numberOfInputs; j++)
-                {
-                    weightsDelta[i, j] = gamma[i] * inputs[j];
-                }
-            }
-        }
-
-        /// <summary>
-        /// Back propagation for the hidden layers
-        /// </summary>
-        /// <param name="gammaForward">the gamma value of the forward layer</param>
-        /// <param name="weightsFoward">the weights of the forward layer</param>
-        public void BackPropHidden(double[] gammaForward, double[,] weightsFoward)
-        {
-            //Caluclate new gamma using gamma sums of the forward layer
-            for (int i = 0; i < numberOfOuputs; i++)
-            {
-                gamma[i] = 0;
-
-                for (int j = 0; j < gammaForward.Length; j++)
-                {
-                    gamma[i] += gammaForward[j] * weightsFoward[j, i];
-                }
-
-                gamma[i] *= TanHDer(outputs[i]);
-            }
-
-            //Caluclating detla weights
-            for (int i = 0; i < numberOfOuputs; i++)
-            {
-                for (int j = 0; j < numberOfInputs; j++)
-                {
-                    weightsDelta[i, j] = gamma[i] * inputs[j];
-                }
-            }
-        }
-
-        /// <summary>
-        /// Updating weights
-        /// </summary>
-        public void UpdateWeights()
-        {
-            for (int i = 0; i < numberOfOuputs; i++)
-            {
-                for (int j = 0; j < numberOfInputs; j++)
-                {
-                    weights[i, j] -= weightsDelta[i, j] * 0.033f;
-                }
-            }
-        }
     }
 }
