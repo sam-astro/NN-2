@@ -27,6 +27,8 @@ public class NetManager : MonoBehaviour
     public int iterations;
     public int maxIterations = 1000;
 
+    public Transform spawnPoint;
+
     //double promptMin = 0;
     //double promptMax = 0;
     //public double[][] prompt =
@@ -45,7 +47,7 @@ public class NetManager : MonoBehaviour
     public int amntLeft;
 
     private double[][][] collectedWeights;
-    private NeuralNetwork.Layer[] preLoadLayers;
+    private double[][][] collectedWeightsCopy;
 
     NeuralNetwork persistenceNetwork;
 
@@ -77,8 +79,8 @@ public class NetManager : MonoBehaviour
         {
             nets.Sort();
 
-            bestError = nets[nets.Count - 1].error;
-            worstError = nets[0].error;
+            bestError = nets[nets.Count - 1].fitness;
+            worstError = nets[0].fitness;
 
             if (generationNumber % timeBetweenSave == 0 && timeBetweenSave != -1)
             {
@@ -87,7 +89,7 @@ public class NetManager : MonoBehaviour
 
                 BinaryFormatter bf = new BinaryFormatter();
                 using (FileStream fs = new FileStream("./Assets/dat/WeightSave.dat", FileMode.Create))
-                    bf.Serialize(fs, nets[nets.Count - 1].layers);
+                    bf.Serialize(fs, nets[nets.Count - 1].weights);
 
                 persistence.Close();
             }
@@ -117,7 +119,7 @@ public class NetManager : MonoBehaviour
                 }
             }
 
-            //Finalizer();
+            Finalizer();
 
             lastBest = bestError;
             lastWorst = worstError;
@@ -137,22 +139,29 @@ public class NetManager : MonoBehaviour
 
     private void CreateEntityBodies()
     {
-        if (entityList == null)
+        if (entityList != null)
         {
+            for (int i = 0; i < entityList.Count; i++)
+            {
+                Destroy(entityList[i]);
+            }
+        }
+        //if (entityList == null)
+        //{
             entityList = new List<GameObject>();
 
             for (int i = 0; i < populationSize; i++)
             {
-                GameObject tempEntity = Instantiate(netEntityPrefab, new Vector3(0, 0, 0), Quaternion.identity);
+                GameObject tempEntity = Instantiate(netEntityPrefab, spawnPoint);
                 tempEntity.GetComponent<NetEntity>().Init(nets[i], generationNumber);
                 entityList.Add(tempEntity);
             }
-        }
-        else
-            for (int i = 0; i < entityList.Count; i++)
-            {
-                entityList[i].GetComponent<NetEntity>().Init(nets[i], generationNumber);
-            }
+        //}
+        //else
+        //    for (int i = 0; i < entityList.Count; i++)
+        //    {
+        //        entityList[i].GetComponent<NetEntity>().Init(nets[i], generationNumber);
+        //    }
     }
 
     private bool IterateNetEntities()
@@ -165,26 +174,53 @@ public class NetManager : MonoBehaviour
 
     void Finalizer()
     {
-        //for (int i = 0; i < populationSize - 12; i++)
+        //nets.Sort();
+        //for (int i = 0; i < populationSize - 1; i++)
+        //{
+        //    // Totally randomize
+        //    if (i < (int)(populationSize * 0.25f))
+        //    {
+        //        nets[i] = new NeuralNetwork(nets[populationSize - 1]);
+        //        nets[i].RandomizeWeights();
+        //    }
+        //    // Copy then mutate
+        //    else
+        //    {
+        //        nets[i] = new NeuralNetwork(nets[populationSize - 1]);
+        //        nets[i].Mutate();
+        //    }
+        //}
+
+        for (int i = 0; i < populationSize - 12; i++)
+        {
+            nets[i] = new NeuralNetwork(nets[populationSize - 1]);     //Copies weight values from top half networks to worst half
+            nets[i].Mutate();
+            nets[populationSize - 1] = new NeuralNetwork(nets[populationSize - 1]); //too lazy to write a reset neuron matrix values method....so just going to make a deepcopy lol
+            nets[populationSize - 2] = new NeuralNetwork(nets[populationSize - 2]); //too lazy to write a reset neuron matrix values method....so just going to make a deepcopy lol
+        }
+        for (int i = populationSize - 12; i < populationSize - 2; i++)
+        {
+            nets[i] = new NeuralNetwork(nets[populationSize - 1]);     //Copies weight values from top half networks to worst half
+            nets[i].RandomizeWeights();
+            nets[populationSize - 1] = new NeuralNetwork(nets[populationSize - 1]); //too lazy to write a reset neuron matrix values method....so just going to make a deepcopy lol
+            nets[populationSize - 2] = new NeuralNetwork(nets[populationSize - 2]); //too lazy to write a reset neuron matrix values method....so just going to make a deepcopy lol
+        }
+
+        //for (int i = 0; i < populationSize - 2; i++)
         //{
         //    nets[i] = new NeuralNetwork(nets[populationSize - 1]);     //Copies weight values from top half networks to worst half
         //    nets[i].Mutate();
         //    nets[populationSize - 1] = new NeuralNetwork(nets[populationSize - 1]); //too lazy to write a reset neuron matrix values method....so just going to make a deepcopy lol
         //    nets[populationSize - 2] = new NeuralNetwork(nets[populationSize - 2]); //too lazy to write a reset neuron matrix values method....so just going to make a deepcopy lol
         //}
-        //for (int i = populationSize - 12; i < populationSize - 2; i++)
-        //{
-        //    nets[i] = new NeuralNetwork(nets[populationSize - 1]);     //Copies weight values from top half networks to worst half
-        //    nets[i].RandomizeWeights();
-        //    nets[populationSize - 1] = new NeuralNetwork(nets[populationSize - 1]); //too lazy to write a reset neuron matrix values method....so just going to make a deepcopy lol
-        //    nets[populationSize - 2] = new NeuralNetwork(nets[populationSize - 2]); //too lazy to write a reset neuron matrix values method....so just going to make a deepcopy lol
-        //}
 
+        for (int i = 0; i < populationSize; i++)
+        {
+            nets[i].SetFitness(0f);
+        }
 
-        //for (int i = 0; i < populationSize; i++)
-        //{
-        //    nets[i].SetFitness(0f);
-        //}
+        //CreateEntityBodies(nets, populationSize);
+        //return nets;
     }
 
     void InitEntityNeuralNetworks()
@@ -201,15 +237,15 @@ public class NetManager : MonoBehaviour
         Console.ForegroundColor = ConsoleColor.Blue;
         for (int i = 0; i < populationSize; i++)
         {
-            NeuralNetwork net = new NeuralNetwork(layers, preLoadLayers);
+            NeuralNetwork net = new NeuralNetwork(layers, collectedWeights);
             Console.WriteLine("* Creating net: " + i + " of " + populationSize);
 
-            //net.learningRate = learningRate;
+            net.learningRate = learningRate;
 
-            //if (persistenceNetwork != null)
-            //    net.weights = persistenceNetwork.weights;
-            //else
-            //    net.RandomizeWeights();
+            if (persistenceNetwork != null)
+                net.weights = persistenceNetwork.weights;
+            else
+                net.RandomizeWeights();
 
             nets.Add(net);
         }
@@ -272,18 +308,18 @@ public class NetManager : MonoBehaviour
     {
         try
         {
-            persistenceNetwork = new NeuralNetwork(layers);
+            persistenceNetwork = new NeuralNetwork(layers, null);
 
             // New System
             Console.ForegroundColor = ConsoleColor.Blue;
             Console.WriteLine("* Loading...");
             BinaryFormatter bf = new BinaryFormatter();
             using (FileStream fs = new FileStream("./Assets/dat/WeightSave.dat", FileMode.Open))
-                persistenceNetwork.layers = (NeuralNetwork.Layer[])bf.Deserialize(fs);
+                persistenceNetwork.weights = (double[][][])bf.Deserialize(fs);
             Console.WriteLine("* Finished Loading.");
             Console.ResetColor();
 
-            preLoadLayers = persistenceNetwork.layers; //convert to 3D array
+            collectedWeightsCopy = persistenceNetwork.weights; //convert to 3D array
         }
         catch (Exception)
         {

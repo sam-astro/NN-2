@@ -108,7 +108,7 @@ public class NetEntity : MonoBehaviour
 
     int timeElapsed = 0;
 
-    public SpriteRenderer mainSprite;
+    public SpriteRenderer[] mainSprites;
     public bool randomizeSpriteColor = true;
 
     public bool Elapse()
@@ -132,13 +132,13 @@ public class NetEntity : MonoBehaviour
             outputs = net.FeedForward(inputs);
 
 
-            if (senses[2].GetSensorValue(gameObject) <= 0.25d) // If touching ground
-            {
-                if (Mathf.Abs((float)outputs[0]) > 0.25f)
-                    transform.position += transform.right / ((1.0f - (float)outputs[0]) * 100.0f);
-            }
-            else
-                transform.position -= new Vector3(0, 0.01f);
+            // if (senses[2].GetSensorValue(gameObject) <= 0.25d) // If touching ground
+            // {
+            //     if (Mathf.Abs((float)outputs[0]) > 0.25f)
+            //         transform.position += transform.right / ((1.0f - (float)outputs[0]) * 100.0f);
+            // }
+            // else
+            //     transform.position -= new Vector3(0, 0.01f);
 
 
             ////transform.position += new Vector3((float)outputs[0]*2.0f-1.0f, (float)outputs[1] * 2.0f - 1.0f) / 100.0f;
@@ -164,7 +164,7 @@ public class NetEntity : MonoBehaviour
 
     public void Init(NeuralNetwork net, int generation)
     {
-        transform.position = Vector3.zero;
+        transform.localPosition = Vector3.zero;
         transform.rotation = Quaternion.identity;
         this.net = net;
         this.generation = generation;
@@ -178,9 +178,15 @@ public class NetEntity : MonoBehaviour
         }
 
         if (randomizeSpriteColor)
-            mainSprite.color = new Color32((byte)UnityEngine.Random.Range(0, 256),
-                (byte)UnityEngine.Random.Range(0, 256),
-                (byte)UnityEngine.Random.Range(0, 256), 255);
+        {
+            Color col = new Color32((byte)UnityEngine.Random.Range(0, 256),
+                    (byte)UnityEngine.Random.Range(0, 256),
+                    (byte)UnityEngine.Random.Range(0, 256), 255);
+            for (int i = 0; i < mainSprites.Length; i++)
+            {
+                mainSprites[i].color = col;
+            }
+        }
     }
 
     public void End()
