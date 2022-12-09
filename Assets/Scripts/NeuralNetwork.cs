@@ -194,7 +194,7 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
                     neurons[i][j] = (double)Tanh(value); // Use TanH activation function 
                 else{
                     if (droppedNeurons[i][j] == 10)
-                        neurons[i][j] = 0;
+                        neurons[i][j] = 0.0001d;
                     else if (droppedNeurons[i][j] != 10)
                         neurons[i][j] = (double)LeakyReLU(value); // Use Leaky ReLU Function
                 }
