@@ -276,12 +276,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   populationSize: 70
-  layers: 0b000000640000001e0000001e0000001e00000004000000
+  layers: 0b0000000f0000001e0000001e0000005000000004000000
   learningRate: 0
   iterations: 0
   maxIterations: 400
   spawnPoint: {fileID: 120052403}
   amntLeft: 0
+  generationNumber: 1
   bestEverError: 100000
   netEntityPrefab: {fileID: 7647521876100407775, guid: 1a697f95b04bb3c49a95245d48113a8b, type: 3}
 --- !u!20 &519420031
