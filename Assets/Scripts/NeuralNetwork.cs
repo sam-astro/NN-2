@@ -151,7 +151,7 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
                     for (int k = 0; k < neuronsInPreviousLayer; k++)
                     {
                         //give random weights to neuron weights
-                        neuronWeights[k] = UnityEngine.Random.Range(-0.5f, 0.5f);
+                        neuronWeights[k] = UnityEngine.Random.Range(-1.1f, 1.1f);
                         //neuronWeights[k] = new Random().Next(-50, 50) / 100.0d;
                     }
 
