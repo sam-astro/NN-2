@@ -185,20 +185,19 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
             {
                 double value = 0f;
 
-                for (int k = 0; k < neurons[i - 1].Length; k++) // For all synapses connected to that neuron
-                {
+                for (int k = 0; k < neurons[i - 1].Length; k++) // For all synapses connected to that neuron, add up the weight*neuron
                     value += (weights[i - 1][j][k] * neurons[i - 1][k]);
+
+
+                // If the layer is the first input or final output layer
+                if(j == neurons.Length - 1 || j = 0)
+                    neurons[i][j] = (double)Tanh(value); // Use TanH activation function 
+                else{
+                    if (droppedNeurons[i][j] == 10)
+                        neurons[i][j] = 0;
+                    else if (droppedNeurons[i][j] != 10)
+                        neurons[i][j] = (double)LeakyReLU(value); // Use Leaky ReLU Function
                 }
-
-                //for (int jj = 0; jj < neurons[i - 1].Length; jj++) // For all neurons in previous layer
-                //{
-                //    value += neurons[i - 1][jj] * weights[i-1][jj][j];
-                //}
-
-                if (droppedNeurons[i][j] == 10)
-                    neurons[i][j] = 0;
-                else if (droppedNeurons[i][j] != 10)
-                    neurons[i][j] = (double)Sigmoid(value);
 
                 //neurons[i][j] = (double)Math.Tanh(value); //Hyperbolic tangent activation
             }
@@ -221,6 +220,10 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
     public static double Tanh(double value)
     {
         return (double)Math.Tanh(value);
+    }
+    public static double LeakyReLU(double value)
+    {
+        return (double)Mathf.Max(0.01d*value, value);
     }
 
     public void BackPropagation(double[] expectedOutput)
