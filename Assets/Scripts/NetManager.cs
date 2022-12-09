@@ -46,16 +46,14 @@ public class NetManager : MonoBehaviour
     #region Internal Variables
     public int amntLeft;
 
-    private double[][][] collectedWeights;
-    private double[][][] collectedWeightsCopy;
-
     NeuralNetwork persistenceNetwork;
 
-    private int generationNumber = 1;
+    public int generationNumber = 1;
     double lastBest = 100000000;
     double lastWorst = 100000000;
-    public double bestError = 0;
-    double worstError = 100000;
+    double bestError = 100000;
+    public double bestEverError = 100000;
+    double worstError = 0;
 
     bool queuedForUpload = false;
     private List<NeuralNetwork> nets;
@@ -89,17 +87,20 @@ public class NetManager : MonoBehaviour
 
                 BinaryFormatter bf = new BinaryFormatter();
                 using (FileStream fs = new FileStream("./Assets/dat/WeightSave.dat", FileMode.Create))
-                    bf.Serialize(fs, nets[nets.Count - 1].weights);
+                    bf.Serialize(fs, persistenceNetwork.weights);
 
                 persistence.Close();
             }
 
-            if ((bestError < lastBest || queuedForUpload == true) && generationNumber % timeBetweenGenerationProgress == 0)
+            if (((bestError < lastBest && bestError < bestEverError) || queuedForUpload == true) && generationNumber % timeBetweenGenerationProgress == 0)
             {
                 using (StreamWriter sw = File.AppendText("./Assets/dat/hist.txt"))
                 {
                     sw.WriteLine((generationNumber).ToString() + ", " + bestError);
                 }
+
+                persistenceNetwork.weights = nets[nets.Count - 1].weights;
+                bestEverError = bestError;
 
                 Console.Write("╚═ Generation: " + generationNumber + "  |  Population: " + populationSize);
                 Console.Write("  |  ");
@@ -148,14 +149,14 @@ public class NetManager : MonoBehaviour
         }
         //if (entityList == null)
         //{
-            entityList = new List<GameObject>();
+        entityList = new List<GameObject>();
 
-            for (int i = 0; i < populationSize; i++)
-            {
-                GameObject tempEntity = Instantiate(netEntityPrefab, spawnPoint);
-                tempEntity.GetComponent<NetEntity>().Init(nets[i], generationNumber);
-                entityList.Add(tempEntity);
-            }
+        for (int i = 0; i < populationSize; i++)
+        {
+            GameObject tempEntity = Instantiate(netEntityPrefab, spawnPoint);
+            tempEntity.GetComponent<NetEntity>().Init(nets[i], generationNumber);
+            entityList.Add(tempEntity);
+        }
         //}
         //else
         //    for (int i = 0; i < entityList.Count; i++)
@@ -166,10 +167,10 @@ public class NetManager : MonoBehaviour
 
     private bool IterateNetEntities()
     {
-        bool outbool = true;
+        int amnt = entityList.Count;
         for (int i = 0; i < entityList.Count; i++)
-            outbool = entityList[i].GetComponent<NetEntity>().Elapse();
-        return outbool;
+            amnt -= entityList[i].GetComponent<NetEntity>().Elapse() ? 0 : 1;
+        return amnt != 0;
     }
 
     void Finalizer()
@@ -191,32 +192,32 @@ public class NetManager : MonoBehaviour
         //    }
         //}
 
-        for (int i = 0; i < populationSize - 12; i++)
+        for (int i = 0; i < populationSize / 2; i++)
         {
-            nets[i] = new NeuralNetwork(nets[populationSize - 1]);     //Copies weight values from top half networks to worst half
+            nets[i] = new NeuralNetwork(persistenceNetwork);     //Copies weight values from top half networks to worst half
             nets[i].Mutate();
-            nets[populationSize - 1] = new NeuralNetwork(nets[populationSize - 1]); //too lazy to write a reset neuron matrix values method....so just going to make a deepcopy lol
+            nets[populationSize - 1] = new NeuralNetwork(persistenceNetwork); //too lazy to write a reset neuron matrix values method....so just going to make a deepcopy lol
             nets[populationSize - 2] = new NeuralNetwork(nets[populationSize - 2]); //too lazy to write a reset neuron matrix values method....so just going to make a deepcopy lol
         }
-        for (int i = populationSize - 12; i < populationSize - 2; i++)
+        for (int i = populationSize / 2; i < populationSize - 2; i++)
         {
-            nets[i] = new NeuralNetwork(nets[populationSize - 1]);     //Copies weight values from top half networks to worst half
+            nets[i] = new NeuralNetwork(persistenceNetwork);     //Copies weight values from top half networks to worst half
             nets[i].RandomizeWeights();
-            nets[populationSize - 1] = new NeuralNetwork(nets[populationSize - 1]); //too lazy to write a reset neuron matrix values method....so just going to make a deepcopy lol
+            nets[populationSize - 1] = new NeuralNetwork(persistenceNetwork); //too lazy to write a reset neuron matrix values method....so just going to make a deepcopy lol
             nets[populationSize - 2] = new NeuralNetwork(nets[populationSize - 2]); //too lazy to write a reset neuron matrix values method....so just going to make a deepcopy lol
         }
 
         //for (int i = 0; i < populationSize - 2; i++)
         //{
-        //    nets[i] = new NeuralNetwork(nets[populationSize - 1]);     //Copies weight values from top half networks to worst half
+        //    nets[i] = new NeuralNetwork(persistenceNetwork);     //Copies weight values from top half networks to worst half
         //    nets[i].Mutate();
-        //    nets[populationSize - 1] = new NeuralNetwork(nets[populationSize - 1]); //too lazy to write a reset neuron matrix values method....so just going to make a deepcopy lol
-        //    nets[populationSize - 2] = new NeuralNetwork(nets[populationSize - 2]); //too lazy to write a reset neuron matrix values method....so just going to make a deepcopy lol
+        //    nets[populationSize - 1] = new NeuralNetwork(persistenceNetwork); //too lazy to write a reset neuron matrix values method....so just going to make a deepcopy lol
+        //    nets[populationSize - 2] = new NeuralNetwork(nets[populationSize - 1]); //too lazy to write a reset neuron matrix values method....so just going to make a deepcopy lol
         //}
 
         for (int i = 0; i < populationSize; i++)
         {
-            nets[i].SetFitness(0f);
+            nets[i].SetFitness(10f);
         }
 
         //CreateEntityBodies(nets, populationSize);
@@ -237,15 +238,13 @@ public class NetManager : MonoBehaviour
         Console.ForegroundColor = ConsoleColor.Blue;
         for (int i = 0; i < populationSize; i++)
         {
-            NeuralNetwork net = new NeuralNetwork(layers, collectedWeights);
+            NeuralNetwork net = new NeuralNetwork(persistenceNetwork);
             Console.WriteLine("* Creating net: " + i + " of " + populationSize);
 
             net.learningRate = learningRate;
 
-            if (persistenceNetwork != null)
-                net.weights = persistenceNetwork.weights;
-            else
-                net.RandomizeWeights();
+            //if (persistenceNetwork == null)
+            //    net.RandomizeWeights();
 
             nets.Add(net);
         }
@@ -310,7 +309,8 @@ public class NetManager : MonoBehaviour
         {
             persistenceNetwork = new NeuralNetwork(layers, null);
 
-            // New System
+            // Load weights data into `persistenceNetwork`
+            Debug.Log("Loading Weights...");
             Console.ForegroundColor = ConsoleColor.Blue;
             Console.WriteLine("* Loading...");
             BinaryFormatter bf = new BinaryFormatter();
@@ -318,11 +318,22 @@ public class NetManager : MonoBehaviour
                 persistenceNetwork.weights = (double[][][])bf.Deserialize(fs);
             Console.WriteLine("* Finished Loading.");
             Console.ResetColor();
+            Debug.Log("Done");
 
-            collectedWeightsCopy = persistenceNetwork.weights; //convert to 3D array
+
+            // Load metadata like best error and generation
+            Debug.Log("Loading Metadata...");
+            StreamReader sr = File.OpenText("./Assets/dat/WeightSaveMeta.mta");
+            string firstLine = sr.ReadLine().Trim();
+            generationNumber = int.Parse(firstLine.Split('#')[0]) + 1;
+            bestEverError = double.Parse(firstLine.Split('#')[1]);
+            sr.Close();
+            Debug.Log("Done");
+
         }
         catch (Exception)
         {
+            Debug.LogWarning("Failed to load weights data");
         }
     }
 

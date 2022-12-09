@@ -194,7 +194,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1827438901723189173}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 2, y: 0, z: 0}
+  m_LocalPosition: {x: 5, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 6689386372796925862}
@@ -224,7 +224,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2667010618398136487}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -1.5, y: 1.5, z: 0}
+  m_LocalPosition: {x: -3.53, y: 3.53, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 6689386372796925862}
@@ -410,7 +410,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4144081811222182676}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 1.5, y: -1.5, z: 0}
+  m_LocalPosition: {x: 3.53, y: -3.53, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 6689386372796925862}
@@ -440,7 +440,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4190333813279764360}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -2, y: 0, z: 0}
+  m_LocalPosition: {x: -5, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 6689386372796925862}
@@ -470,7 +470,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4608185647399663864}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: -2, z: 0}
+  m_LocalPosition: {x: 0, y: -5, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 6689386372796925862}
@@ -500,7 +500,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5000688048961650427}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 1.5, y: 1.5, z: 0}
+  m_LocalPosition: {x: 3.53, y: 3.53, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 6689386372796925862}
@@ -686,7 +686,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7376249644538454035}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 2, z: 0}
+  m_LocalPosition: {x: 0, y: 5, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 6689386372796925862}
@@ -897,18 +897,53 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   senses:
-  - name: DistanceToGoal
-    distanceToObject: 1
+  - name: Sin of Time
+    distanceToObject: 0
     horizontalDifference: 0
     verticalDifference: 0
     intersectingTrueFalse: 0
     intersectingDistance: 0
+    timeElapsedAsSine: 1
+    rotationZ: 0
     objectToSenseForTag: goal
     objectToSenseFor: {fileID: 0}
     intersectionMask:
       serializedVersion: 2
       m_Bits: 0
     initialDistance: 0
+    sinMultiplier: 0.05
+    lastOutput: 0
+  - name: DistanceToGoal
+    distanceToObject: 1
+    horizontalDifference: 0
+    verticalDifference: 0
+    intersectingTrueFalse: 0
+    intersectingDistance: 0
+    timeElapsedAsSine: 0
+    rotationZ: 0
+    objectToSenseForTag: goal
+    objectToSenseFor: {fileID: 0}
+    intersectionMask:
+      serializedVersion: 2
+      m_Bits: 0
+    initialDistance: 20
+    sinMultiplier: 0
+    lastOutput: 0
+  - name: Rotation Z
+    distanceToObject: 0
+    horizontalDifference: 0
+    verticalDifference: 0
+    intersectingTrueFalse: 0
+    intersectingDistance: 0
+    timeElapsedAsSine: 0
+    rotationZ: 1
+    objectToSenseForTag: 
+    objectToSenseFor: {fileID: 0}
+    intersectionMask:
+      serializedVersion: 2
+      m_Bits: 0
+    initialDistance: 5
+    sinMultiplier: 10
     lastOutput: 0
   - name: GroundDistance1
     distanceToObject: 0
@@ -916,12 +951,15 @@ MonoBehaviour:
     verticalDifference: 0
     intersectingTrueFalse: 0
     intersectingDistance: 1
+    timeElapsedAsSine: 0
+    rotationZ: 0
     objectToSenseForTag: 
     objectToSenseFor: {fileID: 3666513846738028067}
     intersectionMask:
       serializedVersion: 2
       m_Bits: 64
-    initialDistance: 2
+    initialDistance: 5
+    sinMultiplier: 10
     lastOutput: 0
   - name: GroundDistance2
     distanceToObject: 0
@@ -929,12 +967,15 @@ MonoBehaviour:
     verticalDifference: 0
     intersectingTrueFalse: 0
     intersectingDistance: 1
+    timeElapsedAsSine: 0
+    rotationZ: 0
     objectToSenseForTag: 
     objectToSenseFor: {fileID: 3391282529441331521}
     intersectionMask:
       serializedVersion: 2
       m_Bits: 64
-    initialDistance: 2
+    initialDistance: 5
+    sinMultiplier: 10
     lastOutput: 0
   - name: GroundDistance3
     distanceToObject: 0
@@ -942,12 +983,15 @@ MonoBehaviour:
     verticalDifference: 0
     intersectingTrueFalse: 0
     intersectingDistance: 1
+    timeElapsedAsSine: 0
+    rotationZ: 0
     objectToSenseForTag: 
     objectToSenseFor: {fileID: 1744401284500682393}
     intersectionMask:
       serializedVersion: 2
       m_Bits: 64
-    initialDistance: 2
+    initialDistance: 5
+    sinMultiplier: 10
     lastOutput: 0
   - name: GroundDistance4
     distanceToObject: 0
@@ -955,12 +999,15 @@ MonoBehaviour:
     verticalDifference: 0
     intersectingTrueFalse: 0
     intersectingDistance: 1
+    timeElapsedAsSine: 0
+    rotationZ: 0
     objectToSenseForTag: 
     objectToSenseFor: {fileID: 4020998430060400800}
     intersectionMask:
       serializedVersion: 2
       m_Bits: 64
-    initialDistance: 2
+    initialDistance: 5
+    sinMultiplier: 10
     lastOutput: 0
   - name: GroundDistance5
     distanceToObject: 0
@@ -968,12 +1015,15 @@ MonoBehaviour:
     verticalDifference: 0
     intersectingTrueFalse: 0
     intersectingDistance: 1
+    timeElapsedAsSine: 0
+    rotationZ: 0
     objectToSenseForTag: 
     objectToSenseFor: {fileID: 3959167755576264701}
     intersectionMask:
       serializedVersion: 2
       m_Bits: 64
-    initialDistance: 2
+    initialDistance: 5
+    sinMultiplier: 10
     lastOutput: 0
   - name: GroundDistance6
     distanceToObject: 0
@@ -981,12 +1031,15 @@ MonoBehaviour:
     verticalDifference: 0
     intersectingTrueFalse: 0
     intersectingDistance: 1
+    timeElapsedAsSine: 0
+    rotationZ: 0
     objectToSenseForTag: 
     objectToSenseFor: {fileID: 5243317418827100340}
     intersectionMask:
       serializedVersion: 2
       m_Bits: 64
-    initialDistance: 2
+    initialDistance: 5
+    sinMultiplier: 10
     lastOutput: 0
   - name: GroundDistance7
     distanceToObject: 0
@@ -994,12 +1047,15 @@ MonoBehaviour:
     verticalDifference: 0
     intersectingTrueFalse: 0
     intersectingDistance: 1
+    timeElapsedAsSine: 0
+    rotationZ: 0
     objectToSenseForTag: 
     objectToSenseFor: {fileID: 2037512825968897748}
     intersectionMask:
       serializedVersion: 2
       m_Bits: 64
-    initialDistance: 2
+    initialDistance: 5
+    sinMultiplier: 10
     lastOutput: 0
   - name: GroundDistance8
     distanceToObject: 0
@@ -1007,12 +1063,15 @@ MonoBehaviour:
     verticalDifference: 0
     intersectingTrueFalse: 0
     intersectingDistance: 1
+    timeElapsedAsSine: 0
+    rotationZ: 0
     objectToSenseForTag: 
     objectToSenseFor: {fileID: 2045146956392664397}
     intersectionMask:
       serializedVersion: 2
       m_Bits: 64
-    initialDistance: 2
+    initialDistance: 5
+    sinMultiplier: 10
     lastOutput: 0
   networkRunning: 0
   generation: 0
@@ -1022,6 +1081,11 @@ MonoBehaviour:
   - {fileID: 6675923317648509168}
   - {fileID: 2935758738172333596}
   - {fileID: 7945994282329116785}
+  hinges:
+  - {fileID: 4666247395395369256}
+  - {fileID: 6976762912665912751}
+  - {fileID: 6882022355614740317}
+  - {fileID: 1379863503603136244}
   randomizeSpriteColor: 1
 --- !u!1 &8181683490782484313
 GameObject:
@@ -1047,7 +1111,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8181683490782484313}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -1.5, y: -1.5, z: 0}
+  m_LocalPosition: {x: -3.53, y: -3.53, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 6689386372796925862}

@@ -16,35 +16,39 @@ public class Sense
     public bool verticalDifference;
     public bool intersectingTrueFalse;
     public bool intersectingDistance;
+    public bool timeElapsedAsSine;
+    public bool rotationZ;
     [Header("Optional Variables")]
     public string objectToSenseForTag;
     public Transform objectToSenseFor;
     public LayerMask intersectionMask;
     public float initialDistance = 10.0f;
+    public float sinMultiplier = 10.0f;
 
     [ShowOnly] public float lastOutput;
 
-    public void Initialize(GameObject gameObject)
+    public void Initialize(GameObject obj)
     {
-        if (objectToSenseFor == null || objectToSenseForTag != "")
+        if (objectToSenseFor == null && objectToSenseForTag != "")
             objectToSenseFor = GameObject.FindGameObjectWithTag(objectToSenseForTag).transform;
         if (initialDistance == 0)
-            initialDistance = Vector2.Distance(gameObject.transform.position, objectToSenseFor.position);
+            initialDistance = Vector2.Distance(obj.transform.position, objectToSenseFor.position);
 
-        lastOutput = (float)GetSensorValue(gameObject);
+        lastOutput = (float)GetSensorValue(obj);
     }
 
-    public double GetSensorValue(int type, GameObject gameObject)
+    // Gets sensor value, normalized between 0 and 1
+    public double GetSensorValue(int type, GameObject obj)
     {
         if (type == 0 && distanceToObject)
-            return Vector2.Distance(gameObject.transform.position, objectToSenseFor.position) / initialDistance;
+            return Vector2.Distance(obj.transform.position, objectToSenseFor.position) / initialDistance;
         if (type == 1 && horizontalDifference)
-            return (Mathf.Abs(gameObject.transform.position.x) + Mathf.Abs(objectToSenseFor.position.x)) / initialDistance;
+            return (Mathf.Abs(obj.transform.position.x) + Mathf.Abs(objectToSenseFor.position.x)) / initialDistance;
         if (type == 2 && verticalDifference)
-            return (Mathf.Abs(gameObject.transform.position.y) + Mathf.Abs(objectToSenseFor.position.y)) / initialDistance;
+            return (Mathf.Abs(obj.transform.position.y) + Mathf.Abs(objectToSenseFor.position.y)) / initialDistance;
         if (type == 3 && intersectingTrueFalse)
         {
-            RaycastHit2D r = Physics2D.Linecast(gameObject.transform.position, objectToSenseFor.position, intersectionMask);
+            RaycastHit2D r = Physics2D.Linecast(obj.transform.position, objectToSenseFor.position, intersectionMask);
             if (r)
                 return 1;
             else
@@ -52,29 +56,36 @@ public class Sense
         }
         if (type == 4 && intersectingDistance)
         {
-            RaycastHit2D r = Physics2D.Linecast(gameObject.transform.position, objectToSenseFor.position, intersectionMask);
+            RaycastHit2D r = Physics2D.Linecast(obj.transform.position, objectToSenseFor.position, intersectionMask);
             if (r)
             {
-                lastOutput = Vector2.Distance(r.point, gameObject.transform.position) / initialDistance;
+                lastOutput = Vector2.Distance(r.point, obj.transform.position) / initialDistance;
                 return lastOutput;
             }
             else
                 return 1;
         }
+        if (timeElapsedAsSine)
+        {
+            lastOutput = (Mathf.Sin(type * sinMultiplier)+1)/2;
+            return lastOutput;
+        }
 
         return 0;
     }
-    public double GetSensorValue(GameObject gameObject)
+
+    // Gets sensor value, normalized between 0 and 1
+    public double GetSensorValue(GameObject obj)
     {
         if (distanceToObject)
-            return Vector2.Distance(gameObject.transform.position, objectToSenseFor.position) / initialDistance;
+            return Vector2.Distance(obj.transform.position, objectToSenseFor.position) / initialDistance;
         if (horizontalDifference)
-            return (Mathf.Abs(gameObject.transform.position.x) + Mathf.Abs(objectToSenseFor.position.x)) / initialDistance;
+            return (Mathf.Abs(obj.transform.position.x) + Mathf.Abs(objectToSenseFor.position.x)) / initialDistance;
         if (verticalDifference)
-            return (Mathf.Abs(gameObject.transform.position.y) + Mathf.Abs(objectToSenseFor.position.y)) / initialDistance;
+            return (Mathf.Abs(obj.transform.position.y) + Mathf.Abs(objectToSenseFor.position.y)) / initialDistance;
         if (intersectingTrueFalse)
         {
-            RaycastHit2D r = Physics2D.Linecast(gameObject.transform.position, objectToSenseFor.position, intersectionMask);
+            RaycastHit2D r = Physics2D.Linecast(obj.transform.position, objectToSenseFor.position, intersectionMask);
             if (r)
                 return 1;
             else
@@ -82,15 +93,17 @@ public class Sense
         }
         if (intersectingDistance)
         {
-            RaycastHit2D r = Physics2D.Linecast(gameObject.transform.position, objectToSenseFor.position, intersectionMask);
+            RaycastHit2D r = Physics2D.Linecast(obj.transform.position, objectToSenseFor.position, intersectionMask);
             if (r)
             {
-                lastOutput = Vector2.Distance(r.point, gameObject.transform.position) / initialDistance;
+                lastOutput = Vector2.Distance(r.point, obj.transform.position) / initialDistance;
                 return lastOutput;
             }
             else
                 return 1;
         }
+        if (rotationZ)
+            return (Mathf.Clamp(obj.transform.rotation.eulerAngles.z, -180, 180)+180)/360;
 
         return 0;
     }
@@ -109,7 +122,11 @@ public class NetEntity : MonoBehaviour
     int timeElapsed = 0;
 
     public SpriteRenderer[] mainSprites;
+    public HingeJoint2D[] hinges;
     public bool randomizeSpriteColor = true;
+
+    float bestDistance = 10000;
+
 
     public bool Elapse()
     {
@@ -126,11 +143,26 @@ public class NetEntity : MonoBehaviour
 
             for (int p = 0; p < inputs.Length; p++)
             {
-                inputs[p] = senses[p].GetSensorValue(gameObject);
+                inputs[p] = senses[p].GetSensorValue(mainSprites[0].gameObject);
+                // Body touched ground, end and turn invisible
+                if (p >2 && inputs[p] < 0.2f)
+                {
+                    networkRunning = false;
+                    for (int i = 0; i < mainSprites.Length; i++)
+                        mainSprites[i].color = Color.clear;
+                    return false;
+                }
             }
+            inputs[0] = senses[0].GetSensorValue(timeElapsed, mainSprites[0].gameObject);
 
             outputs = net.FeedForward(inputs);
 
+            for (int i = 0; i < hinges.Length; i++)
+            {
+                JointMotor2D changemotor = hinges[i].motor;
+                changemotor.motorSpeed = (float)(outputs[i]-0.5)*720*(i<3?-1:1);
+                hinges[i].motor = changemotor;
+            }
 
             // if (senses[2].GetSensorValue(gameObject) <= 0.25d) // If touching ground
             // {
@@ -149,11 +181,20 @@ public class NetEntity : MonoBehaviour
             //net.AddFitness(Vector3.Distance(dir, directionVector));
             //net.error += (senses[0].GetSensorValue(0, gameObject));
 
-            if (timeElapsed % 50 == 0)
+            //if (timeElapsed % 50 == 0)
+            //{
+            //    double[] correct = { 1.0f };
+            //    //net.BackProp(correct);
+            //}
+
+            float senseVal = (float)senses[1].GetSensorValue(mainSprites[0].gameObject);
+            if (senseVal < bestDistance)
             {
-                double[] correct = { 1.0f };
-                //net.BackProp(correct);
+                net.fitness = senseVal;
+                bestDistance = senseVal;
             }
+
+
 
             timeElapsed += 1;
 
@@ -171,10 +212,11 @@ public class NetEntity : MonoBehaviour
         networkRunning = true;
         //net.error = 0;
         timeElapsed = 0;
+        bestDistance = 10000;
 
         foreach (var s in senses)
         {
-            s.Initialize(gameObject);
+            s.Initialize(mainSprites[0].gameObject);
         }
 
         if (randomizeSpriteColor)
@@ -189,11 +231,13 @@ public class NetEntity : MonoBehaviour
         }
     }
 
-    public void End()
-    {
-        double[] correct = { 0, 0 };
-        //net.BackPropagation(correct);
-        networkRunning = false;
-    }
+    //public void End()
+    //{
+    //    net.fitness = senses[8].GetSensorValue(mainSprites[0].gameObject);
+
+    //    double[] correct = { 0, 0 };
+    //    //net.BackPropagation(correct);
+    //    networkRunning = false;
+    //}
 }
 
