@@ -160,7 +160,7 @@ public class NetEntity : MonoBehaviour
             for (int i = 0; i < hinges.Length; i++)
             {
                 JointMotor2D changemotor = hinges[i].motor;
-                changemotor.motorSpeed = (float)(outputs[i]-0.5)*720*(i<3?-1:1);
+                changemotor.motorSpeed = (float)(outputs[i])*720*(i<2?-1:1);
                 hinges[i].motor = changemotor;
             }
 
