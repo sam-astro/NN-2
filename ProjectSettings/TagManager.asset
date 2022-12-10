@@ -6,6 +6,8 @@ TagManager:
   tags:
   - goal
   - ground
+  - wallLeft
+  - wallRight
   layers:
   - Default
   - TransparentFX
@@ -15,8 +17,8 @@ TagManager:
   - UI
   - Ground
   - EntityCollisionLayer
-  - 
-  - 
+  - EntityDon'tCollideLayer
+  - Ground2
   - 
   - 
   - 

@@ -158,7 +158,7 @@ public class NetManager : MonoBehaviour
         for (int i = 0; i < populationSize; i++)
         {
             GameObject tempEntity = Instantiate(netEntityPrefab, spawnPoint);
-            tempEntity.GetComponent<NetEntity>().Init(nets[i], generationNumber, layers[0]);
+            tempEntity.GetComponent<NetEntity>().Init(nets[i], generationNumber, layers[0], maxIterations);
             entityList.Add(tempEntity);
         }
         //}

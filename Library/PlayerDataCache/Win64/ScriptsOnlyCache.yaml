@@ -1,8 +1,6 @@
 ScriptsOnlyBuild:
   usedScripts:
     Assembly-CSharp.dll:
-    - GotoMouse
-    - Gyro
     - IsColliding
     - NetEntity
     - NetManager
@@ -87,15 +85,11 @@ ScriptsOnlyBuild:
     - Class: 114
       Script: {instanceID: 3478}
     - Class: 114
-      Script: {instanceID: 4322}
-    - Class: 114
       Script: {instanceID: 4864}
     - Class: 114
       Script: {instanceID: 5262}
     - Class: 114
       Script: {instanceID: 32844}
-    - Class: 114
-      Script: {instanceID: 37348}
     - Class: 115
       Script: {instanceID: 0}
     - Class: 128
@@ -131,7 +125,7 @@ ScriptsOnlyBuild:
     className: Image
   - hash:
       serializedVersion: 2
-      Hash: ecf2b0bda95db9e62b1ccfd66f5a9052
+      Hash: 2a418d845505a13997be41200498ae20
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: NetEntity
@@ -377,7 +371,7 @@ ScriptsOnlyBuild:
     className: SpriteShapeController
   - hash:
       serializedVersion: 2
-      Hash: d007c0c758329077344698fb52220b0f
+      Hash: d560bedca4fa4e63b5258c920ec52346
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: NetManager

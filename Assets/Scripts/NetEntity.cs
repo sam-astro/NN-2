@@ -19,6 +19,7 @@ public class Sense
     public bool timeElapsedAsSine;
     public bool rotationZ;
     public bool checkIfColliding;
+    public bool xVelocity;
     [Header("Optional Variables")]
     public string objectToSenseForTag;
     public Transform objectToSenseFor;
@@ -73,6 +74,8 @@ public class Sense
         {
             val = Mathf.Sin(type * sinMultiplier);
         }
+        else if (xVelocity)
+            val = objectToSenseFor.GetComponent<Rigidbody2D>().velocity.x / (float)type;
 
         lastOutput = (float)val;
         return val;
@@ -106,7 +109,7 @@ public class Sense
         }
         else if (rotationZ)
             // Rotation normalized between -1 and 1
-            val = ((obj.transform.eulerAngles.z > 180 ? 180 - (obj.transform.eulerAngles.z - 180) : -obj.transform.eulerAngles.z)) / 180.0f;
+            val = ((objectToSenseFor.transform.eulerAngles.z > 180 ? 180 - (objectToSenseFor.transform.eulerAngles.z - 180) : -objectToSenseFor.transform.eulerAngles.z)) / 180.0f;
         //Debug.Log(((obj.transform.eulerAngles.z>180? 180-(obj.transform.eulerAngles.z-180): obj.transform.eulerAngles.z)) / 180.0f);
         else if (checkIfColliding)
             try
@@ -138,7 +141,7 @@ public class NetEntity : MonoBehaviour
 
     int timeElapsed = 0;
 
-    float totalRotationalDifference = 0;
+    [ShowOnly] public float totalRotationalDifference = 0;
 
     public SpriteRenderer[] mainSprites;
     public HingeJoint2D[] hinges;
@@ -146,13 +149,8 @@ public class NetEntity : MonoBehaviour
 
     float bestDistance = 10000;
 
-    [Header("Fitness Modifiers")]
-    public bool touchingGroundIsBad = false;
-    public bool rotationIsBad = false;
+    int totalIterations=1;
 
-    private bool[] directions = { false, false }; // Array of directions of each motor
-    public float[] directionTimes = { 0, 0 }; // Amount of time each direction has been used
-    private float finalErrorOffset = 0;
 
     [ShowOnly] public double fitness;
 
@@ -178,35 +176,23 @@ public class NetEntity : MonoBehaviour
 
             outputs = net.FeedForward(inputs);
 
-            for (int i = 0; i < outputs.Length; i++)
+            mainSprites[0].GetComponent<Rigidbody2D>().AddForce(new Vector2((float)outputs[0]*100, 0), ForceMode2D.Force);
+
+
+            //totalRotationalDifference += Mathf.Abs((float)senses[0].GetSensorValue(mainSprites[1].gameObject));
+            //net.fitness = totalRotationalDifference / timeElapsed;
+
+
+
+            if (senses[4].GetSensorValue(gameObject) == 1) // If pole ground
             {
-                JointMotor2D changemotor = hinges[i].motor;
-                changemotor.motorSpeed = (float)(outputs[i] - 0d) * 90.0f;
-                hinges[i].motor = changemotor;
-
-                // Get direction and see if it changed for lower joints
-                if (i <= 1)
-                {
-                    bool direction = hinges[i].motor.motorSpeed > 0 ? true : false;
-                    if (directions[i] == direction){  // It is still going in the same direction
-                        directionTimes[i] += 1+Mathf.Abs(hinges[i].motor.motorSpeed)/90.0f;
-                    }
-                    else // It changed direction
-                    {
-                        finalErrorOffset += Mathf.Pow(directionTimes[i], 2)/30000.0f;
-                        directionTimes[i] = 0;
-                        directions[i] = !directions[i];
-                    }
-                }
+                net.fitness = (totalIterations - timeElapsed) / (float)totalIterations;
+                networkRunning = false;
+                for (int i = 0; i < mainSprites.Length; i++)
+                    mainSprites[i].color = Color.clear;
+                //net.fitness += (totalIterations - timeElapsed) / totalIterations;
+                return false;
             }
-
-            // if (senses[2].GetSensorValue(gameObject) <= 0.25d) // If touching ground
-            // {
-            //     if (Mathf.Abs((float)outputs[0]) > 0.25f)
-            //         transform.position += transform.right / ((1.0f - (float)outputs[0]) * 100.0f);
-            // }
-            // else
-            //     transform.position -= new Vector3(0, 0.01f);
 
 
             ////transform.position += new Vector3((float)outputs[0]*2.0f-1.0f, (float)outputs[1] * 2.0f - 1.0f) / 100.0f;
@@ -226,29 +212,8 @@ public class NetEntity : MonoBehaviour
             // Only update fitness every 10 cycles
             //if (timeElapsed % 10 == 0)
             //{
-            float senseVal = (float)senses[12].GetSensorValue(mainSprites[0].gameObject);
-            if (senseVal < bestDistance)
-            {
-                net.fitness = senseVal+ finalErrorOffset;
-                if (rotationIsBad)
-                    net.fitness += totalRotationalDifference / (float)timeElapsed;
-                bestDistance = senseVal;
-            }
-
-            if (rotationIsBad)
-                totalRotationalDifference += Mathf.Abs(senses[1].lastOutput) * 2;
-            //}
 
 
-            if (touchingGroundIsBad)
-                // If body touched ground, end and turn invisible
-                if (senses[13].GetSensorValue(mainSprites[0].gameObject) == 1)
-                {
-                    networkRunning = false;
-                    for (int i = 0; i < mainSprites.Length; i++)
-                        mainSprites[i].color = Color.clear;
-                    return false;
-                }
 
 
             timeElapsed += 1;
@@ -261,17 +226,19 @@ public class NetEntity : MonoBehaviour
         return false;
     }
 
-    public void Init(NeuralNetwork net, int generation, int numberOfInputs)
+    public void Init(NeuralNetwork net, int generation, int numberOfInputs, int totalIterations)
     {
         transform.localPosition = Vector3.zero;
         transform.rotation = Quaternion.identity;
         this.net = net;
         this.generation = generation;
         this.numberOfInputs = numberOfInputs;
+        this.totalIterations = totalIterations;
         networkRunning = true;
         //net.error = 0;
         timeElapsed = 0;
         bestDistance = 10000;
+        mainSprites[1].gameObject.transform.eulerAngles = Quaternion.Euler(0, 0, UnityEngine.Random.Range(0, 2)==1?-5:5).eulerAngles;
 
         foreach (var s in senses)
         {
