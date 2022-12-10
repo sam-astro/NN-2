@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 1854068927787828014}
   - component: {fileID: 6317993719123137435}
   - component: {fileID: 3343397910798123496}
+  - component: {fileID: 5452428410435177805}
   m_Layer: 7
   m_Name: body
   m_TagString: Untagged
@@ -110,7 +111,7 @@ BoxCollider2D:
   m_AutoTiling: 0
   serializedVersion: 2
   m_Size: {x: 1, y: 1}
-  m_EdgeRadius: 0.11
+  m_EdgeRadius: 0.06
 --- !u!50 &3343397910798123496
 Rigidbody2D:
   serializedVersion: 4
@@ -132,6 +133,21 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 1
   m_Constraints: 0
+--- !u!114 &5452428410435177805
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1443714202508797353}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 029f649799145074082cd6d1ee300a1a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  isColliding: 0
+  failed: 0
+  tagName: ground
 --- !u!1 &1600748011633806280
 GameObject:
   m_ObjectHideFlags: 0
@@ -141,6 +157,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6689386372796925862}
+  - component: {fileID: 4800183973290087751}
   m_Layer: 0
   m_Name: sensors
   m_TagString: Untagged
@@ -170,6 +187,18 @@ Transform:
   m_Father: {fileID: 2669643338255989059}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &4800183973290087751
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1600748011633806280}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 820426340b163c746b2daf8dd2d62caa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1827438901723189173
 GameObject:
   m_ObjectHideFlags: 0
@@ -519,6 +548,7 @@ GameObject:
   - component: {fileID: 4609765722862245615}
   - component: {fileID: 2730877074867715054}
   - component: {fileID: 6976762912665912751}
+  - component: {fileID: 4802955397092523641}
   m_Layer: 7
   m_Name: legA-2
   m_TagString: Untagged
@@ -662,6 +692,21 @@ HingeJoint2D:
   m_AngleLimits:
     m_LowerAngle: 0
     m_UpperAngle: 359
+--- !u!114 &4802955397092523641
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5342088866773031342}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 029f649799145074082cd6d1ee300a1a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  isColliding: 1
+  failed: 0
+  tagName: ground
 --- !u!1 &7376249644538454035
 GameObject:
   m_ObjectHideFlags: 0
@@ -705,6 +750,7 @@ GameObject:
   - component: {fileID: 2052102489790114713}
   - component: {fileID: 2806038372072452659}
   - component: {fileID: 1379863503603136244}
+  - component: {fileID: 7977322244236998689}
   m_Layer: 7
   m_Name: legB-2
   m_TagString: Untagged
@@ -848,6 +894,21 @@ HingeJoint2D:
   m_AngleLimits:
     m_LowerAngle: 0
     m_UpperAngle: 359
+--- !u!114 &7977322244236998689
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7581830696047203153}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 029f649799145074082cd6d1ee300a1a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  isColliding: 1
+  failed: 0
+  tagName: ground
 --- !u!1 &7647521876100407775
 GameObject:
   m_ObjectHideFlags: 0
@@ -905,6 +966,7 @@ MonoBehaviour:
     intersectingDistance: 0
     timeElapsedAsSine: 1
     rotationZ: 0
+    checkIfColliding: 0
     objectToSenseForTag: goal
     objectToSenseFor: {fileID: 0}
     intersectionMask:
@@ -912,22 +974,6 @@ MonoBehaviour:
       m_Bits: 0
     initialDistance: 0
     sinMultiplier: 0.05
-    lastOutput: 0
-  - name: DistanceToGoal
-    distanceToObject: 1
-    horizontalDifference: 0
-    verticalDifference: 0
-    intersectingTrueFalse: 0
-    intersectingDistance: 0
-    timeElapsedAsSine: 0
-    rotationZ: 0
-    objectToSenseForTag: goal
-    objectToSenseFor: {fileID: 0}
-    intersectionMask:
-      serializedVersion: 2
-      m_Bits: 0
-    initialDistance: 20
-    sinMultiplier: 0
     lastOutput: 0
   - name: Rotation Z
     distanceToObject: 0
@@ -937,6 +983,7 @@ MonoBehaviour:
     intersectingDistance: 0
     timeElapsedAsSine: 0
     rotationZ: 1
+    checkIfColliding: 0
     objectToSenseForTag: 
     objectToSenseFor: {fileID: 0}
     intersectionMask:
@@ -953,6 +1000,7 @@ MonoBehaviour:
     intersectingDistance: 1
     timeElapsedAsSine: 0
     rotationZ: 0
+    checkIfColliding: 0
     objectToSenseForTag: 
     objectToSenseFor: {fileID: 3666513846738028067}
     intersectionMask:
@@ -969,6 +1017,7 @@ MonoBehaviour:
     intersectingDistance: 1
     timeElapsedAsSine: 0
     rotationZ: 0
+    checkIfColliding: 0
     objectToSenseForTag: 
     objectToSenseFor: {fileID: 3391282529441331521}
     intersectionMask:
@@ -985,6 +1034,7 @@ MonoBehaviour:
     intersectingDistance: 1
     timeElapsedAsSine: 0
     rotationZ: 0
+    checkIfColliding: 0
     objectToSenseForTag: 
     objectToSenseFor: {fileID: 1744401284500682393}
     intersectionMask:
@@ -1001,6 +1051,7 @@ MonoBehaviour:
     intersectingDistance: 1
     timeElapsedAsSine: 0
     rotationZ: 0
+    checkIfColliding: 0
     objectToSenseForTag: 
     objectToSenseFor: {fileID: 4020998430060400800}
     intersectionMask:
@@ -1017,6 +1068,7 @@ MonoBehaviour:
     intersectingDistance: 1
     timeElapsedAsSine: 0
     rotationZ: 0
+    checkIfColliding: 0
     objectToSenseForTag: 
     objectToSenseFor: {fileID: 3959167755576264701}
     intersectionMask:
@@ -1033,6 +1085,7 @@ MonoBehaviour:
     intersectingDistance: 1
     timeElapsedAsSine: 0
     rotationZ: 0
+    checkIfColliding: 0
     objectToSenseForTag: 
     objectToSenseFor: {fileID: 5243317418827100340}
     intersectionMask:
@@ -1049,6 +1102,7 @@ MonoBehaviour:
     intersectingDistance: 1
     timeElapsedAsSine: 0
     rotationZ: 0
+    checkIfColliding: 0
     objectToSenseForTag: 
     objectToSenseFor: {fileID: 2037512825968897748}
     intersectionMask:
@@ -1065,6 +1119,7 @@ MonoBehaviour:
     intersectingDistance: 1
     timeElapsedAsSine: 0
     rotationZ: 0
+    checkIfColliding: 0
     objectToSenseForTag: 
     objectToSenseFor: {fileID: 2045146956392664397}
     intersectionMask:
@@ -1073,8 +1128,77 @@ MonoBehaviour:
     initialDistance: 5
     sinMultiplier: 10
     lastOutput: 0
+  - name: LegCollidingA
+    distanceToObject: 0
+    horizontalDifference: 0
+    verticalDifference: 0
+    intersectingTrueFalse: 0
+    intersectingDistance: 0
+    timeElapsedAsSine: 0
+    rotationZ: 0
+    checkIfColliding: 1
+    objectToSenseForTag: 
+    objectToSenseFor: {fileID: 5693464044084005765}
+    intersectionMask:
+      serializedVersion: 2
+      m_Bits: 0
+    initialDistance: 20
+    sinMultiplier: 0
+    lastOutput: 0
+  - name: LegCollidingB
+    distanceToObject: 0
+    horizontalDifference: 0
+    verticalDifference: 0
+    intersectingTrueFalse: 0
+    intersectingDistance: 0
+    timeElapsedAsSine: 0
+    rotationZ: 0
+    checkIfColliding: 1
+    objectToSenseForTag: 
+    objectToSenseFor: {fileID: 5672827704509119320}
+    intersectionMask:
+      serializedVersion: 2
+      m_Bits: 0
+    initialDistance: 20
+    sinMultiplier: 0
+    lastOutput: 0
+  - name: DistanceToGoal
+    distanceToObject: 1
+    horizontalDifference: 0
+    verticalDifference: 0
+    intersectingTrueFalse: 0
+    intersectingDistance: 0
+    timeElapsedAsSine: 0
+    rotationZ: 0
+    checkIfColliding: 0
+    objectToSenseForTag: goal
+    objectToSenseFor: {fileID: 0}
+    intersectionMask:
+      serializedVersion: 2
+      m_Bits: 0
+    initialDistance: 20
+    sinMultiplier: 0
+    lastOutput: 0
+  - name: Body Colliding
+    distanceToObject: 0
+    horizontalDifference: 0
+    verticalDifference: 0
+    intersectingTrueFalse: 0
+    intersectingDistance: 0
+    timeElapsedAsSine: 0
+    rotationZ: 0
+    checkIfColliding: 1
+    objectToSenseForTag: 
+    objectToSenseFor: {fileID: 2669643338255989059}
+    intersectionMask:
+      serializedVersion: 2
+      m_Bits: 0
+    initialDistance: 20
+    sinMultiplier: 0
+    lastOutput: 0
   networkRunning: 0
   generation: 0
+  numberOfInputs: 0
   mainSprites:
   - {fileID: 1854068927787828014}
   - {fileID: 4020114072412403281}
@@ -1082,11 +1206,16 @@ MonoBehaviour:
   - {fileID: 2935758738172333596}
   - {fileID: 7945994282329116785}
   hinges:
-  - {fileID: 4666247395395369256}
   - {fileID: 6976762912665912751}
-  - {fileID: 6882022355614740317}
   - {fileID: 1379863503603136244}
+  - {fileID: 4666247395395369256}
+  - {fileID: 6882022355614740317}
   randomizeSpriteColor: 1
+  touchingGroundIsBad: 1
+  rotationIsBad: 1
+  directionTimes:
+  - 0
+  - 0
 --- !u!1 &8181683490782484313
 GameObject:
   m_ObjectHideFlags: 0

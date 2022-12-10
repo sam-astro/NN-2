@@ -11,6 +11,7 @@ using System.Collections.Specialized;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Runtime.Serialization;
 using UnityEngine;
+using TMPro;
 
 public class NetManager : MonoBehaviour
 {
@@ -28,6 +29,8 @@ public class NetManager : MonoBehaviour
     public int maxIterations = 1000;
 
     public Transform spawnPoint;
+
+    public TMP_Text generationText;
 
     //double promptMin = 0;
     //double promptMax = 0;
@@ -50,9 +53,9 @@ public class NetManager : MonoBehaviour
 
     public int generationNumber = 1;
     double lastBest = 100000000;
-    double lastWorst = 100000000;
-    double bestError = 100000;
-    public double bestEverError = 100000;
+    public double lastWorst = 100000000;
+    double bestError = 100000000;
+    public double bestEverError = 100000000;
     double worstError = 0;
 
     bool queuedForUpload = false;
@@ -125,6 +128,7 @@ public class NetManager : MonoBehaviour
             lastBest = bestError;
             lastWorst = worstError;
             generationNumber++;
+            generationText.text = generationNumber.ToString();
 
             CreateEntityBodies();
             iterations = maxIterations;
@@ -154,7 +158,7 @@ public class NetManager : MonoBehaviour
         for (int i = 0; i < populationSize; i++)
         {
             GameObject tempEntity = Instantiate(netEntityPrefab, spawnPoint);
-            tempEntity.GetComponent<NetEntity>().Init(nets[i], generationNumber);
+            tempEntity.GetComponent<NetEntity>().Init(nets[i], generationNumber, layers[0]);
             entityList.Add(tempEntity);
         }
         //}
@@ -196,16 +200,19 @@ public class NetManager : MonoBehaviour
         {
             nets[i] = new NeuralNetwork(persistenceNetwork);     //Copies weight values from top half networks to worst half
             nets[i].Mutate();
-            nets[populationSize - 1] = new NeuralNetwork(persistenceNetwork); //too lazy to write a reset neuron matrix values method....so just going to make a deepcopy lol
-            nets[populationSize - 2] = new NeuralNetwork(nets[populationSize - 2]); //too lazy to write a reset neuron matrix values method....so just going to make a deepcopy lol
         }
-        for (int i = populationSize / 2; i < populationSize - 2; i++)
+        for (int i = populationSize / 2; i < populationSize - 10; i++)
         {
             nets[i] = new NeuralNetwork(persistenceNetwork);     //Copies weight values from top half networks to worst half
             nets[i].RandomizeWeights();
-            nets[populationSize - 1] = new NeuralNetwork(persistenceNetwork); //too lazy to write a reset neuron matrix values method....so just going to make a deepcopy lol
-            nets[populationSize - 2] = new NeuralNetwork(nets[populationSize - 2]); //too lazy to write a reset neuron matrix values method....so just going to make a deepcopy lol
         }
+        for (int i = populationSize - 10; i < populationSize - 1; i++)
+        {
+            //nets[i] = new NeuralNetwork(nets[i]);     //Copies weight values from top half networks to worst half
+            nets[i].Mutate();
+        }
+
+        nets[populationSize - 1] = new NeuralNetwork(persistenceNetwork); //too lazy to write a reset neuron matrix values method....so just going to make a deepcopy lol
 
         //for (int i = 0; i < populationSize - 2; i++)
         //{
@@ -243,8 +250,8 @@ public class NetManager : MonoBehaviour
 
             net.learningRate = learningRate;
 
-            //if (persistenceNetwork == null)
-            //    net.RandomizeWeights();
+            if (persistenceNetwork == null)
+                net.RandomizeWeights();
 
             nets.Add(net);
         }

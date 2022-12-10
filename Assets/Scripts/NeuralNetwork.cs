@@ -151,7 +151,7 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
                     for (int k = 0; k < neuronsInPreviousLayer; k++)
                     {
                         //give random weights to neuron weights
-                        neuronWeights[k] = UnityEngine.Random.Range(-1.1f, 1.1f);
+                        neuronWeights[k] = UnityEngine.Random.Range(-10f, 10f);
                         //neuronWeights[k] = new Random().Next(-50, 50) / 100.0d;
                     }
 
@@ -189,14 +189,14 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
                     value += (weights[i - 1][j][k] * neurons[i - 1][k]);
 
 
-                // If the layer is the first input or final output layer
-                if(j == neurons.Length - 1 || j = 0)
+                // If the layer is the final output layer
+                if(i == layers.Length - 1)
                     neurons[i][j] = (double)Tanh(value); // Use TanH activation function 
                 else{
-                    if (droppedNeurons[i][j] == 10)
-                        neurons[i][j] = 0.0001d;
-                    else if (droppedNeurons[i][j] != 10)
-                        neurons[i][j] = (double)LeakyReLU(value); // Use Leaky ReLU Function
+                    //if (droppedNeurons[i][j] == 10)
+                    //    neurons[i][j] = 0.0001d;
+                    //else if (droppedNeurons[i][j] != 10)
+                        neurons[i][j] = (double)Sigmoid(value); // Use Leaky ReLU Function
                 }
 
                 //neurons[i][j] = (double)Math.Tanh(value); //Hyperbolic tangent activation
@@ -223,7 +223,7 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
     }
     public static double LeakyReLU(double value)
     {
-        return (double)Mathf.Max(0.01d*value, value);
+        return (double)Math.Max(0.01d*value, value);
     }
 
     public void BackPropagation(double[] expectedOutput)
@@ -301,10 +301,25 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
                         double factor = new Random().Next(-1000, 1000) / 100.0d / 10000.0d;
                         weight += factor;
                     }
-                    else if (randomNumber <= 10f)
+                    //else if (randomNumber <= 10f)
+                    //{
+                    //    //flip sign
+                    //    weight *= -1;
+                    //}
+                    else if (randomNumber <= 12f)
                     {
-                        //flip sign
-                        weight *= -1;
+                        //add 0.001
+                        weight += 0.001d;
+                    }
+                    else if (randomNumber <= 14f)
+                    {
+                        //sub 0.001
+                        weight -= 0.001d;
+                    }
+                    else if (randomNumber <= 13f)
+                    {
+                        //totally randomize
+                        weight = UnityEngine.Random.Range(-10f, 10f); ;
                     }
 
                     weights[i][j][k] = weight;

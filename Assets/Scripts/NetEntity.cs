@@ -18,6 +18,7 @@ public class Sense
     public bool intersectingDistance;
     public bool timeElapsedAsSine;
     public bool rotationZ;
+    public bool checkIfColliding;
     [Header("Optional Variables")]
     public string objectToSenseForTag;
     public Transform objectToSenseFor;
@@ -29,6 +30,9 @@ public class Sense
 
     public void Initialize(GameObject obj)
     {
+        if (checkIfColliding)
+            return;
+
         if (objectToSenseFor == null && objectToSenseForTag != "")
             objectToSenseFor = GameObject.FindGameObjectWithTag(objectToSenseForTag).transform;
         if (initialDistance == 0)
@@ -40,72 +44,83 @@ public class Sense
     // Gets sensor value, normalized between 0 and 1
     public double GetSensorValue(int type, GameObject obj)
     {
+        double val = 0;
         if (type == 0 && distanceToObject)
-            return Vector2.Distance(obj.transform.position, objectToSenseFor.position) / initialDistance;
-        if (type == 1 && horizontalDifference)
-            return (Mathf.Abs(obj.transform.position.x) + Mathf.Abs(objectToSenseFor.position.x)) / initialDistance;
-        if (type == 2 && verticalDifference)
-            return (Mathf.Abs(obj.transform.position.y) + Mathf.Abs(objectToSenseFor.position.y)) / initialDistance;
-        if (type == 3 && intersectingTrueFalse)
+            val = Vector2.Distance(obj.transform.position, objectToSenseFor.position) / initialDistance;
+        else if (type == 1 && horizontalDifference)
+            val = (Mathf.Abs(obj.transform.position.x) + Mathf.Abs(objectToSenseFor.position.x)) / initialDistance;
+        else if (type == 2 && verticalDifference)
+            val = (Mathf.Abs(obj.transform.position.y) + Mathf.Abs(objectToSenseFor.position.y)) / initialDistance;
+        else if (type == 3 && intersectingTrueFalse)
         {
             RaycastHit2D r = Physics2D.Linecast(obj.transform.position, objectToSenseFor.position, intersectionMask);
             if (r)
-                return 1;
+                val = 1;
             else
-                return 0;
+                val = 0;
         }
-        if (type == 4 && intersectingDistance)
+        else if (type == 4 && intersectingDistance)
         {
             RaycastHit2D r = Physics2D.Linecast(obj.transform.position, objectToSenseFor.position, intersectionMask);
             if (r)
             {
-                lastOutput = Vector2.Distance(r.point, obj.transform.position) / initialDistance;
-                return lastOutput;
+                val = Vector2.Distance(r.point, obj.transform.position) / initialDistance;
             }
             else
-                return 1;
+                val = 1;
         }
-        if (timeElapsedAsSine)
+        else if (timeElapsedAsSine)
         {
-            lastOutput = (Mathf.Sin(type * sinMultiplier)+1)/2;
-            return lastOutput;
+            val = Mathf.Sin(type * sinMultiplier);
         }
 
-        return 0;
+        lastOutput = (float)val;
+        return val;
     }
 
     // Gets sensor value, normalized between 0 and 1
     public double GetSensorValue(GameObject obj)
     {
+        double val = 0;
         if (distanceToObject)
-            return Vector2.Distance(obj.transform.position, objectToSenseFor.position) / initialDistance;
-        if (horizontalDifference)
-            return (Mathf.Abs(obj.transform.position.x) + Mathf.Abs(objectToSenseFor.position.x)) / initialDistance;
-        if (verticalDifference)
-            return (Mathf.Abs(obj.transform.position.y) + Mathf.Abs(objectToSenseFor.position.y)) / initialDistance;
-        if (intersectingTrueFalse)
+            val = Vector2.Distance(obj.transform.position, objectToSenseFor.position) / initialDistance;
+        else if (horizontalDifference)
+            val = (Mathf.Abs(obj.transform.position.x) + Mathf.Abs(objectToSenseFor.position.x)) / initialDistance;
+        else if (verticalDifference)
+            val = (Mathf.Abs(obj.transform.position.y) + Mathf.Abs(objectToSenseFor.position.y)) / initialDistance;
+        else if (intersectingTrueFalse)
         {
             RaycastHit2D r = Physics2D.Linecast(obj.transform.position, objectToSenseFor.position, intersectionMask);
             if (r)
-                return 1;
+                val = 1;
             else
-                return 0;
+                val = 0;
         }
-        if (intersectingDistance)
+        else if (intersectingDistance)
         {
             RaycastHit2D r = Physics2D.Linecast(obj.transform.position, objectToSenseFor.position, intersectionMask);
             if (r)
+                val = Vector2.Distance(r.point, obj.transform.position) / initialDistance;
+            else
+                val = 1;
+        }
+        else if (rotationZ)
+            // Rotation normalized between -1 and 1
+            val = ((obj.transform.eulerAngles.z > 180 ? 180 - (obj.transform.eulerAngles.z - 180) : -obj.transform.eulerAngles.z)) / 180.0f;
+        //Debug.Log(((obj.transform.eulerAngles.z>180? 180-(obj.transform.eulerAngles.z-180): obj.transform.eulerAngles.z)) / 180.0f);
+        else if (checkIfColliding)
+            try
             {
-                lastOutput = Vector2.Distance(r.point, obj.transform.position) / initialDistance;
-                return lastOutput;
+                val = objectToSenseFor.GetComponent<IsColliding>().isColliding ? 1 : 0;
             }
-            else
-                return 1;
-        }
-        if (rotationZ)
-            return (Mathf.Clamp(obj.transform.rotation.eulerAngles.z, -180, 180)+180)/360;
+            catch (Exception)
+            {
 
-        return 0;
+                throw;
+            }
+
+        lastOutput = (float)val;
+        return val;
     }
 }
 
@@ -119,7 +134,11 @@ public class NetEntity : MonoBehaviour
     public bool networkRunning = false;
     public int generation;
 
+    public int numberOfInputs;
+
     int timeElapsed = 0;
+
+    float totalRotationalDifference = 0;
 
     public SpriteRenderer[] mainSprites;
     public HingeJoint2D[] hinges;
@@ -127,6 +146,15 @@ public class NetEntity : MonoBehaviour
 
     float bestDistance = 10000;
 
+    [Header("Fitness Modifiers")]
+    public bool touchingGroundIsBad = false;
+    public bool rotationIsBad = false;
+
+    private bool[] directions = { false, false }; // Array of directions of each motor
+    public float[] directionTimes = { 0, 0 }; // Amount of time each direction has been used
+    private float finalErrorOffset = 0;
+
+    [ShowOnly] public double fitness;
 
     public bool Elapse()
     {
@@ -139,29 +167,37 @@ public class NetEntity : MonoBehaviour
             //}
             //Debug.Log(weightLengths);
 
-            double[] inputs = new double[senses.Length];
+
+            double[] inputs = new double[numberOfInputs];
 
             for (int p = 0; p < inputs.Length; p++)
             {
                 inputs[p] = senses[p].GetSensorValue(mainSprites[0].gameObject);
-                // Body touched ground, end and turn invisible
-                if (p >2 && inputs[p] < 0.2f)
-                {
-                    networkRunning = false;
-                    for (int i = 0; i < mainSprites.Length; i++)
-                        mainSprites[i].color = Color.clear;
-                    return false;
-                }
             }
             inputs[0] = senses[0].GetSensorValue(timeElapsed, mainSprites[0].gameObject);
 
             outputs = net.FeedForward(inputs);
 
-            for (int i = 0; i < hinges.Length; i++)
+            for (int i = 0; i < outputs.Length; i++)
             {
                 JointMotor2D changemotor = hinges[i].motor;
-                changemotor.motorSpeed = (float)(outputs[i])*720*(i<2?-1:1);
+                changemotor.motorSpeed = (float)(outputs[i] - 0d) * 90.0f;
                 hinges[i].motor = changemotor;
+
+                // Get direction and see if it changed for lower joints
+                if (i <= 1)
+                {
+                    bool direction = hinges[i].motor.motorSpeed > 0 ? true : false;
+                    if (directions[i] == direction){  // It is still going in the same direction
+                        directionTimes[i] += 1+Mathf.Abs(hinges[i].motor.motorSpeed)/90.0f;
+                    }
+                    else // It changed direction
+                    {
+                        finalErrorOffset += Mathf.Pow(directionTimes[i], 2)/30000.0f;
+                        directionTimes[i] = 0;
+                        directions[i] = !directions[i];
+                    }
+                }
             }
 
             // if (senses[2].GetSensorValue(gameObject) <= 0.25d) // If touching ground
@@ -187,28 +223,51 @@ public class NetEntity : MonoBehaviour
             //    //net.BackProp(correct);
             //}
 
-            float senseVal = (float)senses[1].GetSensorValue(mainSprites[0].gameObject);
+            // Only update fitness every 10 cycles
+            //if (timeElapsed % 10 == 0)
+            //{
+            float senseVal = (float)senses[12].GetSensorValue(mainSprites[0].gameObject);
             if (senseVal < bestDistance)
             {
-                net.fitness = senseVal;
+                net.fitness = senseVal+ finalErrorOffset;
+                if (rotationIsBad)
+                    net.fitness += totalRotationalDifference / (float)timeElapsed;
                 bestDistance = senseVal;
             }
 
+            if (rotationIsBad)
+                totalRotationalDifference += Mathf.Abs(senses[1].lastOutput) * 2;
+            //}
+
+
+            if (touchingGroundIsBad)
+                // If body touched ground, end and turn invisible
+                if (senses[13].GetSensorValue(mainSprites[0].gameObject) == 1)
+                {
+                    networkRunning = false;
+                    for (int i = 0; i < mainSprites.Length; i++)
+                        mainSprites[i].color = Color.clear;
+                    return false;
+                }
 
 
             timeElapsed += 1;
+
+
+            fitness = net.fitness;
 
             return true;
         }
         return false;
     }
 
-    public void Init(NeuralNetwork net, int generation)
+    public void Init(NeuralNetwork net, int generation, int numberOfInputs)
     {
         transform.localPosition = Vector3.zero;
         transform.rotation = Quaternion.identity;
         this.net = net;
         this.generation = generation;
+        this.numberOfInputs = numberOfInputs;
         networkRunning = true;
         //net.error = 0;
         timeElapsed = 0;
