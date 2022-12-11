@@ -121,6 +121,8 @@ public class Sense
 
                 throw;
             }
+        else if (xVelocity)
+            val = objectToSenseFor.GetComponent<Rigidbody2D>().velocity.x / (float)4;
 
         lastOutput = (float)val;
         return val;
@@ -133,9 +135,9 @@ public class NetEntity : MonoBehaviour
 
     public Sense[] senses;
 
-    double[] outputs;
+    [ShowOnly] public double[] outputs;
     public bool networkRunning = false;
-    public int generation;
+    [ShowOnly] public int generation;
 
     public int numberOfInputs;
 
@@ -149,10 +151,16 @@ public class NetEntity : MonoBehaviour
 
     float bestDistance = 10000;
 
-    int totalIterations=1;
+    int totalIterations = 1;
+
+    public float[] trialRotations;
+
+    [ShowOnly] public int trial;
+    int stillTime = 0;
 
 
     [ShowOnly] public double fitness;
+    [ShowOnly] public double totalFitness;
 
     public bool Elapse()
     {
@@ -172,25 +180,53 @@ public class NetEntity : MonoBehaviour
             {
                 inputs[p] = senses[p].GetSensorValue(mainSprites[0].gameObject);
             }
-            inputs[0] = senses[0].GetSensorValue(timeElapsed, mainSprites[0].gameObject);
 
             outputs = net.FeedForward(inputs);
 
-            mainSprites[0].GetComponent<Rigidbody2D>().AddForce(new Vector2((float)outputs[0]*100, 0), ForceMode2D.Force);
+            //mainSprites[0].GetComponent<Rigidbody2D>().AddForce(new Vector2((float)outputs[0] * 100, 0), ForceMode2D.Force);
+            //float direction = 0;
+            //if (outputs[0] > 0.25f)
+            //    direction = 4;
+            //if (outputs[0] < -0.25f)
+            //    direction = -4;
+            //mainSprites[0].GetComponent<Rigidbody2D>().velocity = new Vector2((float)outputs[0]*5, 0);
+
+            //float direction = 0;
+            //float dif = Mathf.Abs((float)outputs[0] - (float)outputs[1]);
+            //if (dif > 0.1f)
+            //    direction = outputs[0] > outputs[1] ? Mathf.Abs((float)outputs[0]) * 4 : Mathf.Abs((float)outputs[1]) * -4;
+            //mainSprites[0].GetComponent<Rigidbody2D>().velocity = new Vector2(direction, 0);
+
+            float direction = ((float)outputs[0]-0.5f)*3.0f;
+            mainSprites[0].GetComponent<Rigidbody2D>().velocity = new Vector2(direction, 0);
+
+            if ((Mathf.Abs(mainSprites[0].transform.position.x) < 0.2f))
+                stillTime++;
 
 
-            //totalRotationalDifference += Mathf.Abs((float)senses[0].GetSensorValue(mainSprites[1].gameObject));
-            //net.fitness = totalRotationalDifference / timeElapsed;
+            totalRotationalDifference += Mathf.Abs((float)senses[0].GetSensorValue(mainSprites[1].gameObject));
+            //net.fitness = (totalRotationalDifference / timeElapsed)+ ((totalIterations - timeElapsed) / (float)totalIterations);
 
 
 
-            if (senses[4].GetSensorValue(gameObject) == 1) // If pole ground
+            net.pendingFitness = ((totalIterations - timeElapsed) / (float)totalIterations) +
+                (stillTime / (float)totalIterations * 10.0f) +
+                (totalRotationalDifference / timeElapsed);
+            //if (senses[4].GetSensorValue(gameObject) == 1) // If pole ground
+            //{
+            //    networkRunning = false;
+            //    for (int i = 0; i < mainSprites.Length; i++)
+            //        mainSprites[i].color = Color.clear;
+            //    //net.fitness += (totalIterations - timeElapsed) / totalIterations;
+            //    return false;
+            //}
+            if (Mathf.Abs((float)inputs[0]) > 0.25f) // If the pole has reached too shallow of an angle, fail
             {
-                net.fitness = (totalIterations - timeElapsed) / (float)totalIterations;
                 networkRunning = false;
                 for (int i = 0; i < mainSprites.Length; i++)
-                    mainSprites[i].color = Color.clear;
-                //net.fitness += (totalIterations - timeElapsed) / totalIterations;
+                    Destroy(mainSprites[i].gameObject);
+                //net.fitness += fitness / (Mathf.Pow(trial, 2) / 2.0f + 1); // Add this trial's fitness to total
+                //net.fitness += fitness; // Add this trial's fitness to total
                 return false;
             }
 
@@ -218,15 +254,15 @@ public class NetEntity : MonoBehaviour
 
             timeElapsed += 1;
 
+            totalFitness = net.fitness;
 
-            fitness = net.fitness;
 
             return true;
         }
         return false;
     }
 
-    public void Init(NeuralNetwork net, int generation, int numberOfInputs, int totalIterations)
+    public void Init(NeuralNetwork net, int generation, int numberOfInputs, int totalIterations, int trial)
     {
         transform.localPosition = Vector3.zero;
         transform.rotation = Quaternion.identity;
@@ -234,11 +270,17 @@ public class NetEntity : MonoBehaviour
         this.generation = generation;
         this.numberOfInputs = numberOfInputs;
         this.totalIterations = totalIterations;
+        this.trial = trial;
         networkRunning = true;
+        this.net.fitness += this.net.pendingFitness;
+        this.net.pendingFitness = 0;
         //net.error = 0;
         timeElapsed = 0;
         bestDistance = 10000;
-        mainSprites[1].gameObject.transform.eulerAngles = Quaternion.Euler(0, 0, UnityEngine.Random.Range(0, 2)==1?-5:5).eulerAngles;
+        if (trialRotations.Length > trial)
+            mainSprites[1].gameObject.transform.eulerAngles = Quaternion.Euler(0, 0, trialRotations[trial]).eulerAngles;
+        else
+            mainSprites[1].gameObject.transform.eulerAngles = Quaternion.Euler(0, 0, UnityEngine.Random.Range(-10f, 10f)).eulerAngles;
 
         foreach (var s in senses)
         {

@@ -8,7 +8,6 @@ ScriptsOnlyBuild:
     - UnityEditor.U2D.Animation.BoneGizmo
     Unity.2D.IK.Editor.dll:
     - UnityEditor.U2D.IK.IKEditorManager
-    - UnityEditor.U2D.IK.IKGizmos
     Unity.2D.Tilemap.Editor.dll:
     - UnityEditor.Tilemaps.GridPaintingState
     - UnityEditor.Tilemaps.GridPaletteBrushes
@@ -67,29 +66,29 @@ ScriptsOnlyBuild:
     - Class: 104
       Script: {instanceID: 0}
     - Class: 114
-      Script: {instanceID: 1550}
+      Script: {instanceID: 1572}
     - Class: 114
-      Script: {instanceID: 1842}
+      Script: {instanceID: 1864}
     - Class: 114
-      Script: {instanceID: 2248}
+      Script: {instanceID: 2270}
     - Class: 114
-      Script: {instanceID: 2682}
+      Script: {instanceID: 2704}
     - Class: 114
-      Script: {instanceID: 2854}
+      Script: {instanceID: 2876}
     - Class: 114
-      Script: {instanceID: 2904}
+      Script: {instanceID: 2926}
     - Class: 114
-      Script: {instanceID: 3090}
+      Script: {instanceID: 3112}
     - Class: 114
-      Script: {instanceID: 3336}
+      Script: {instanceID: 3358}
     - Class: 114
-      Script: {instanceID: 3478}
+      Script: {instanceID: 3500}
     - Class: 114
-      Script: {instanceID: 4864}
+      Script: {instanceID: 4886}
     - Class: 114
-      Script: {instanceID: 5262}
+      Script: {instanceID: 5156}
     - Class: 114
-      Script: {instanceID: 32844}
+      Script: {instanceID: 5286}
     - Class: 115
       Script: {instanceID: 0}
     - Class: 128
@@ -593,6 +592,12 @@ ScriptsOnlyBuild:
     className: TMP_SubMeshUI
   - hash:
       serializedVersion: 2
+      Hash: 9700fb28582d04b2fb2ac43df0ba3d9d
+    assemblyName: Assembly-CSharp.dll
+    namespaceName: 
+    className: IsColliding
+  - hash:
+      serializedVersion: 2
       Hash: fd68d84f33fad85aac38f2739c0ee270
     assemblyName: Unity.TextMeshPro.dll
     namespaceName: TMPro
@@ -639,12 +644,6 @@ ScriptsOnlyBuild:
     assemblyName: Unity.2D.IK.Runtime.dll
     namespaceName: UnityEngine.U2D.IK
     className: FabrikSolver2D
-  - hash:
-      serializedVersion: 2
-      Hash: 9700fb28582d04b2fb2ac43df0ba3d9d
-    assemblyName: Assembly-CSharp.dll
-    namespaceName: 
-    className: IsColliding
   - hash:
       serializedVersion: 2
       Hash: 71bb6a6b6c8f052f948db64c7dd3ca4f

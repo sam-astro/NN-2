@@ -276,16 +276,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   populationSize: 200
-  layers: 040000000f0000001e0000000f00000001000000
+  layers: 020000000a000000140000000a00000002000000
   learningRate: 0
   iterations: 0
-  maxIterations: 5000
+  maxIterations: 1000
+  maxTrialsPerGeneration: 4
+  trial: 0
   spawnPoint: {fileID: 120052403}
   generationText: {fileID: 1011231766}
   amntLeft: 0
   generationNumber: 1
   lastWorst: 100000000
-  bestEverError: 100000
+  bestEverError: 15
   netEntityPrefab: {fileID: 7542785305623083481, guid: 1a697f95b04bb3c49a95245d48113a8b, type: 3}
 --- !u!20 &519420031
 Camera:
@@ -772,7 +774,7 @@ MonoBehaviour:
   m_lineSpacingMax: 0
   m_paragraphSpacing: 0
   m_charWidthMaxAdj: 0
-  m_enableWordWrapping: 1
+  m_enableWordWrapping: 0
   m_wordWrappingRatios: 0.4
   m_overflowMode: 0
   m_linkedTextComponent: {fileID: 0}
