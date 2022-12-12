@@ -19,6 +19,7 @@ public class Sense
     public bool timeElapsedAsSine;
     public bool rotationZ;
     public bool checkIfColliding;
+    public bool xVelocity;
     [Header("Optional Variables")]
     public string objectToSenseForTag;
     public Transform objectToSenseFor;
@@ -73,6 +74,8 @@ public class Sense
         {
             val = Mathf.Sin(type * sinMultiplier);
         }
+        else if (xVelocity)
+            val = objectToSenseFor.GetComponent<Rigidbody2D>().velocity.x / (float)type;
 
         lastOutput = (float)val;
         return val;
@@ -106,7 +109,7 @@ public class Sense
         }
         else if (rotationZ)
             // Rotation normalized between -1 and 1
-            val = ((obj.transform.eulerAngles.z > 180 ? 180 - (obj.transform.eulerAngles.z - 180) : -obj.transform.eulerAngles.z)) / 180.0f;
+            val = ((objectToSenseFor.transform.eulerAngles.z > 180 ? 180 - (objectToSenseFor.transform.eulerAngles.z - 180) : -objectToSenseFor.transform.eulerAngles.z)) / 180.0f;
         //Debug.Log(((obj.transform.eulerAngles.z>180? 180-(obj.transform.eulerAngles.z-180): obj.transform.eulerAngles.z)) / 180.0f);
         else if (checkIfColliding)
             try
@@ -118,6 +121,8 @@ public class Sense
 
                 throw;
             }
+        else if (xVelocity)
+            val = objectToSenseFor.GetComponent<Rigidbody2D>().velocity.x / (float)4;
 
         lastOutput = (float)val;
         return val;
@@ -155,6 +160,8 @@ public class NetEntity : MonoBehaviour
     private float finalErrorOffset = 0;
 
     [ShowOnly] public double fitness;
+    int totalIterations;
+    [ShowOnly] public int trial;
 
     public bool Elapse()
     {
@@ -181,7 +188,7 @@ public class NetEntity : MonoBehaviour
             for (int i = 0; i < outputs.Length; i++)
             {
                 JointMotor2D changemotor = hinges[i].motor;
-                changemotor.motorSpeed = (float)(outputs[i] - 0d) * 90.0f;
+                changemotor.motorSpeed = (float)(outputs[i] - 0.5d) * 90.0f;
                 hinges[i].motor = changemotor;
 
                 // Get direction and see if it changed for lower joints
@@ -261,18 +268,22 @@ public class NetEntity : MonoBehaviour
         return false;
     }
 
-    public void Init(NeuralNetwork net, int generation, int numberOfInputs)
+    public void Init(NeuralNetwork net, int generation, int numberOfInputs, int totalIterations, int trial)
     {
         transform.localPosition = Vector3.zero;
         transform.rotation = Quaternion.identity;
         this.net = net;
         this.generation = generation;
         this.numberOfInputs = numberOfInputs;
+        this.totalIterations = totalIterations;
+        this.trial = trial;
         networkRunning = true;
+        this.net.fitness += this.net.pendingFitness;
+        this.net.pendingFitness = 0;
         //net.error = 0;
         timeElapsed = 0;
         bestDistance = 10000;
-
+        
         foreach (var s in senses)
         {
             s.Initialize(mainSprites[0].gameObject);

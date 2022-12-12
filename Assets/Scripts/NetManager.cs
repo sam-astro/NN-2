@@ -28,6 +28,9 @@ public class NetManager : MonoBehaviour
     public int iterations;
     public int maxIterations = 1000;
 
+    public int maxTrialsPerGeneration = 1;
+    [ShowOnly] public int trial;
+
     public Transform spawnPoint;
 
     public TMP_Text generationText;
@@ -72,66 +75,72 @@ public class NetManager : MonoBehaviour
         CreateEntityBodies();
 
         iterations = maxIterations;
+
+        generationText.text = generationNumber.ToString() + " : " + trial.ToString();
     }
 
-    public void Update()
+    public void FixedUpdate()
     {
-        if (iterations <= 0)
+        if (iterations <= 0) // If this trial is over, do another one
         {
-            nets.Sort();
-
-            bestError = nets[nets.Count - 1].fitness;
-            worstError = nets[0].fitness;
-
-            if (generationNumber % timeBetweenSave == 0 && timeBetweenSave != -1)
+            if (trial >= maxTrialsPerGeneration - 1) // If the final trial is over, finalize and go to next generation
             {
-                StreamWriter persistence = new StreamWriter("./Assets/dat/WeightSaveMeta.mta");
-                persistence.WriteLine((generationNumber).ToString() + "#" + (bestError).ToString());
+                generationText.text = "processing...";
 
-                BinaryFormatter bf = new BinaryFormatter();
-                using (FileStream fs = new FileStream("./Assets/dat/WeightSave.dat", FileMode.Create))
-                    bf.Serialize(fs, persistenceNetwork.weights);
+                // Make sure final pendingFitness is added
+                for (int i = 0; i < populationSize; i++)
+                    nets[i].AddFitness(nets[i].pendingFitness);
 
-                persistence.Close();
-            }
+                nets.Sort();
 
-            if (((bestError < lastBest && bestError < bestEverError) || queuedForUpload == true) && generationNumber % timeBetweenGenerationProgress == 0)
-            {
-                using (StreamWriter sw = File.AppendText("./Assets/dat/hist.txt"))
+                bestError = nets[nets.Count - 1].fitness;
+                worstError = nets[0].fitness;
+
+                if (generationNumber % timeBetweenSave == 0 && timeBetweenSave != -1)
                 {
-                    sw.WriteLine((generationNumber).ToString() + ", " + bestError);
+                    StreamWriter persistence = new StreamWriter("./Assets/dat/WeightSaveMeta.mta");
+                    persistence.WriteLine((generationNumber).ToString() + "#" + (bestEverError).ToString());
+
+                    BinaryFormatter bf = new BinaryFormatter();
+                    using (FileStream fs = new FileStream("./Assets/dat/WeightSave.dat", FileMode.Create))
+                        bf.Serialize(fs, persistenceNetwork.weights);
+
+                    persistence.Close();
                 }
 
-                persistenceNetwork.weights = nets[nets.Count - 1].weights;
-                bestEverError = bestError;
-
-                Console.Write("╚═ Generation: " + generationNumber + "  |  Population: " + populationSize);
-                Console.Write("  |  ");
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.Write("Error Rate: " + bestError + "\n");
-                Console.ResetColor();
-            }
-            else if (generationNumber % timeBetweenGenerationProgress == 0)
-            {
-                Console.Write("╚═ Generation: " + generationNumber + "  |  Population: " + populationSize);
-                Console.Write("  |  ");
-                Console.Write("Error Rate: " + (bestError) + "\n");
-
-                using (StreamWriter sw = File.AppendText("./Assets/dat/hist.txt"))
+                if (bestError < bestEverError || queuedForUpload == true || generationNumber == 0)
                 {
-                    sw.WriteLine((generationNumber).ToString() + ", " + bestError);
+                    persistenceNetwork.weights = nets[nets.Count - 1].weights;
+                    bestEverError = bestError;
+
+                    using (StreamWriter sw = File.AppendText("./Assets/dat/hist.txt"))
+                        sw.WriteLine((generationNumber).ToString() + ", " + bestEverError);
+
                 }
+                else if (generationNumber % timeBetweenGenerationProgress == 0)
+                    using (StreamWriter sw = File.AppendText("./Assets/dat/hist.txt"))
+                        sw.WriteLine((generationNumber).ToString() + ", " + bestEverError);
+
+                Finalizer();
+
+                lastBest = bestError;
+                lastWorst = worstError;
+                generationNumber++;
+                trial = 0;
+                iterations = maxIterations;
+
+                CreateEntityBodies();
+
+                generationText.text = generationNumber.ToString() + " : " + trial.ToString();
             }
+            else // Otherwise, create next trial and reset entities
+            {
+                iterations = maxIterations;
+                trial += 1;
+                CreateEntityBodies();
 
-            Finalizer();
-
-            lastBest = bestError;
-            lastWorst = worstError;
-            generationNumber++;
-            generationText.text = generationNumber.ToString();
-
-            CreateEntityBodies();
-            iterations = maxIterations;
+                generationText.text = generationNumber.ToString() + " : " + trial.ToString();
+            }
         }
         else
         {
@@ -158,7 +167,7 @@ public class NetManager : MonoBehaviour
         for (int i = 0; i < populationSize; i++)
         {
             GameObject tempEntity = Instantiate(netEntityPrefab, spawnPoint);
-            tempEntity.GetComponent<NetEntity>().Init(nets[i], generationNumber, layers[0]);
+            tempEntity.GetComponent<NetEntity>().Init(nets[i], generationNumber, layers[0], maxIterations, trial);
             entityList.Add(tempEntity);
         }
         //}
@@ -196,23 +205,24 @@ public class NetManager : MonoBehaviour
         //    }
         //}
 
-        for (int i = 0; i < populationSize / 2; i++)
+
+        for (int i = 0; i < (int)(populationSize * 0.75); i++)
         {
             nets[i] = new NeuralNetwork(persistenceNetwork);     //Copies weight values from top half networks to worst half
             nets[i].Mutate();
         }
-        for (int i = populationSize / 2; i < populationSize - 10; i++)
+        for (int i = (int)(populationSize * 0.75); i < populationSize - 25; i++)
         {
             nets[i] = new NeuralNetwork(persistenceNetwork);     //Copies weight values from top half networks to worst half
             nets[i].RandomizeWeights();
         }
-        for (int i = populationSize - 10; i < populationSize - 1; i++)
+        for (int i = populationSize - 25; i < populationSize - 1; i++)
         {
             //nets[i] = new NeuralNetwork(nets[i]);     //Copies weight values from top half networks to worst half
             nets[i].Mutate();
         }
-
         nets[populationSize - 1] = new NeuralNetwork(persistenceNetwork); //too lazy to write a reset neuron matrix values method....so just going to make a deepcopy lol
+
 
         //for (int i = 0; i < populationSize - 2; i++)
         //{
@@ -224,7 +234,8 @@ public class NetManager : MonoBehaviour
 
         for (int i = 0; i < populationSize; i++)
         {
-            nets[i].SetFitness(10f);
+            nets[i].SetFitness(0f);
+            nets[i].pendingFitness = 0f;
         }
 
         //CreateEntityBodies(nets, populationSize);
