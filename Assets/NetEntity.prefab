@@ -967,6 +967,7 @@ MonoBehaviour:
     timeElapsedAsSine: 1
     rotationZ: 0
     checkIfColliding: 0
+    xVelocity: 0
     objectToSenseForTag: goal
     objectToSenseFor: {fileID: 0}
     intersectionMask:
@@ -984,8 +985,9 @@ MonoBehaviour:
     timeElapsedAsSine: 0
     rotationZ: 1
     checkIfColliding: 0
+    xVelocity: 0
     objectToSenseForTag: 
-    objectToSenseFor: {fileID: 0}
+    objectToSenseFor: {fileID: 2669643338255989059}
     intersectionMask:
       serializedVersion: 2
       m_Bits: 0
@@ -1001,6 +1003,7 @@ MonoBehaviour:
     timeElapsedAsSine: 0
     rotationZ: 0
     checkIfColliding: 0
+    xVelocity: 0
     objectToSenseForTag: 
     objectToSenseFor: {fileID: 3666513846738028067}
     intersectionMask:
@@ -1018,6 +1021,7 @@ MonoBehaviour:
     timeElapsedAsSine: 0
     rotationZ: 0
     checkIfColliding: 0
+    xVelocity: 0
     objectToSenseForTag: 
     objectToSenseFor: {fileID: 3391282529441331521}
     intersectionMask:
@@ -1035,6 +1039,7 @@ MonoBehaviour:
     timeElapsedAsSine: 0
     rotationZ: 0
     checkIfColliding: 0
+    xVelocity: 0
     objectToSenseForTag: 
     objectToSenseFor: {fileID: 1744401284500682393}
     intersectionMask:
@@ -1052,6 +1057,7 @@ MonoBehaviour:
     timeElapsedAsSine: 0
     rotationZ: 0
     checkIfColliding: 0
+    xVelocity: 0
     objectToSenseForTag: 
     objectToSenseFor: {fileID: 4020998430060400800}
     intersectionMask:
@@ -1069,6 +1075,7 @@ MonoBehaviour:
     timeElapsedAsSine: 0
     rotationZ: 0
     checkIfColliding: 0
+    xVelocity: 0
     objectToSenseForTag: 
     objectToSenseFor: {fileID: 3959167755576264701}
     intersectionMask:
@@ -1086,6 +1093,7 @@ MonoBehaviour:
     timeElapsedAsSine: 0
     rotationZ: 0
     checkIfColliding: 0
+    xVelocity: 0
     objectToSenseForTag: 
     objectToSenseFor: {fileID: 5243317418827100340}
     intersectionMask:
@@ -1103,6 +1111,7 @@ MonoBehaviour:
     timeElapsedAsSine: 0
     rotationZ: 0
     checkIfColliding: 0
+    xVelocity: 0
     objectToSenseForTag: 
     objectToSenseFor: {fileID: 2037512825968897748}
     intersectionMask:
@@ -1120,6 +1129,7 @@ MonoBehaviour:
     timeElapsedAsSine: 0
     rotationZ: 0
     checkIfColliding: 0
+    xVelocity: 0
     objectToSenseForTag: 
     objectToSenseFor: {fileID: 2045146956392664397}
     intersectionMask:
@@ -1137,6 +1147,7 @@ MonoBehaviour:
     timeElapsedAsSine: 0
     rotationZ: 0
     checkIfColliding: 1
+    xVelocity: 0
     objectToSenseForTag: 
     objectToSenseFor: {fileID: 5693464044084005765}
     intersectionMask:
@@ -1154,6 +1165,7 @@ MonoBehaviour:
     timeElapsedAsSine: 0
     rotationZ: 0
     checkIfColliding: 1
+    xVelocity: 0
     objectToSenseForTag: 
     objectToSenseFor: {fileID: 5672827704509119320}
     intersectionMask:
@@ -1171,6 +1183,7 @@ MonoBehaviour:
     timeElapsedAsSine: 0
     rotationZ: 0
     checkIfColliding: 0
+    xVelocity: 0
     objectToSenseForTag: goal
     objectToSenseFor: {fileID: 0}
     intersectionMask:
@@ -1188,6 +1201,7 @@ MonoBehaviour:
     timeElapsedAsSine: 0
     rotationZ: 0
     checkIfColliding: 1
+    xVelocity: 0
     objectToSenseForTag: 
     objectToSenseFor: {fileID: 2669643338255989059}
     intersectionMask:
@@ -1196,6 +1210,7 @@ MonoBehaviour:
     initialDistance: 20
     sinMultiplier: 0
     lastOutput: 0
+  outputs: []
   networkRunning: 0
   generation: 0
   numberOfInputs: 0
@@ -1212,10 +1227,14 @@ MonoBehaviour:
   - {fileID: 6882022355614740317}
   randomizeSpriteColor: 1
   touchingGroundIsBad: 1
-  rotationIsBad: 1
+  rotationIsBad: 0
   directionTimes:
   - 0
   - 0
+  - 0
+  - 0
+  fitness: 0
+  trial: 0
 --- !u!1 &8181683490782484313
 GameObject:
   m_ObjectHideFlags: 0

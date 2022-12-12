@@ -135,7 +135,7 @@ public class NetEntity : MonoBehaviour
 
     public Sense[] senses;
 
-    double[] outputs;
+    [ShowOnly] public double[] outputs;
     public bool networkRunning = false;
     public int generation;
 
@@ -155,7 +155,7 @@ public class NetEntity : MonoBehaviour
     public bool touchingGroundIsBad = false;
     public bool rotationIsBad = false;
 
-    private bool[] directions = { false, false }; // Array of directions of each motor
+    private bool[] directions = { false, false, false, false }; // Array of directions of each motor
     public float[] directionTimes = { 0, 0 }; // Amount of time each direction has been used
     private float finalErrorOffset = 0;
 
@@ -191,8 +191,8 @@ public class NetEntity : MonoBehaviour
                 changemotor.motorSpeed = (float)(outputs[i] - 0.5d) * 90.0f;
                 hinges[i].motor = changemotor;
 
-                // Get direction and see if it changed for lower joints
-                if (i <= 1)
+                // Get direction and see if it changed for joints
+                if (i <= 3)
                 {
                     bool direction = hinges[i].motor.motorSpeed > 0 ? true : false;
                     if (directions[i] == direction){  // It is still going in the same direction
@@ -200,7 +200,7 @@ public class NetEntity : MonoBehaviour
                     }
                     else // It changed direction
                     {
-                        finalErrorOffset += Mathf.Pow(directionTimes[i], 2)/30000.0f;
+                        finalErrorOffset += Mathf.Pow(directionTimes[i], 2)/30.0f;
                         directionTimes[i] = 0;
                         directions[i] = !directions[i];
                     }
@@ -236,7 +236,11 @@ public class NetEntity : MonoBehaviour
             float senseVal = (float)senses[12].GetSensorValue(mainSprites[0].gameObject);
             if (senseVal < bestDistance)
             {
-                net.fitness = senseVal+ finalErrorOffset;
+                net.fitness = senseVal + finalErrorOffset +
+                    Mathf.Pow(directionTimes[0], 2) / 30.0f +
+                    Mathf.Pow(directionTimes[1], 2) / 30.0f +
+                    Mathf.Pow(directionTimes[2], 2) / 30.0f +
+                    Mathf.Pow(directionTimes[3], 2) / 30.0f;
                 if (rotationIsBad)
                     net.fitness += totalRotationalDifference / (float)timeElapsed;
                 bestDistance = senseVal;
@@ -253,7 +257,7 @@ public class NetEntity : MonoBehaviour
                 {
                     networkRunning = false;
                     for (int i = 0; i < mainSprites.Length; i++)
-                        mainSprites[i].color = Color.clear;
+                        Destroy(mainSprites[i].gameObject);
                     return false;
                 }
 

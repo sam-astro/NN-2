@@ -275,11 +275,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 02e2081876c99244fa317519acbd4d62, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  populationSize: 100
-  layers: 0c0000000f0000001e0000001e0000001e00000004000000
+  populationSize: 150
+  layers: 0c0000001e0000003c0000001e00000004000000
   learningRate: 0
   iterations: 0
   maxIterations: 600
+  maxTrialsPerGeneration: 1
+  trial: 0
   spawnPoint: {fileID: 120052403}
   generationText: {fileID: 1011231766}
   amntLeft: 0
