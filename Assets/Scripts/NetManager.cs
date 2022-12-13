@@ -50,11 +50,11 @@ public class NetManager : MonoBehaviour
 
 
     #region Internal Variables
-    public int amntLeft;
+    [ShowOnly] public int amntLeft;
 
     NeuralNetwork persistenceNetwork;
 
-    public int generationNumber = 1;
+    [ShowOnly] public int generationNumber = 1;
     double lastBest = 100000000;
     public double lastWorst = 100000000;
     double bestError = 100000000;
@@ -146,8 +146,9 @@ public class NetManager : MonoBehaviour
         {
             iterations -= 1;
 
-            if (IterateNetEntities() == false || iterations <= 0)
-                iterations = 0;
+            if (iterations % 10 == 0)
+                if (IterateNetEntities() == false || iterations <= 0)
+                    iterations = 0;
         }
     }
 
@@ -183,6 +184,7 @@ public class NetManager : MonoBehaviour
         int amnt = entityList.Count;
         for (int i = 0; i < entityList.Count; i++)
             amnt -= entityList[i].GetComponent<NetEntity>().Elapse() ? 0 : 1;
+        amntLeft = amnt;
         return amnt != 0;
     }
 
@@ -205,20 +207,19 @@ public class NetManager : MonoBehaviour
         //    }
         //}
 
-
-        for (int i = 0; i < (int)(populationSize * 0.75); i++)
+        // Create copies of best-ever network and replace the worst neural networks
+        for (int i = 0; i < (int)(populationSize * 0.2); i++)
         {
-            nets[i] = new NeuralNetwork(persistenceNetwork);     //Copies weight values from top half networks to worst half
+            nets[i] = new NeuralNetwork(persistenceNetwork);
             nets[i].Mutate();
         }
-        for (int i = (int)(populationSize * 0.75); i < populationSize - 25; i++)
+        // Create create totally new neural networks with random weights
+        for (int i = (int)(populationSize * 0.2); i < (int)(populationSize * 0.5); i++)
         {
-            nets[i] = new NeuralNetwork(persistenceNetwork);     //Copies weight values from top half networks to worst half
             nets[i].RandomizeWeights();
         }
-        for (int i = populationSize - 25; i < populationSize - 1; i++)
+        for (int i = (int)(populationSize * 0.5); i < populationSize - 1; i++)
         {
-            //nets[i] = new NeuralNetwork(nets[i]);     //Copies weight values from top half networks to worst half
             nets[i].Mutate();
         }
         nets[populationSize - 1] = new NeuralNetwork(persistenceNetwork); //too lazy to write a reset neuron matrix values method....so just going to make a deepcopy lol

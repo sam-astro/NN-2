@@ -144,6 +144,8 @@ public class NetEntity : MonoBehaviour
     int timeElapsed = 0;
 
     float totalRotationalDifference = 0;
+    float totalheightDifference = 0;
+    float totalDistanceOverTime = 0;
 
     public SpriteRenderer[] mainSprites;
     public HingeJoint2D[] hinges;
@@ -154,14 +156,19 @@ public class NetEntity : MonoBehaviour
     [Header("Fitness Modifiers")]
     public bool touchingGroundIsBad = false;
     public bool rotationIsBad = false;
+    public bool rewardTimeAlive = false;
+    public bool heightIsGood = false;
+    public bool slowRotationIsBad = false;
+    public bool distanceIsGood = false;
 
-    private bool[] directions = { false, false, false, false }; // Array of directions of each motor
+    private bool[] directions = { false, false }; // Array of directions of each motor
     public float[] directionTimes = { 0, 0 }; // Amount of time each direction has been used
     private float finalErrorOffset = 0;
 
-    [ShowOnly] public double fitness;
+    [ShowOnly] public double totalFitness;
     int totalIterations;
     [ShowOnly] public int trial;
+    public float[] trialValues;
 
     public bool Elapse()
     {
@@ -188,24 +195,33 @@ public class NetEntity : MonoBehaviour
             for (int i = 0; i < outputs.Length; i++)
             {
                 JointMotor2D changemotor = hinges[i].motor;
-                changemotor.motorSpeed = (float)(outputs[i] - 0.5d) * 90.0f;
+                changemotor.motorSpeed = ((float)outputs[i] - 0.5f) * 360.0f;
                 hinges[i].motor = changemotor;
 
                 // Get direction and see if it changed for joints
-                if (i <= 3)
+                if (i <= 1)
                 {
                     bool direction = hinges[i].motor.motorSpeed > 0 ? true : false;
-                    if (directions[i] == direction){  // It is still going in the same direction
-                        directionTimes[i] += 1+Mathf.Abs(hinges[i].motor.motorSpeed)/90.0f;
+                    if (directions[i] == direction)
+                    {  // It is still going in the same direction
+                        //directionTimes[i] += 1+Mathf.Abs(hinges[i].motor.motorSpeed)/90.0f;
+                        directionTimes[i] += 1;
                     }
                     else // It changed direction
                     {
-                        finalErrorOffset += Mathf.Pow(directionTimes[i], 2)/30.0f;
+                        finalErrorOffset += Mathf.Pow(directionTimes[i], 2) / (float)(totalIterations * totalIterations);
                         directionTimes[i] = 0;
                         directions[i] = !directions[i];
                     }
+                    if (slowRotationIsBad)
+                        // If slow motor speed, also add penalty
+                        if (Mathf.Abs(hinges[i].motor.motorSpeed) < 20)
+                            directionTimes[i] += (20f - Mathf.Abs(hinges[i].motor.motorSpeed)) / 20f;
                 }
             }
+
+            if (rotationIsBad)
+                totalRotationalDifference += Mathf.Abs(senses[1].lastOutput);
 
             // if (senses[2].GetSensorValue(gameObject) <= 0.25d) // If touching ground
             // {
@@ -229,31 +245,32 @@ public class NetEntity : MonoBehaviour
             //    double[] correct = { 1.0f };
             //    //net.BackProp(correct);
             //}
+            float height = (float)senses[2].GetSensorValue(mainSprites[0].gameObject);
+            totalheightDifference += 1f-height;
 
-            // Only update fitness every 10 cycles
-            //if (timeElapsed % 10 == 0)
+            float distance = (float)senses[7].GetSensorValue(mainSprites[4].gameObject);
+            totalDistanceOverTime += distance;
+            //if (senseVal < bestDistance)
             //{
-            float senseVal = (float)senses[12].GetSensorValue(mainSprites[0].gameObject);
-            if (senseVal < bestDistance)
-            {
-                net.fitness = senseVal + finalErrorOffset +
-                    Mathf.Pow(directionTimes[0], 2) / 30.0f +
-                    Mathf.Pow(directionTimes[1], 2) / 30.0f +
-                    Mathf.Pow(directionTimes[2], 2) / 30.0f +
-                    Mathf.Pow(directionTimes[3], 2) / 30.0f;
-                if (rotationIsBad)
-                    net.fitness += totalRotationalDifference / (float)timeElapsed;
-                bestDistance = senseVal;
-            }
-
+            net.pendingFitness = 0;
+            if (distanceIsGood)
+                net.pendingFitness = (totalDistanceOverTime/ (float)timeElapsed) +
+                    finalErrorOffset +
+                    Mathf.Pow(directionTimes[0], 2) / (float)(totalIterations * totalIterations) +
+                    Mathf.Pow(directionTimes[1], 2) / (float)(totalIterations * totalIterations);
             if (rotationIsBad)
-                totalRotationalDifference += Mathf.Abs(senses[1].lastOutput) * 2;
+                net.pendingFitness += totalRotationalDifference / (float)timeElapsed;
+            if (rewardTimeAlive)
+                net.pendingFitness += ((totalIterations - timeElapsed) / (float)totalIterations);
+            if (heightIsGood)
+                net.pendingFitness += totalheightDifference / (float)timeElapsed;
+            //bestDistance = senseVal;
             //}
 
 
             if (touchingGroundIsBad)
                 // If body touched ground, end and turn invisible
-                if (senses[13].GetSensorValue(mainSprites[0].gameObject) == 1)
+                if (senses[8].GetSensorValue(mainSprites[0].gameObject) == 1)
                 {
                     networkRunning = false;
                     for (int i = 0; i < mainSprites.Length; i++)
@@ -265,7 +282,7 @@ public class NetEntity : MonoBehaviour
             timeElapsed += 1;
 
 
-            fitness = net.fitness;
+            totalFitness = net.fitness;
 
             return true;
         }
@@ -275,11 +292,12 @@ public class NetEntity : MonoBehaviour
     public void Init(NeuralNetwork net, int generation, int numberOfInputs, int totalIterations, int trial)
     {
         transform.localPosition = Vector3.zero;
-        transform.rotation = Quaternion.identity;
+        transform.eulerAngles = Quaternion.Euler(0, 0, trialValues[trial]).eulerAngles;
         this.net = net;
         this.generation = generation;
         this.numberOfInputs = numberOfInputs;
         this.totalIterations = totalIterations;
+        this.totalRotationalDifference = 0;
         this.trial = trial;
         networkRunning = true;
         this.net.fitness += this.net.pendingFitness;
@@ -287,7 +305,7 @@ public class NetEntity : MonoBehaviour
         //net.error = 0;
         timeElapsed = 0;
         bestDistance = 10000;
-        
+
         foreach (var s in senses)
         {
             s.Initialize(mainSprites[0].gameObject);

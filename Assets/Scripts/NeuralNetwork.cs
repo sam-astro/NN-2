@@ -53,8 +53,8 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
         }
 
         InitNeurons();
-        InitWeights(null);
-        CopyWeights(copyNetwork.weights);
+        InitWeights(copyNetwork.weights);
+        //CopyWeights(copyNetwork.weights);
     }
 
     private void CopyWeights(double[][][] copyWeights)
@@ -109,7 +109,7 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
                 {
                     //give random weights to neuron weights
                     //neuronWeights[k] = UnityEngine.Random.Range(-0.5f,0.5f);
-                    neuronWeights[k] = new Random().Next(-50, 50) / 100.0d;
+                    neuronWeights[k] = UnityEngine.Random.Range(-0.5f, 0.5f);
                 }
 
                 layerWeightsList.Add(neuronWeights); //add neuron weights of this current layer to layer weights
@@ -152,7 +152,7 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
                     for (int k = 0; k < neuronsInPreviousLayer; k++)
                     {
                         //give random weights to neuron weights
-                        neuronWeights[k] = UnityEngine.Random.Range(0f, 2f);
+                        neuronWeights[k] = UnityEngine.Random.Range(-0.5f, 0.5f);
                         //neuronWeights[k] = new Random().Next(-50, 50) / 100.0d;
                     }
 
@@ -208,9 +208,10 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
 
         return neurons[neurons.Length - 1]; //return output layer
     }
-    public static double Sigmoid(double value)
+    public static double Sigmoid(double x)
     {
-        return 1.0d / (1.0d + (double)Math.Exp(-value));
+        return 1.0d / (1.0d + (double)Math.Exp(-x));
+        //return x/Math.Sqrt(1d+Math.Pow(x, 2));
     }
     public static double dSigmoid(double value)
     {
@@ -275,105 +276,105 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
     /// </summary>
     public void Mutate()
     {
-        Parallel.For(0, weights.Length, i =>
-        {
-            Parallel.For(0, weights[i].Length, j =>
-            {
-                Parallel.For(0, weights[i][j].Length, k =>
-                {
-                    double weight = weights[i][j][k];
-
-                    //mutate weight value 
-                    double randomNumber = new Random().Next(0, 100) * (1d - learningRate);
-
-                    if (randomNumber <= 2f)
-                    { //if 3
-                      //randomly increase by 0% to 1%
-                        double factor = new Random().Next(0, 100) / 10000.0d;
-                        weight += factor;
-                    }
-                    else if (randomNumber <= 4f)
-                    { //if 4
-                      //randomly change by -1% to 1%
-                        double factor = new Random().Next(-100, 100) / 10000.0d;
-                        weight += factor;
-                    }
-                    else if (randomNumber <= 8f)
-                    { //if 5
-                      //randomly increase or decrease weight by tiny amount
-                        double factor = new Random().Next(-1000, 1000) / 100.0d / 10000.0d;
-                        weight += factor;
-                    }
-                    //else if (randomNumber <= 10f)
-                    //{
-                    //    //flip sign
-                    //    weight *= -1;
-                    //}
-                    else if (randomNumber <= 12f)
-                    {
-                        //add 0.001
-                        weight += 0.001d;
-                    }
-                    else if (randomNumber <= 14f)
-                    {
-                        //sub 0.001
-                        weight -= 0.001d;
-                    }
-                    else if (randomNumber <= 13f)
-                    {
-                        //totally randomize
-                        weight = UnityEngine.Random.Range(-10f, 10f); ;
-                    }
-                    else if (randomNumber <= 19f)
-                    { //if 5
-                      //randomly increase or decrease weight by tiny amount
-                        double factor = new Random().Next(-1000, 1000) / 100.0d / 10000.0d;
-                        weight += factor;
-                    }
-
-                    weights[i][j][k] = weight;
-                });
-            });
-        });
-        //for (int i = 0; i < weights.Length; i++)
+        //Parallel.For(0, weights.Length, i =>
         //{
-        //    for (int j = 0; j < weights[i].Length; j++)
+        //    Parallel.For(0, weights[i].Length, j =>
         //    {
-        //        for (int k = 0; k < weights[i][j].Length; k++)
+        //        Parallel.For(0, weights[i][j].Length, k =>
         //        {
         //            double weight = weights[i][j][k];
 
         //            //mutate weight value 
-        //            double randomNumber = new Random().Next(0, 100);
+        //            double randomNumber = UnityEngine.Random.Range(0,100) * (1d - learningRate);
 
         //            if (randomNumber <= 2f)
         //            { //if 3
         //              //randomly increase by 0% to 1%
-        //                double factor = new Random().Next(0, 100) / 10000.0f;
+        //                double factor = UnityEngine.Random.Range(0, 100) / 10000.0d;
         //                weight += factor;
         //            }
         //            else if (randomNumber <= 4f)
         //            { //if 4
-        //              //randomly decrease by 0% to 1%
-        //                double factor = new Random().Next(-100, 100) / 10000.0f;
-        //                weight -= factor;
+        //              //randomly change by -1% to 1%
+        //                double factor = UnityEngine.Random.Range(-100, 100) / 10000.0d;
+        //                weight += factor;
         //            }
         //            else if (randomNumber <= 8f)
         //            { //if 5
         //              //randomly increase or decrease weight by tiny amount
-        //                double factor = new Random().Next(-1000, 1000) / 100.0f / 100000;
+        //                double factor = UnityEngine.Random.Range(-1000, 1000) / 100.0d / 10000.0d;
         //                weight += factor;
         //            }
-        //            //else
+        //            //else if (randomNumber <= 10f)
         //            //{
-        //            //    //pick random weight between -1 and 1
-        //            //    weight = new Random().Next(-100, 100) / 100.0f;
+        //            //    //flip sign
+        //            //    weight *= -1;
         //            //}
+        //            else if (randomNumber <= 12f)
+        //            {
+        //                //add 0.001
+        //                weight += 0.001d;
+        //            }
+        //            else if (randomNumber <= 14f)
+        //            {
+        //                //sub 0.001
+        //                weight -= 0.001d;
+        //            }
+        //            //else if (randomNumber <= 13f)
+        //            //{
+        //            //    //totally randomize
+        //            //    weight = UnityEngine.Random.Range(-10f, 10f); ;
+        //            //}
+        //            else if (randomNumber <= 80f)
+        //            { //if 5
+        //              //randomly increase or decrease weight by tiny amount
+        //                double factor = new Random().Next(-1000, 1000) / 100.0d / 10000.0d;
+        //                weight += factor;
+        //            }
 
         //            weights[i][j][k] = weight;
-        //        }
-        //    }
-        //}
+        //        });
+        //    });
+        //});
+        for (int i = 0; i < weights.Length; i++)
+        {
+            for (int j = 0; j < weights[i].Length; j++)
+            {
+                for (int k = 0; k < weights[i][j].Length; k++)
+                {
+                    double weight = weights[i][j][k];
+
+                    //mutate weight value 
+                    double randomNumber = UnityEngine.Random.Range(0, 100);
+
+                    if (randomNumber <= 2f)
+                    { //if 3
+                      //randomly increase by 0% to 1%
+                        double factor = UnityEngine.Random.Range(0, 100) / 10000.0f;
+                        weight += factor;
+                    }
+                    else if (randomNumber <= 4f)
+                    { //if 4
+                      //randomly decrease by 0% to 1%
+                        double factor = UnityEngine.Random.Range(-100, 100) / 10000.0f;
+                        weight -= factor;
+                    }
+                    else if (randomNumber <= 8f)
+                    { //if 5
+                      //randomly increase or decrease weight by tiny amount
+                        double factor = UnityEngine.Random.Range(-1000, 1000) / 100.0f / 100000;
+                        weight += factor;
+                    }
+                    //else
+                    //{
+                    //    //pick random weight between -1 and 1
+                    //    weight = new Random().Next(-100, 100) / 100.0f;
+                    //}
+
+                    weights[i][j][k] = weight;
+                }
+            }
+        }
     }
 
     public void AddFitness(double fit)
