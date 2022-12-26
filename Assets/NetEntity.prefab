@@ -30,7 +30,8 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: -0.2541, z: 0}
   m_LocalScale: {x: 1, y: 0.4918, z: 1}
-  m_Children: []
+  m_Children:
+  - {fileID: 5505451291856599952}
   m_Father: {fileID: 431616144762280655}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -910,7 +911,7 @@ MonoBehaviour:
       serializedVersion: 2
       m_Bits: 0
     initialDistance: 0
-    sinMultiplier: 3
+    sinMultiplier: 1.5
     lastOutput: 0
   - name: Rotation Z
     distanceToObject: 0
@@ -924,6 +925,78 @@ MonoBehaviour:
     xVelocity: 0
     objectToSenseForTag: 
     objectToSenseFor: {fileID: 2669643338255989059}
+    intersectionMask:
+      serializedVersion: 2
+      m_Bits: 0
+    initialDistance: 5
+    sinMultiplier: 10
+    lastOutput: 0
+  - name: LegRotationZ-A1
+    distanceToObject: 0
+    horizontalDifference: 0
+    verticalDifference: 0
+    intersectingTrueFalse: 0
+    intersectingDistance: 0
+    timeElapsedAsSine: 0
+    rotationZ: 1
+    checkIfColliding: 0
+    xVelocity: 0
+    objectToSenseForTag: 
+    objectToSenseFor: {fileID: 8800060005557718232}
+    intersectionMask:
+      serializedVersion: 2
+      m_Bits: 0
+    initialDistance: 5
+    sinMultiplier: 10
+    lastOutput: 0
+  - name: LegRotationZ-B1
+    distanceToObject: 0
+    horizontalDifference: 0
+    verticalDifference: 0
+    intersectingTrueFalse: 0
+    intersectingDistance: 0
+    timeElapsedAsSine: 0
+    rotationZ: 1
+    checkIfColliding: 0
+    xVelocity: 0
+    objectToSenseForTag: 
+    objectToSenseFor: {fileID: 6869453045741788976}
+    intersectionMask:
+      serializedVersion: 2
+      m_Bits: 0
+    initialDistance: 5
+    sinMultiplier: 10
+    lastOutput: 0
+  - name: LegRotationZ-A2
+    distanceToObject: 0
+    horizontalDifference: 0
+    verticalDifference: 0
+    intersectingTrueFalse: 0
+    intersectingDistance: 0
+    timeElapsedAsSine: 0
+    rotationZ: 1
+    checkIfColliding: 0
+    xVelocity: 0
+    objectToSenseForTag: 
+    objectToSenseFor: {fileID: 5693464044084005765}
+    intersectionMask:
+      serializedVersion: 2
+      m_Bits: 0
+    initialDistance: 5
+    sinMultiplier: 10
+    lastOutput: 0
+  - name: LegRotationZ-B2
+    distanceToObject: 0
+    horizontalDifference: 0
+    verticalDifference: 0
+    intersectingTrueFalse: 0
+    intersectingDistance: 0
+    timeElapsedAsSine: 0
+    rotationZ: 1
+    checkIfColliding: 0
+    xVelocity: 0
+    objectToSenseForTag: 
+    objectToSenseFor: {fileID: 5672827704509119320}
     intersectionMask:
       serializedVersion: 2
       m_Bits: 0
@@ -1073,20 +1146,109 @@ MonoBehaviour:
   - {fileID: 6882022355614740317}
   randomizeSpriteColor: 1
   touchingGroundIsBad: 1
+  touchingLaserIsBad: 1
   rotationIsBad: 0
   rewardTimeAlive: 0
-  heightIsGood: 1
+  heightIsGood: 0
   slowRotationIsBad: 0
   distanceIsGood: 1
+  directionChangeIsGood: 0
+  xVelocityIsGood: 0
   directionTimes:
   - 0
   - 0
+  genome: 
   totalFitness: 0
   trial: 0
   trialValues:
   - 0
   - 20
   - -20
+  mutVars: []
+  netID: 0
+  bestCrown: {fileID: 7733096843526706533}
+--- !u!1 &7733096843526706533
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5505451291856599952}
+  - component: {fileID: 231584376013966461}
+  m_Layer: 0
+  m_Name: Crown
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!4 &5505451291856599952
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7733096843526706533}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 1.2283448, z: 0}
+  m_LocalScale: {x: 0.10325081, y: 0.20994471, z: 0.10325081}
+  m_Children: []
+  m_Father: {fileID: 2669643338255989059}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!212 &231584376013966461
+SpriteRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7733096843526706533}
+  m_Enabled: 1
+  m_CastShadows: 0
+  m_ReceiveShadows: 0
+  m_DynamicOccludee: 1
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 0
+  m_RayTraceProcedural: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 0
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 100
+  m_Sprite: {fileID: 21300000, guid: b7738a2dbef770845bbf67546a4a72eb, type: 3}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_FlipX: 0
+  m_FlipY: 0
+  m_DrawMode: 0
+  m_Size: {x: 1, y: 1}
+  m_AdaptiveModeThreshold: 0.5
+  m_SpriteTileMode: 0
+  m_WasSpriteAssigned: 1
+  m_MaskInteraction: 0
+  m_SpriteSortPoint: 0
 --- !u!1 &8181683490782484313
 GameObject:
   m_ObjectHideFlags: 0

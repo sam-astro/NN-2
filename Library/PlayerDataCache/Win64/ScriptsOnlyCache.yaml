@@ -4,8 +4,10 @@ ScriptsOnlyBuild:
     - GotoMouse
     - Gyro
     - IsColliding
+    - LaserScript
     - NetEntity
     - NetManager
+    - TimeManager
     Unity.2D.Animation.Editor.dll:
     - UnityEditor.U2D.Animation.BoneGizmo
     Unity.2D.IK.Editor.dll:
@@ -83,19 +85,23 @@ ScriptsOnlyBuild:
     - Class: 114
       Script: {instanceID: 3112}
     - Class: 114
-      Script: {instanceID: 3358}
+      Script: {instanceID: 3134}
     - Class: 114
-      Script: {instanceID: 3500}
+      Script: {instanceID: 3360}
     - Class: 114
-      Script: {instanceID: 4344}
+      Script: {instanceID: 3502}
     - Class: 114
-      Script: {instanceID: 4886}
+      Script: {instanceID: 4346}
     - Class: 114
-      Script: {instanceID: 5156}
+      Script: {instanceID: 4586}
     - Class: 114
-      Script: {instanceID: 5286}
+      Script: {instanceID: 4890}
     - Class: 114
-      Script: {instanceID: 5810}
+      Script: {instanceID: 5160}
+    - Class: 114
+      Script: {instanceID: 5290}
+    - Class: 114
+      Script: {instanceID: 5814}
     - Class: 115
       Script: {instanceID: 0}
     - Class: 128
@@ -131,7 +137,7 @@ ScriptsOnlyBuild:
     className: Image
   - hash:
       serializedVersion: 2
-      Hash: 09ce00d211898997e0bfdd4c8a8900c6
+      Hash: 344846206026172351bec5be169e67c3
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: NetEntity
@@ -299,6 +305,12 @@ ScriptsOnlyBuild:
     className: GraphicRaycaster
   - hash:
       serializedVersion: 2
+      Hash: 49b851fd736ac8542e5727381aada297
+    assemblyName: Assembly-CSharp.dll
+    namespaceName: 
+    className: TimeManager
+  - hash:
+      serializedVersion: 2
       Hash: f40fedccd4adbc76605bea6d67537e4b
     assemblyName: Unity.TextMeshPro.dll
     namespaceName: TMPro
@@ -377,7 +389,7 @@ ScriptsOnlyBuild:
     className: SpriteShapeController
   - hash:
       serializedVersion: 2
-      Hash: 6c6fcab0b308acd268c651c270221d5e
+      Hash: e0e2f9dfa6834d4bd8c6033a5c3f1c5d
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: NetManager
@@ -519,6 +531,12 @@ ScriptsOnlyBuild:
     assemblyName: Unity.2D.SpriteShape.Runtime.dll
     namespaceName: 
     className: SpriteShapeGeometryCache
+  - hash:
+      serializedVersion: 2
+      Hash: 3a2e50b789cba071819c09be1718c118
+    assemblyName: Assembly-CSharp.dll
+    namespaceName: 
+    className: LaserScript
   - hash:
       serializedVersion: 2
       Hash: b424b4eeb810aecb0ff91c62639241e9

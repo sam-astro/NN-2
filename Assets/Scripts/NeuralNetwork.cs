@@ -18,7 +18,29 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
     public double fitness; //fitness of the network
     public double pendingFitness; // pending trial fitness of the network
 
+    public double[] mutatableVariables; // List of mutatable doubles, similar to weights but can be used in any way by the agent
+    public int mutVarSize = 1;
+
+    public int netID = 0;
+
     public float learningRate = 1f;
+    public bool isBest = false;
+
+    const string glyphs = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    public string genome = "";
+
+    public char[] letters =
+{
+    'a', 'b', 'c',       // 2
+    'd', 'e', 'f',       // 3
+    'g', 'h', 'i',       // 4
+    'j', 'k', 'l',       // 5
+    'm', 'n', 'o',       // 6
+    'p', 'q', 'r', 's',  // 7
+    't', 'u', 'v',       // 8
+    'w', 'x', 'y', 'z',  // 9
+    ' '                  // 0
+};
 
 
     /// <summary>
@@ -71,6 +93,23 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
         }
     }
 
+    public string GenerateGenome()
+    {
+        string g = "";
+        for (int i = 0; i < 8; i++)
+            g += glyphs[UnityEngine.Random.Range(0, glyphs.Length)];
+        g += "a";
+        if (g.Trim() == "")
+            UnityEngine.Debug.LogError("Genome failed to generate, problem with random generator?");
+
+        return g;
+    }
+
+    public void ResetGenome()
+    {
+        genome = GenerateGenome();
+    }
+
     /// <summary>
     /// Create neuron matrix
     /// </summary>
@@ -81,44 +120,54 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
 
         for (int i = 0; i < layers.Length; i++) //run through all layers
         {
-            neuronsList.Add(new double[layers[i]]); //add layer to neuron list
+            neuronsList.Add(new double[layers[i] + 1]); //add layer to neuron list
         }
 
         neurons = neuronsList.ToArray(); //convert list to array
-        droppedNeurons = neurons;
+        //droppedNeurons = neurons;
     }
 
-    public void RandomizeWeights()
+    public double[][][] RandomizeWeights()
     {
         List<double[][]> weightsList = new List<double[][]>(); //weights list which will later be converted into a weights 3D array
 
         //itterate over all neurons that have a weight connection
-        for (int i = 1; i < layers.Length; i++)
+        for (int i = 1; i < neurons.Length; i++)
         {
             List<double[]> layerWeightsList = new List<double[]>(); //layer weight list for this current layer (will be converted to 2D array)
 
-            int neuronsInPreviousLayer = layers[i - 1];
+            int neuronsInPreviousLayer = neurons[i - 1].Length;
 
             //itterate over all neurons in this current layer
             for (int j = 0; j < neurons[i].Length; j++)
             {
-                double[] neuronWeights = new double[neuronsInPreviousLayer]; //neruons weights
+                double[] neuronWeights = new double[neuronsInPreviousLayer]; //neurons weights
 
                 //itterate over all neurons in the previous layer and set the weights randomly between 0.5f and -0.5
                 for (int k = 0; k < neuronsInPreviousLayer; k++)
                 {
                     //give random weights to neuron weights
-                    //neuronWeights[k] = UnityEngine.Random.Range(-0.5f,0.5f);
                     neuronWeights[k] = UnityEngine.Random.Range(-0.5f, 0.5f);
+                    //neuronWeights[k] = new Random().Next(-50, 50) / 100.0d;
                 }
-
+                //neuronWeights[neuronWeights.Length - 1] = 1; // Set bias to 1
                 layerWeightsList.Add(neuronWeights); //add neuron weights of this current layer to layer weights
             }
 
             weightsList.Add(layerWeightsList.ToArray()); //add this layers weights converted into 2D array into weights list
         }
 
-        weights = weightsList.ToArray(); //convert to 3D array
+        //weights = weightsList.ToArray(); //convert to 3D array
+        return weightsList.ToArray();
+    }
+
+    public double[] RandomizeMutVars()
+    {
+        double[] mutArTemp = new double[mutVarSize];
+        //itterate over all mutatable variables and set randomly between 0.5f and -0.5
+        for (int k = 0; k < mutArTemp.Length; k++)
+            mutArTemp[k] = UnityEngine.Random.Range(-0.5f, 0.5f);
+        return mutArTemp;
     }
 
     /// <summary>
@@ -130,40 +179,47 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
         //string[] lines = streamReader.ReadToEnd().Split('\n');
         //streamReader.Close();
 
-        if (persistenceWeights != null)
-            weights = persistenceWeights;
-        else
+        List<double[][]> weightsList = new List<double[][]>(); //weights list which will later be converted into a weights 3D array
+
+        //itterate over all neurons that have a weight connection
+        for (int i = 1; i < neurons.Length; i++)
         {
-            List<double[][]> weightsList = new List<double[][]>(); //weights list which will later be converted into a weights 3D array
+            List<double[]> layerWeightsList = new List<double[]>(); //layer weight list for this current layer (will be converted to 2D array)
 
-            //itterate over all neurons that have a weight connection
-            for (int i = 1; i < layers.Length; i++)
+            int neuronsInPreviousLayer = neurons[i - 1].Length;
+
+            //itterate over all neurons in this current layer
+            for (int j = 0; j < neurons[i].Length; j++)
             {
-                List<double[]> layerWeightsList = new List<double[]>(); //layer weight list for this current layer (will be converted to 2D array)
+                double[] neuronWeights = new double[neuronsInPreviousLayer]; //neurons weights
 
-                int neuronsInPreviousLayer = layers[i - 1];
-
-                //itterate over all neurons in this current layer
-                for (int j = 0; j < neurons[i].Length; j++)
+                //itterate over all neurons in the previous layer and set the weights randomly between 0.5f and -0.5
+                for (int k = 0; k < neuronsInPreviousLayer; k++)
                 {
-                    double[] neuronWeights = new double[neuronsInPreviousLayer]; //neurons weights
-
-                    //itterate over all neurons in the previous layer and set the weights randomly between 0.5f and -0.5
-                    for (int k = 0; k < neuronsInPreviousLayer; k++)
-                    {
-                        //give random weights to neuron weights
-                        neuronWeights[k] = UnityEngine.Random.Range(-0.5f, 0.5f);
-                        //neuronWeights[k] = new Random().Next(-50, 50) / 100.0d;
-                    }
-
-                    layerWeightsList.Add(neuronWeights); //add neuron weights of this current layer to layer weights
+                    //give random weights to neuron weights
+                    neuronWeights[k] = UnityEngine.Random.Range(-0.5f, 0.5f);
+                    //neuronWeights[k] = new Random().Next(-50, 50) / 100.0d;
                 }
-
-                weightsList.Add(layerWeightsList.ToArray()); //add this layers weights converted into 2D array into weights list
+                //neuronWeights[neuronWeights.Length - 1] = 1; // Set bias to 1
+                layerWeightsList.Add(neuronWeights); //add neuron weights of this current layer to layer weights
             }
 
-            weights = weightsList.ToArray(); //convert to 3D array
+            weightsList.Add(layerWeightsList.ToArray()); //add this layers weights converted into 2D array into weights list
         }
+
+        weights = weightsList.ToArray(); //convert to 3D array
+
+
+        if (persistenceWeights != null)
+            for (int i = 0; i < weights.Length; i++)
+                for (int j = 0; j < weights[i].Length; j++)
+                    for (int k = 0; k < weights[i][j].Length; k++)
+                        weights[i][j][k] = persistenceWeights[i][j][k];
+
+
+        mutatableVariables = new double[mutVarSize];
+
+        //RandomizeMutVars();
     }
 
     /// <summary>
@@ -175,20 +231,19 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
     {
         //Add inputs to the neuron matrix
         for (int i = 0; i < inputs.Length; i++)
-        {
             neurons[0][i] = inputs[i];
-        }
 
         //itterate over all neurons and compute feedforward values 
-        for (int i = 1; i < layers.Length; i++) // For each layer
+        for (int i = 1; i < neurons.Length; i++) // For each layer
         {
             for (int j = 0; j < neurons[i].Length; j++) // For each neuron in that layer
             {
                 double value = 0f;
 
-                for (int k = 0; k < neurons[i - 1].Length; k++) // For all synapses connected to that neuron, add up the weight*neuron
+                for (int k = 0; k < neurons[i - 1].Length - 1; k++) // For all synapses connected to that neuron, add up the weight*neuron
                     value += (weights[i - 1][j][k] * neurons[i - 1][k]);
 
+                value += (1 * weights[i - 1][j][neurons[i - 1].Length - 1]);
 
                 // If the layer is the final output layer
                 if (i == neurons.Length - 1)
@@ -206,7 +261,10 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
             }
         }
 
-        return neurons[neurons.Length - 1]; //return output layer
+        List<double> outputs = new List<double>();
+        for (int i = 0; i < neurons[neurons.Length - 1].Length - 1; i++)
+            outputs.Add(neurons[neurons.Length - 1][i]);
+        return outputs.ToArray(); //return output layer
     }
     public static double Sigmoid(double x)
     {
@@ -336,6 +394,7 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
         //        });
         //    });
         //});
+        // Mutate the weights
         for (int i = 0; i < weights.Length; i++)
         {
             for (int j = 0; j < weights[i].Length; j++)
@@ -362,7 +421,7 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
                     else if (randomNumber <= 8f)
                     { //if 5
                       //randomly increase or decrease weight by tiny amount
-                        double factor = UnityEngine.Random.Range(-1000, 1000) / 100.0f / 100000;
+                        double factor = UnityEngine.Random.Range(-1000, 1000) / 100.0f / 1000f;
                         weight += factor;
                     }
                     //else
@@ -375,6 +434,56 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
                 }
             }
         }
+    }
+
+    public double[] MutateMutVars()
+    {
+        double[] mutArTemp = new double[mutVarSize];
+        //UnityEngine.Debug.Log("Network Mutate Vars: " + netID.ToString());
+        // Mutate the mutatable variables
+        for (int k = 0; k < mutVarSize; k++)
+        {
+            //mutate weight value 
+            double randomNumber = UnityEngine.Random.Range(0, 100);
+
+            if (randomNumber <= 2f)
+            { //if 3
+              //randomly increase by 0% to 1%
+                double factor = UnityEngine.Random.Range(0, 100) / 10000.0f;
+                mutArTemp[k] += factor;
+            }
+            else if (randomNumber <= 4f)
+            { //if 4
+              //randomly decrease by 0% to 1%
+                double factor = UnityEngine.Random.Range(-100, 100) / 10000.0f;
+                mutArTemp[k] -= factor;
+            }
+            else if (randomNumber <= 8f)
+            { //if 5
+              //randomly increase or decrease weight by tiny amount
+                double factor = UnityEngine.Random.Range(-1000, 1000) / 100.0f / 1000f;
+                mutArTemp[k] += factor;
+            }
+            else if (randomNumber <= 9.5f)
+            { //if 5
+              //randomly increase or decrease weight by larger amount
+                double factor = UnityEngine.Random.Range(-1000, 1000) / 100.0f / 100f;
+                mutArTemp[k] += factor;
+            }
+        }
+
+        return mutArTemp;
+    }
+
+    public void UpdateGenome()
+    {
+        // Add 1 to mutation letter
+        int mutationNum = Array.IndexOf(letters, genome[8]);
+        //UnityEngine.Debug.Log(mutationNum);
+        genome = genome.Substring(0, 8) + letters[mutationNum + 1];
+        // If this network has been mutated 20 or more times, then it will become it's own separate genome
+        if (mutationNum >= 20)
+            ResetGenome();
     }
 
     public void AddFitness(double fit)
