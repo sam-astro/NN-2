@@ -371,9 +371,9 @@ public class NetEntity : MonoBehaviour
         timeElapsed = 0;
         bestDistance = 10000;
 
-        //// Set the sin multiplier based off of mutVar 0
-        //if (outputAffectsSin)
-        //    senses[0].sinMultiplier = (float)net.mutatableVariables[0];
+        // Set the sin multiplier based off of mutVar 0
+        if (outputAffectsSin)
+            senses[0].sinMultiplier = (float)net.mutatableVariables[0];
         //senses[0].sinMultiplier = 2.0f * (float)net.mutatableVariables[0];
 
         //mutVars = net.mutatableVariables;

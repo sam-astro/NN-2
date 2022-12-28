@@ -225,6 +225,10 @@ public class NetManager : MonoBehaviour
                     // Get hash of best weights
                     bestHash = ByteArrayToString(new MD5CryptoServiceProvider().ComputeHash(System.IO.File.ReadAllBytes("./Assets/dat/WeightSave.bin")));
 
+                    // Save best mutatable variables
+                    BinaryFormatter bf2 = new BinaryFormatter();
+                    using (FileStream fs2 = new FileStream("./Assets/dat/MutVars.bin", FileMode.Create))
+                        bf2.Serialize(fs2, persistenceNetwork.mutatableVariables);
 
                     persistence.Close();
                 }
@@ -232,6 +236,7 @@ public class NetManager : MonoBehaviour
                 if (bestError < bestEverError || queuedForUpload == true || generationNumber == 0)
                 {
                     persistenceNetwork.weights = nets[nets.Count - 1].weights;
+                    persistenceNetwork.mutatableVariables = nets[nets.Count - 1].mutatableVariables;
                     persistenceNetwork.genome = nets[nets.Count - 1].genome;
                     bestEverError = bestError;
 
@@ -443,8 +448,7 @@ public class NetManager : MonoBehaviour
                 nets[i].genome = topGenomes[g].genome;
                 nets[i].UpdateGenome();
                 nets[i].Mutate();
-                nets[i].isBest = false;
-                //nets[i].MutateMutVars();
+                nets[i].mutatableVariables = nets[i].MutateMutVars();
             }
         }
         // Create create totally new neural networks with random weights
@@ -452,8 +456,8 @@ public class NetManager : MonoBehaviour
         {
             nets[i] = new NeuralNetwork(persistenceNetwork);
             nets[i].weights = nets[i].RandomizeWeights();
-            nets[i].isBest = false;
             nets[i].genome = nets[i].GenerateGenome();
+            nets[i].mutatableVariables = nets[i].MutateMutVars();
         }
         // Continue using the best 50% of neural networks and mutate them a bit
         for (int i = (int)(populationSize * 0.5); i < populationSize - 1; i++)
@@ -465,15 +469,18 @@ public class NetManager : MonoBehaviour
             {
                 nets[i].ResetGenome();
                 nets[i].CopyWeights(nets[i].RandomizeWeights());
-                nets[i].isBest = false;
             }
             else
             {
                 nets[i] = new NeuralNetwork(nets[i]);
                 nets[i].Mutate();
-                nets[i].isBest = false;
                 nets[i].UpdateGenome();
+                nets[i].mutatableVariables = nets[i].MutateMutVars();
             }
+        }
+        for (int i = 0; i < populationSize; i++)
+        {
+            nets[i].isBest = false;
         }
         nets[0] = new NeuralNetwork(persistenceNetwork);
         nets[0].isBest = true;
@@ -515,6 +522,7 @@ public class NetManager : MonoBehaviour
                 //net.mutVarSize = mutVarSize;
                 net.ResetGenome();
                 //net.mutatableVariables = net.RandomizeMutVars();
+                net.mutatableVariables[0] = 0.25f;
 
                 nets.Add(net);
             }
@@ -528,6 +536,7 @@ public class NetManager : MonoBehaviour
                 net.layers = layers;
                 //net.mutVarSize = mutVarSize;
                 net.genome = bestGenome;
+                net.mutatableVariables = persistenceNetwork.mutatableVariables;
 
                 //Array.Copy(persistenceNetwork.mutatableVariables, net.mutatableVariables, mutVarSize);
 
@@ -539,6 +548,7 @@ public class NetManager : MonoBehaviour
         {
             bestGenome = nets[0].GenerateGenome();
             persistenceNetwork.genome = bestGenome;
+            persistenceNetwork.mutatableVariables[0] = 0.25f;
             //persistenceNetwork.mutatableVariables = persistenceNetwork.RandomizeMutVars();
             //persistenceNetwork.RandomizeWeights();
         }
@@ -602,10 +612,10 @@ public class NetManager : MonoBehaviour
             BinaryFormatter bf = new BinaryFormatter();
             using (FileStream fs = new FileStream("./Assets/dat/WeightSave.bin", FileMode.Open))
                 persistenceNetwork.weights = (double[][][])bf.Deserialize(fs);
-            //// Load mutVar data into `persistenceNetwork`
-            //BinaryFormatter bf2 = new BinaryFormatter();
-            //using (FileStream fs2 = new FileStream("./Assets/dat/MutVars.bin", FileMode.Open))
-            //    persistenceNetwork.mutatableVariables = (double[])bf2.Deserialize(fs2);
+            // Load mutVar data into `persistenceNetwork`
+            BinaryFormatter bf2 = new BinaryFormatter();
+            using (FileStream fs2 = new FileStream("./Assets/dat/MutVars.bin", FileMode.Open))
+                persistenceNetwork.mutatableVariables = (double[])bf2.Deserialize(fs2);
             //bestMutVars = persistenceNetwork.mutatableVariables;
 
             // Get hash of best weights

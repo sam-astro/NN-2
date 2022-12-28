@@ -20,8 +20,8 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
 
     private float mutationFactor;
 
-    //public double[] mutatableVariables; // List of mutatable doubles, similar to weights but can be used in any way by the agent
-    //public int mutVarSize = 1;
+    public double[] mutatableVariables; // List of mutatable doubles, similar to weights but can be used in any way by the agent
+    public int mutVarSize = 1;
 
     public int netID = 0;
 
@@ -92,13 +92,11 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
         InitNeurons();
         InitWeights(copyNetwork.weights);
 
-        //for (int i = 0; i < mutVarSize; i++)
-        //{
-        //    mutatableVariables[i] = copyNetwork.mutatableVariables[i];
-        //}
+        mutVarSize = copyNetwork.mutVarSize;
+        for (int i = 0; i < mutVarSize; i++)
+            mutatableVariables[i] = copyNetwork.mutatableVariables[i];
 
         //mutatableVariables = copyNetwork.mutatableVariables;
-        //mutVarSize = copyNetwork.mutVarSize;
         //CopyWeights(copyNetwork.weights);
     }
 
@@ -240,7 +238,7 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
                         weights[i][j][k] = persistenceWeights[i][j][k];
 
 
-        //mutatableVariables = new double[mutVarSize];
+        mutatableVariables = new double[mutVarSize];
 
         //RandomizeMutVars();
     }
@@ -462,44 +460,55 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
         }
     }
 
-    //public double[] MutateMutVars()
-    //{
-    //    double[] mutArTemp = mutatableVariables;
-    //    //UnityEngine.Debug.Log("Network Mutate Vars: " + netID.ToString());
-    //    // Mutate the mutatable variables
-    //    for (int k = 0; k < mutVarSize; k++)
-    //    {
-    //        //mutate weight value 
-    //        double randomNumber = UnityEngine.Random.Range(0, 100);
+    public double[] MutateMutVars()
+    {
+        double[] mutArTemp = mutatableVariables;
+        //UnityEngine.Debug.Log("Network Mutate Vars: " + netID.ToString());
+        // Mutate the mutatable variables
+        for (int k = 0; k < mutVarSize; k++)
+        {
+            //mutate weight value 
+            double randomNumber = UnityEngine.Random.Range(0, 100);
 
-    //        if (randomNumber <= 2f)
-    //        { //if 3
-    //          //randomly increase by 0% to 1%
-    //            double factor = UnityEngine.Random.Range(0, 100) / 10000.0f;
-    //            mutArTemp[k] += factor;
-    //        }
-    //        else if (randomNumber <= 4f)
-    //        { //if 4
-    //          //randomly decrease by 0% to 1%
-    //            double factor = UnityEngine.Random.Range(-100, 100) / 10000.0f;
-    //            mutArTemp[k] -= factor;
-    //        }
-    //        else if (randomNumber <= 8f)
-    //        { //if 5
-    //          //randomly increase or decrease weight by tiny amount
-    //            double factor = UnityEngine.Random.Range(-1000, 1000) / 100.0f / 1000f;
-    //            mutArTemp[k] += factor;
-    //        }
-    //        else if (randomNumber <= 9.5f)
-    //        { //if 5
-    //          //randomly increase or decrease weight by larger amount
-    //            double factor = UnityEngine.Random.Range(-1000, 1000) / 100.0f / 100f;
-    //            mutArTemp[k] += factor;
-    //        }
-    //    }
+            if (randomNumber <= 2f)
+            {
+              //randomly increase by 0% to 1%
+                double factor = UnityEngine.Random.Range(0, 100) / 10000.0f;
+                mutArTemp[k] += factor;
+            }
+            else if (randomNumber <= 4f)
+            {
+              //randomly decrease by 0% to 1%
+                double factor = UnityEngine.Random.Range(-100, 100) / 10000.0f;
+                mutArTemp[k] -= factor;
+            }
+            else if (randomNumber <= 8f)
+            {
+              //randomly increase or decrease weight by tiny amount
+                double factor = UnityEngine.Random.Range(-1000, 1000) / 100.0f / 1000f;
+                mutArTemp[k] += factor;
+            }
+            else if (randomNumber <= 10f)
+            {
+                //randomly increase or decrease weight by larger amount
+                double factor = UnityEngine.Random.Range(-1000, 1000) / 100.0f / 100f;
+                mutArTemp[k] += factor;
+            }
+            else if (randomNumber <= 11f)
+            {
+                //randomly increase or decrease weight by even larger amount
+                double factor = UnityEngine.Random.Range(-1000, 1000) / 100.0f / 10f;
+                mutArTemp[k] += factor;
+            }
+            else if (randomNumber <= 11.2f)
+            {
+                //pick random weight between -1 and 1
+                mutArTemp[k] += UnityEngine.Random.Range(-1f, 1f);
+            }
+        }
 
-    //    return mutArTemp;
-    //}
+        return mutArTemp;
+    }
 
     public void UpdateGenome()
     {
