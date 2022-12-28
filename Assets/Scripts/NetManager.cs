@@ -91,6 +91,11 @@ public class NetManager : MonoBehaviour
         iterations = maxIterations;
 
         generationText.text = generationNumber.ToString() + " : " + trial.ToString();
+
+        // If the hist.txt file does not exist, create it and add data labels
+        if(!File.Exists("./Assets/dat/hist.txt"))
+            using (StreamWriter sw = File.AppendText("./Assets/dat/hist.txt"))
+                sw.WriteLine("generation, Top Error, Gen Error");
     }
 
     public void FixedUpdate()
@@ -231,12 +236,12 @@ public class NetManager : MonoBehaviour
                     bestEverError = bestError;
 
                     using (StreamWriter sw = File.AppendText("./Assets/dat/hist.txt"))
-                        sw.WriteLine((generationNumber).ToString() + ", " + bestEverError);
+                        sw.WriteLine((generationNumber).ToString() + ", " + bestEverError + ", " + bestError);
 
                 }
                 else if (generationNumber % timeBetweenGenerationProgress == 0)
                     using (StreamWriter sw = File.AppendText("./Assets/dat/hist.txt"))
-                        sw.WriteLine((generationNumber).ToString() + ", " + bestEverError);
+                        sw.WriteLine((generationNumber).ToString() + ", " + bestEverError + ", " + bestError);
 
                 // Find the top 3 *individual* genomes and add them to a `topGenomes` list
                 Debug.Log("lGenome: " + bestGenome);
@@ -438,6 +443,7 @@ public class NetManager : MonoBehaviour
                 nets[i].genome = topGenomes[g].genome;
                 nets[i].UpdateGenome();
                 nets[i].Mutate();
+                nets[i].isBest = false;
                 //nets[i].MutateMutVars();
             }
         }
@@ -469,8 +475,9 @@ public class NetManager : MonoBehaviour
                 nets[i].UpdateGenome();
             }
         }
-        nets[populationSize - 1] = new NeuralNetwork(persistenceNetwork);
-        nets[populationSize - 1].isBest = true;
+        nets[0] = new NeuralNetwork(persistenceNetwork);
+        nets[0].isBest = true;
+        nets[0].genome = persistenceNetwork.genome;
 
 
     }
@@ -613,7 +620,7 @@ public class NetManager : MonoBehaviour
             bestEverError = double.Parse(firstLine.Split('#')[1]);
             timeManager.offsetTime = int.Parse(firstLine.Split('#')[2]);
             bestGenome = firstLine.Split('#')[3];
-            persistenceNetwork.genome = bestGenome + "a";
+            persistenceNetwork.genome = bestGenome;
             sr.Close();
 
         }

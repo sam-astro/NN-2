@@ -507,7 +507,10 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
         int mutationNum = Array.IndexOf(letters, genome[8])+ (int)UnityEngine.Mathf.Clamp((mutationFactor - 2f) * 5f, 0, 25);
         // If this network has been mutated 30 or more times, then it will become it's own separate genome
         if (mutationNum >= 20)
+        {
             ResetGenome();
+            mutationNum = 0;
+        }
         genome = genome.Substring(0, 8) + letters[mutationNum];
         //UnityEngine.Debug.Log((int)UnityEngine.Mathf.Clamp((mutationFactor - 2f) * 5f, 0, 25));
         mutationFactor = 0f;

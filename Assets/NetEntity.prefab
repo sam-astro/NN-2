@@ -296,6 +296,7 @@ GameObject:
   - component: {fileID: 247828625609014697}
   - component: {fileID: 6383315180846252699}
   - component: {fileID: 6882022355614740317}
+  - component: {fileID: 9066113332677997319}
   m_Layer: 7
   m_Name: legB-1
   m_TagString: Untagged
@@ -439,6 +440,21 @@ HingeJoint2D:
   m_AngleLimits:
     m_LowerAngle: 0
     m_UpperAngle: 359
+--- !u!114 &9066113332677997319
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3816113896899285685}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 029f649799145074082cd6d1ee300a1a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  isColliding: 0
+  failed: 0
+  tagName: ground
 --- !u!1 &4144081811222182676
 GameObject:
   m_ObjectHideFlags: 0
@@ -1129,6 +1145,42 @@ MonoBehaviour:
     initialDistance: 20
     sinMultiplier: 0
     lastOutput: 0
+  - name: LegCollidingA-Upper
+    distanceToObject: 0
+    horizontalDifference: 0
+    verticalDifference: 0
+    intersectingTrueFalse: 0
+    intersectingDistance: 0
+    timeElapsedAsSine: 0
+    rotationZ: 0
+    checkIfColliding: 1
+    xVelocity: 0
+    objectToSenseForTag: 
+    objectToSenseFor: {fileID: 8800060005557718232}
+    intersectionMask:
+      serializedVersion: 2
+      m_Bits: 0
+    initialDistance: 20
+    sinMultiplier: 0
+    lastOutput: 0
+  - name: LegCollidingB-Upper
+    distanceToObject: 0
+    horizontalDifference: 0
+    verticalDifference: 0
+    intersectingTrueFalse: 0
+    intersectingDistance: 0
+    timeElapsedAsSine: 0
+    rotationZ: 0
+    checkIfColliding: 1
+    xVelocity: 0
+    objectToSenseForTag: 
+    objectToSenseFor: {fileID: 6869453045741788976}
+    intersectionMask:
+      serializedVersion: 2
+      m_Bits: 0
+    initialDistance: 20
+    sinMultiplier: 0
+    lastOutput: 0
   outputs: []
   networkRunning: 0
   generation: 0
@@ -1145,7 +1197,8 @@ MonoBehaviour:
   - {fileID: 4666247395395369256}
   - {fileID: 6882022355614740317}
   randomizeSpriteColor: 1
-  touchingGroundIsBad: 1
+  bodyTouchingGroundIsBad: 1
+  upperLegsTouchingGroundIsBad: 1
   touchingLaserIsBad: 1
   rotationIsBad: 0
   rewardTimeAlive: 0
@@ -1154,6 +1207,7 @@ MonoBehaviour:
   distanceIsGood: 1
   directionChangeIsGood: 1
   xVelocityIsGood: 0
+  outputAffectsSin: 1
   directionTimes:
   - 0
   - 0
@@ -1293,6 +1347,7 @@ GameObject:
   - component: {fileID: 2222703830877748190}
   - component: {fileID: 3259527664901957775}
   - component: {fileID: 4666247395395369256}
+  - component: {fileID: 4393247331357552501}
   m_Layer: 7
   m_Name: legA-1
   m_TagString: Untagged
@@ -1436,3 +1491,18 @@ HingeJoint2D:
   m_AngleLimits:
     m_LowerAngle: 0
     m_UpperAngle: 359
+--- !u!114 &4393247331357552501
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8467166172523808636}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 029f649799145074082cd6d1ee300a1a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  isColliding: 0
+  failed: 0
+  tagName: ground

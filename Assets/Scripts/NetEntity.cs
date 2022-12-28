@@ -155,7 +155,8 @@ public class NetEntity : MonoBehaviour
     float bestDistance = 10000;
 
     [Header("Fitness Modifiers")]
-    public bool touchingGroundIsBad = false;
+    public bool bodyTouchingGroundIsBad = false;
+    public bool upperLegsTouchingGroundIsBad = false;
     public bool touchingLaserIsBad = true;
     public bool rotationIsBad = false;
     public bool rewardTimeAlive = false;
@@ -164,6 +165,7 @@ public class NetEntity : MonoBehaviour
     public bool distanceIsGood = false;
     public bool directionChangeIsGood = false;
     public bool xVelocityIsGood = false;
+    public bool outputAffectsSin = false;
 
     private bool[] directions = { false, false }; // Array of directions of each motor
     public float[] directionTimes = { 0, 0 }; // Amount of time each direction has been used
@@ -239,8 +241,10 @@ public class NetEntity : MonoBehaviour
                                 directionTimes[i] += (20f - Mathf.Abs(hinges[i].motor.motorSpeed)) / 20f;
                     }
             }
+
             //// Set the sin multiplier based off of output 4
-            //senses[0].sinMultiplier = 2.0f * (float)outputs[4];
+            //if (outputAffectsSin)
+            //    senses[0].sinMultiplier = 5f * (float)outputs[4];
 
             if (rotationIsBad)
                 totalRotationalDifference += Mathf.Abs(senses[1].lastOutput);
@@ -296,14 +300,25 @@ public class NetEntity : MonoBehaviour
             if (heightIsGood)
                 net.pendingFitness += totalheightDifference / (float)timeElapsed;
             if (xVelocityIsGood)
-                net.pendingFitness += 2.0f-(totalXVelocity / (float)timeElapsed);
+                net.pendingFitness += 2.0f - (totalXVelocity / (float)timeElapsed);
             //bestDistance = senseVal;
             //}
 
 
-            if (touchingGroundIsBad)
+            if (bodyTouchingGroundIsBad)
                 // If body touched ground, end and turn invisible
                 if (senses[12].GetSensorValue(mainSprites[0].gameObject) == 1)
+                {
+                    networkRunning = false;
+                    for (int i = 0; i < mainSprites.Length; i++)
+                        Destroy(mainSprites[i].gameObject);
+                    //net.pendingFitness += 0.3f;
+                    //return false;
+                }
+            if (upperLegsTouchingGroundIsBad)
+                // If upper leg parts touched ground, end and turn invisible
+                if (senses[13].GetSensorValue(mainSprites[0].gameObject) == 1 ||
+                    senses[14].GetSensorValue(mainSprites[0].gameObject) == 1)
                 {
                     networkRunning = false;
                     for (int i = 0; i < mainSprites.Length; i++)
@@ -329,7 +344,7 @@ public class NetEntity : MonoBehaviour
             timeElapsed += 1;
 
 
-            totalFitness = net.fitness+ net.pendingFitness;
+            totalFitness = net.fitness + net.pendingFitness;
 
             return true;
         }
@@ -356,6 +371,9 @@ public class NetEntity : MonoBehaviour
         timeElapsed = 0;
         bestDistance = 10000;
 
+        //// Set the sin multiplier based off of mutVar 0
+        //if (outputAffectsSin)
+        //    senses[0].sinMultiplier = (float)net.mutatableVariables[0];
         //senses[0].sinMultiplier = 2.0f * (float)net.mutatableVariables[0];
 
         //mutVars = net.mutatableVariables;

@@ -401,7 +401,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   populationSize: 200
-  layers: 0900000032000000140000003200000004000000
+  layers: 0900000032000000140000003200000005000000
   learningRate: 0
   iterations: 0
   maxIterations: 4000
