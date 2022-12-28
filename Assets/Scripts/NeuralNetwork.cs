@@ -18,8 +18,10 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
     public double fitness; //fitness of the network
     public double pendingFitness; // pending trial fitness of the network
 
-    public double[] mutatableVariables; // List of mutatable doubles, similar to weights but can be used in any way by the agent
-    public int mutVarSize = 1;
+    private float mutationFactor;
+
+    //public double[] mutatableVariables; // List of mutatable doubles, similar to weights but can be used in any way by the agent
+    //public int mutVarSize = 1;
 
     public int netID = 0;
 
@@ -29,17 +31,27 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
     const string glyphs = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
     public string genome = "";
 
+    public string weightsHash = "";
+
     public char[] letters =
 {
-    'a', 'b', 'c',       // 2
-    'd', 'e', 'f',       // 3
-    'g', 'h', 'i',       // 4
-    'j', 'k', 'l',       // 5
-    'm', 'n', 'o',       // 6
-    'p', 'q', 'r', 's',  // 7
-    't', 'u', 'v',       // 8
-    'w', 'x', 'y', 'z',  // 9
-    ' '                  // 0
+    'a', 'b', 'c',
+    'd', 'e', 'f',
+    'g', 'h', 'i',
+    'j', 'k', 'l',
+    'm', 'n', 'o',
+    'p', 'q', 'r', 's',
+    't', 'u', 'v',
+    'w', 'x', 'y', 'z',
+    'A', 'B', 'C',
+    'D', 'E', 'F',
+    'G', 'H', 'I',
+    'J', 'K', 'L',
+    'M', 'N', 'O',
+    'P', 'Q', 'R', 'S',
+    'T', 'U', 'V',
+    'W', 'X', 'Y', 'Z',
+    ' '
 };
 
 
@@ -74,12 +86,23 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
             this.layers[i] = copyNetwork.layers[i];
         }
 
+        this.genome = copyNetwork.genome;
+        this.learningRate = copyNetwork.learningRate;
+        //this.mutVarSize = copyNetwork.mutVarSize;
         InitNeurons();
         InitWeights(copyNetwork.weights);
+
+        //for (int i = 0; i < mutVarSize; i++)
+        //{
+        //    mutatableVariables[i] = copyNetwork.mutatableVariables[i];
+        //}
+
+        //mutatableVariables = copyNetwork.mutatableVariables;
+        //mutVarSize = copyNetwork.mutVarSize;
         //CopyWeights(copyNetwork.weights);
     }
 
-    private void CopyWeights(double[][][] copyWeights)
+    public void CopyWeights(double[][][] copyWeights)
     {
         for (int i = 0; i < weights.Length; i++)
         {
@@ -98,9 +121,9 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
         string g = "";
         for (int i = 0; i < 8; i++)
             g += glyphs[UnityEngine.Random.Range(0, glyphs.Length)];
-        g += "a";
         if (g.Trim() == "")
             UnityEngine.Debug.LogError("Genome failed to generate, problem with random generator?");
+        g += "a";
 
         return g;
     }
@@ -161,14 +184,14 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
         return weightsList.ToArray();
     }
 
-    public double[] RandomizeMutVars()
-    {
-        double[] mutArTemp = new double[mutVarSize];
-        //itterate over all mutatable variables and set randomly between 0.5f and -0.5
-        for (int k = 0; k < mutArTemp.Length; k++)
-            mutArTemp[k] = UnityEngine.Random.Range(-0.5f, 0.5f);
-        return mutArTemp;
-    }
+    //public double[] RandomizeMutVars()
+    //{
+    //    double[] mutArTemp = new double[mutVarSize];
+    //    //itterate over all mutatable variables and set randomly between 0.5f and -0.5
+    //    for (int k = 0; k < mutArTemp.Length; k++)
+    //        mutArTemp[k] = UnityEngine.Random.Range(-0.5f, 0.5f);
+    //    return mutArTemp;
+    //}
 
     /// <summary>
     /// Create weights matrix.
@@ -217,7 +240,7 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
                         weights[i][j][k] = persistenceWeights[i][j][k];
 
 
-        mutatableVariables = new double[mutVarSize];
+        //mutatableVariables = new double[mutVarSize];
 
         //RandomizeMutVars();
     }
@@ -430,60 +453,64 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
                     //    weight = new Random().Next(-100, 100) / 100.0f;
                     //}
 
+                    if (randomNumber <= 8f)
+                        mutationFactor += 26f/ (float)weights.Length/ (float)weights[i].Length/ (float)weights[i][j].Length;
+
                     weights[i][j][k] = weight;
                 }
             }
         }
     }
 
-    public double[] MutateMutVars()
-    {
-        double[] mutArTemp = new double[mutVarSize];
-        //UnityEngine.Debug.Log("Network Mutate Vars: " + netID.ToString());
-        // Mutate the mutatable variables
-        for (int k = 0; k < mutVarSize; k++)
-        {
-            //mutate weight value 
-            double randomNumber = UnityEngine.Random.Range(0, 100);
+    //public double[] MutateMutVars()
+    //{
+    //    double[] mutArTemp = mutatableVariables;
+    //    //UnityEngine.Debug.Log("Network Mutate Vars: " + netID.ToString());
+    //    // Mutate the mutatable variables
+    //    for (int k = 0; k < mutVarSize; k++)
+    //    {
+    //        //mutate weight value 
+    //        double randomNumber = UnityEngine.Random.Range(0, 100);
 
-            if (randomNumber <= 2f)
-            { //if 3
-              //randomly increase by 0% to 1%
-                double factor = UnityEngine.Random.Range(0, 100) / 10000.0f;
-                mutArTemp[k] += factor;
-            }
-            else if (randomNumber <= 4f)
-            { //if 4
-              //randomly decrease by 0% to 1%
-                double factor = UnityEngine.Random.Range(-100, 100) / 10000.0f;
-                mutArTemp[k] -= factor;
-            }
-            else if (randomNumber <= 8f)
-            { //if 5
-              //randomly increase or decrease weight by tiny amount
-                double factor = UnityEngine.Random.Range(-1000, 1000) / 100.0f / 1000f;
-                mutArTemp[k] += factor;
-            }
-            else if (randomNumber <= 9.5f)
-            { //if 5
-              //randomly increase or decrease weight by larger amount
-                double factor = UnityEngine.Random.Range(-1000, 1000) / 100.0f / 100f;
-                mutArTemp[k] += factor;
-            }
-        }
+    //        if (randomNumber <= 2f)
+    //        { //if 3
+    //          //randomly increase by 0% to 1%
+    //            double factor = UnityEngine.Random.Range(0, 100) / 10000.0f;
+    //            mutArTemp[k] += factor;
+    //        }
+    //        else if (randomNumber <= 4f)
+    //        { //if 4
+    //          //randomly decrease by 0% to 1%
+    //            double factor = UnityEngine.Random.Range(-100, 100) / 10000.0f;
+    //            mutArTemp[k] -= factor;
+    //        }
+    //        else if (randomNumber <= 8f)
+    //        { //if 5
+    //          //randomly increase or decrease weight by tiny amount
+    //            double factor = UnityEngine.Random.Range(-1000, 1000) / 100.0f / 1000f;
+    //            mutArTemp[k] += factor;
+    //        }
+    //        else if (randomNumber <= 9.5f)
+    //        { //if 5
+    //          //randomly increase or decrease weight by larger amount
+    //            double factor = UnityEngine.Random.Range(-1000, 1000) / 100.0f / 100f;
+    //            mutArTemp[k] += factor;
+    //        }
+    //    }
 
-        return mutArTemp;
-    }
+    //    return mutArTemp;
+    //}
 
     public void UpdateGenome()
     {
-        // Add 1 to mutation letter
-        int mutationNum = Array.IndexOf(letters, genome[8]);
-        //UnityEngine.Debug.Log(mutationNum);
-        genome = genome.Substring(0, 8) + letters[mutationNum + 1];
-        // If this network has been mutated 20 or more times, then it will become it's own separate genome
+        // Add mutation factor to mutation letter
+        int mutationNum = Array.IndexOf(letters, genome[8])+ (int)UnityEngine.Mathf.Clamp((mutationFactor - 2f) * 5f, 0, 25);
+        // If this network has been mutated 30 or more times, then it will become it's own separate genome
         if (mutationNum >= 20)
             ResetGenome();
+        genome = genome.Substring(0, 8) + letters[mutationNum];
+        //UnityEngine.Debug.Log((int)UnityEngine.Mathf.Clamp((mutationFactor - 2f) * 5f, 0, 25));
+        mutationFactor = 0f;
     }
 
     public void AddFitness(double fit)

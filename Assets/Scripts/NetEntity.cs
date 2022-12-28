@@ -177,6 +177,7 @@ public class NetEntity : MonoBehaviour
 
     [ShowOnly] public double[] mutVars;
     [ShowOnly] public int netID;
+    [ShowOnly] public string weightsHash;
 
     public GameObject bestCrown;
 
@@ -184,6 +185,7 @@ public class NetEntity : MonoBehaviour
     {
         if (networkRunning == true)
         {
+
             //string weightLengths = "";
             //for (int i = 0; i < net.weights.Length; i++)
             //{
@@ -191,24 +193,29 @@ public class NetEntity : MonoBehaviour
             //}
             //Debug.Log(weightLengths);
 
-
-            double[] inputs = new double[numberOfInputs];
-
-            for (int p = 0; p < inputs.Length; p++)
+            if (timeElapsed % 2 == 0)
             {
-                if (p == 7 || p == 8)
-                    continue;
-                inputs[p] = senses[p].GetSensorValue(mainSprites[0].gameObject);
-            }
-            inputs[0] = senses[0].GetSensorValue(timeElapsed, mainSprites[0].gameObject);
+                double[] inputs = new double[numberOfInputs];
 
-            outputs = net.FeedForward(inputs);
+                for (int p = 0; p < inputs.Length; p++)
+                {
+                    if (p == 7 || p == 8)
+                        continue;
+                    inputs[p] = senses[p].GetSensorValue(mainSprites[0].gameObject);
+                }
+                inputs[0] = senses[0].GetSensorValue(timeElapsed, mainSprites[0].gameObject);
+
+                outputs = net.FeedForward(inputs);
+            }
 
             for (int i = 0; i < hinges.Length; i++)
             {
-                JointMotor2D changemotor = hinges[i].motor;
-                changemotor.motorSpeed = ((float)outputs[i] - 0.5f) * 360.0f;
-                hinges[i].motor = changemotor;
+                if (timeElapsed % 2 == 0)
+                {
+                    JointMotor2D changemotor = hinges[i].motor;
+                    changemotor.motorSpeed = ((float)outputs[i] - 0.5f) * 180.0f;
+                    hinges[i].motor = changemotor;
+                }
 
                 // Get direction and see if it changed for joints
                 if (directionChangeIsGood)
@@ -275,8 +282,8 @@ public class NetEntity : MonoBehaviour
             //{
             net.pendingFitness = 0;
             if (distanceIsGood)
-                net.pendingFitness += (bestDistance / 2.0f) +
-                //net.pendingFitness = (totalDistanceOverTime / (float)timeElapsed) +
+                //net.pendingFitness += (bestDistance / 2.0f) +
+                net.pendingFitness += (totalDistanceOverTime / (float)timeElapsed) +
                     (distance / 2.0f);
             if (directionChangeIsGood)
                 net.pendingFitness += finalErrorOffset +
@@ -301,8 +308,8 @@ public class NetEntity : MonoBehaviour
                     networkRunning = false;
                     for (int i = 0; i < mainSprites.Length; i++)
                         Destroy(mainSprites[i].gameObject);
-                    net.pendingFitness += 0.3f;
-                    return false;
+                    //net.pendingFitness += 0.3f;
+                    //return false;
                 }
             if (touchingLaserIsBad)
                 // If any body part touches the laser, end and turn invisible
@@ -314,8 +321,8 @@ public class NetEntity : MonoBehaviour
                     networkRunning = false;
                     for (int i = 0; i < mainSprites.Length; i++)
                         Destroy(mainSprites[i].gameObject);
-                    net.pendingFitness += 0.15f;
-                    return false;
+                    //net.pendingFitness += 0.15f;
+                    //return false;
                 }
 
 
@@ -323,7 +330,6 @@ public class NetEntity : MonoBehaviour
 
 
             totalFitness = net.fitness+ net.pendingFitness;
-            this.genome = net.genome;
 
             return true;
         }
@@ -345,13 +351,14 @@ public class NetEntity : MonoBehaviour
         this.net.pendingFitness = 0;
         this.genome = net.genome;
         this.netID = net.netID;
+        this.weightsHash = net.weightsHash;
         //net.error = 0;
         timeElapsed = 0;
         bestDistance = 10000;
 
         //senses[0].sinMultiplier = 2.0f * (float)net.mutatableVariables[0];
 
-        mutVars = net.mutatableVariables;
+        //mutVars = net.mutatableVariables;
 
         // Show the crown if this is the best network
         bestCrown.SetActive(net.isBest);

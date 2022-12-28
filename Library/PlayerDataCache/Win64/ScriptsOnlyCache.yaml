@@ -12,7 +12,6 @@ ScriptsOnlyBuild:
     - UnityEditor.U2D.Animation.BoneGizmo
     Unity.2D.IK.Editor.dll:
     - UnityEditor.U2D.IK.IKEditorManager
-    - UnityEditor.U2D.IK.IKGizmos
     Unity.2D.Tilemap.Editor.dll:
     - UnityEditor.Tilemaps.GridPaintingState
     - UnityEditor.Tilemaps.GridPaletteBrushes
@@ -137,7 +136,7 @@ ScriptsOnlyBuild:
     className: Image
   - hash:
       serializedVersion: 2
-      Hash: 344846206026172351bec5be169e67c3
+      Hash: 321928265787846151f821ec80e191f4
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: NetEntity
@@ -389,7 +388,7 @@ ScriptsOnlyBuild:
     className: SpriteShapeController
   - hash:
       serializedVersion: 2
-      Hash: e0e2f9dfa6834d4bd8c6033a5c3f1c5d
+      Hash: 40e8add849301b0aca9aed7863658352
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: NetManager
@@ -533,7 +532,7 @@ ScriptsOnlyBuild:
     className: SpriteShapeGeometryCache
   - hash:
       serializedVersion: 2
-      Hash: 3a2e50b789cba071819c09be1718c118
+      Hash: 82c35dcf73de12762adead6dbd27d783
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: LaserScript

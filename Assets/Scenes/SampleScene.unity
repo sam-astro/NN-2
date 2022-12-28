@@ -404,7 +404,7 @@ MonoBehaviour:
   layers: 0900000032000000140000003200000004000000
   learningRate: 0
   iterations: 0
-  maxIterations: 400
+  maxIterations: 4000
   mutVarSize: 1
   maxTrialsPerGeneration: 1
   trial: 0
@@ -415,13 +415,12 @@ MonoBehaviour:
   laser: {fileID: 510059493}
   amntLeft: 0
   bestGenome: 
+  bestHash: 
   generationNumber: 1
   lastWorst: 100000000
   lastBest: 100000000
   bestEverError: 100000
   netEntityPrefab: {fileID: 7647521876100407775, guid: 1a697f95b04bb3c49a95245d48113a8b, type: 3}
-  bestMutVarsBefore: []
-  bestMutVars: []
 --- !u!20 &519420031
 Camera:
   m_ObjectHideFlags: 0

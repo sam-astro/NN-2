@@ -12,6 +12,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.Runtime.Serialization;
 using UnityEngine;
 using TMPro;
+using System.Security.Cryptography;
 
 public class NetManager : MonoBehaviour
 {
@@ -61,6 +62,7 @@ public class NetManager : MonoBehaviour
 
     NeuralNetwork persistenceNetwork;
     [ShowOnly] public string bestGenome = "";
+    [ShowOnly] public string bestHash = "";
     private List<NeuralNetwork> topGenomes;
 
     [ShowOnly] public int generationNumber = 1;
@@ -77,8 +79,8 @@ public class NetManager : MonoBehaviour
 
     public GameObject netEntityPrefab;
 
-    [ShowOnly] public double[] bestMutVarsBefore;
-    [ShowOnly] public double[] bestMutVars;
+    //[ShowOnly] public double[] bestMutVarsBefore;
+    //[ShowOnly] public double[] bestMutVars;
     #endregion
 
     private void Start()
@@ -97,6 +99,100 @@ public class NetManager : MonoBehaviour
         {
             if (trial >= maxTrialsPerGeneration - 1) // If the final trial is over, finalize and go to next generation
             {
+                //generationText.text = "processing...";
+
+                //// Make sure final pendingFitness is added
+                //for (int i = 0; i < populationSize; i++)
+                //    nets[i].fitness+=nets[i].pendingFitness;
+
+                //nets.Sort();
+
+                //bestError = nets[nets.Count - 1].fitness;
+                //worstError = nets[0].fitness;
+
+
+
+                //if (bestError < bestEverError || queuedForUpload == true || generationNumber == 0)
+                //{
+                //    //persistenceNetwork = nets[nets.Count - 1];
+                //    //persistenceNetwork = new NeuralNetwork(nets[nets.Count - 1]);
+                //    //persistenceNetwork.CopyWeights(nets[nets.Count - 1].weights);
+                //    persistenceNetwork.weights = nets[nets.Count - 1].weights;
+                //    //Array.Copy(nets[nets.Count - 1].mutatableVariables, persistenceNetwork.mutatableVariables, mutVarSize);
+                //    //persistenceNetwork.mutatableVariables = nets[nets.Count - 1].mutatableVariables;
+                //    persistenceNetwork.genome = nets[nets.Count - 1].genome;
+                //    bestEverError = bestError;
+                //    bestGenome = persistenceNetwork.genome.Substring(0, 8) + "a";
+
+                //    using (StreamWriter sw = File.AppendText("./Assets/dat/hist.txt"))
+                //        sw.WriteLine((generationNumber).ToString() + ", " + bestEverError);
+
+                //    // Save best weights
+                //    BinaryFormatter bf = new BinaryFormatter();
+                //    using (FileStream fs = new FileStream("./Assets/dat/WeightSave.bin", FileMode.Create))
+                //        bf.Serialize(fs, persistenceNetwork.weights);
+
+                //    // Get hash of best weights
+                //    bestHash = ByteArrayToString(new MD5CryptoServiceProvider().ComputeHash(System.IO.File.ReadAllBytes("./Assets/dat/WeightSave.bin")));
+
+                ////    // Save best mutatable variables
+                ////    BinaryFormatter bf2 = new BinaryFormatter();
+                ////    using (FileStream fs2 = new FileStream("./Assets/dat/MutVars.bin", FileMode.Create))
+                ////        bf2.Serialize(fs2, persistenceNetwork.mutatableVariables);
+
+                //}
+                //else if (generationNumber % timeBetweenGenerationProgress == 0)
+                //    using (StreamWriter sw = File.AppendText("./Assets/dat/hist.txt"))
+                //        sw.WriteLine((generationNumber).ToString() + ", " + bestEverError);
+
+                //if (generationNumber % timeBetweenSave == 0 && timeBetweenSave != -1)
+                //{
+                //    // Save metadata
+                //    StreamWriter ps = new StreamWriter("./Assets/dat/WeightSaveMeta.mta");
+                //    ps.WriteLine((generationNumber).ToString() + "#" +
+                //        (bestEverError).ToString() + "#" +
+                //        ((int)Time.realtimeSinceStartup + timeManager.offsetTime).ToString() + "#" +
+                //        bestGenome);
+                //    ps.Close();
+                //}
+
+                //// Find the top 3 *individual* genomes and add them to a `topGenomes` list
+                //Debug.Log("lGenome: " + bestGenome);
+                //string lastGenome = bestGenome.Substring(0, 8);
+                //topGenomes = new List<NeuralNetwork>();
+                //topGenomes.Add(persistenceNetwork);
+                //for (int i = nets.Count - 1; i >= 0; i--)
+                //{
+                //    if (topGenomes.Count >= 3)
+                //        break;
+                //    if (nets[i].genome.Substring(0, 8) != lastGenome)
+                //    {
+                //        topGenomes.Add(new NeuralNetwork(nets[i]));
+                //        lastGenome = nets[i].genome.Substring(0, 8);
+                //    }
+                //}
+
+                //ListBestGenomes();
+
+                //Finalizer();
+
+                //lastBest = bestError;
+                //lastWorst = worstError;
+                //generationNumber++;
+                //trial = 0;
+                //iterations = maxIterations;
+                //laser.ResetPosition();
+
+                //CreateEntityBodies();
+
+                //generationText.text = generationNumber.ToString() + " : " + trial.ToString();
+
+
+
+                //
+                // OLD SYSTEM: 
+                //
+
                 generationText.text = "processing...";
 
                 // Make sure final pendingFitness is added
@@ -110,35 +206,29 @@ public class NetManager : MonoBehaviour
 
                 if (generationNumber % timeBetweenSave == 0 && timeBetweenSave != -1)
                 {
-                    // Save metadata
+                    bestGenome = persistenceNetwork.genome.Substring(0, 8) + "a";
+
                     StreamWriter persistence = new StreamWriter("./Assets/dat/WeightSaveMeta.mta");
                     persistence.WriteLine((generationNumber).ToString() + "#" +
                         (bestEverError).ToString() + "#" +
                         ((int)Time.realtimeSinceStartup + timeManager.offsetTime).ToString() + "#" +
                         bestGenome);
 
-                    // Save best weights
                     BinaryFormatter bf = new BinaryFormatter();
                     using (FileStream fs = new FileStream("./Assets/dat/WeightSave.bin", FileMode.Create))
                         bf.Serialize(fs, persistenceNetwork.weights);
-                    // Save best mutatable variables
-                    BinaryFormatter bf2 = new BinaryFormatter();
-                    using (FileStream fs2 = new FileStream("./Assets/dat/MutVars.bin", FileMode.Create))
-                        bf2.Serialize(fs2, persistenceNetwork.mutatableVariables);
+                    // Get hash of best weights
+                    bestHash = ByteArrayToString(new MD5CryptoServiceProvider().ComputeHash(System.IO.File.ReadAllBytes("./Assets/dat/WeightSave.bin")));
+
 
                     persistence.Close();
                 }
 
                 if (bestError < bestEverError || queuedForUpload == true || generationNumber == 0)
                 {
-                    //persistenceNetwork = nets[nets.Count - 1];
-                    //persistenceNetwork = new NeuralNetwork(nets[nets.Count - 1]);
                     persistenceNetwork.weights = nets[nets.Count - 1].weights;
-                    Array.Copy(nets[nets.Count - 1].mutatableVariables, persistenceNetwork.mutatableVariables, mutVarSize);
-                    //persistenceNetwork.mutatableVariables = nets[nets.Count - 1].mutatableVariables;
-                    //persistenceNetwork.genome = nets[nets.Count - 1].genome;
+                    persistenceNetwork.genome = nets[nets.Count - 1].genome;
                     bestEverError = bestError;
-                    bestGenome = persistenceNetwork.genome.Substring(0, 8) + "a";
 
                     using (StreamWriter sw = File.AppendText("./Assets/dat/hist.txt"))
                         sw.WriteLine((generationNumber).ToString() + ", " + bestEverError);
@@ -159,11 +249,10 @@ public class NetManager : MonoBehaviour
                         break;
                     if (nets[i].genome.Substring(0, 8) != lastGenome)
                     {
-                        topGenomes.Add(nets[i]);
+                        topGenomes.Add(new NeuralNetwork(nets[i]));
                         lastGenome = nets[i].genome.Substring(0, 8);
                     }
                 }
-
                 ListBestGenomes();
 
                 Finalizer();
@@ -173,7 +262,6 @@ public class NetManager : MonoBehaviour
                 generationNumber++;
                 trial = 0;
                 iterations = maxIterations;
-                laser.ResetPosition();
 
                 CreateEntityBodies();
 
@@ -254,110 +342,148 @@ public class NetManager : MonoBehaviour
 
     void Finalizer()
     {
-        //nets.Sort();
-        //for (int i = 0; i < populationSize - 1; i++)
+        //// Create copies of top 3 genomes to replace the worst neural networks
+        //for (int g = 0; g < topGenomes.Count; g++)
         //{
-        //    // Totally randomize
-        //    if (i < (int)(populationSize * 0.25f))
+        //    for (int i = (int)(populationSize * 0.2 / topGenomes.Count) * g; i < (int)(populationSize * 0.2 / topGenomes.Count) * (g + 1); i++)
         //    {
-        //        nets[i] = new NeuralNetwork(nets[populationSize - 1]);
-        //        nets[i].RandomizeWeights();
+        //        nets[i] = new NeuralNetwork(topGenomes[g]);
+        //        //nets[i].CopyWeights(topGenomes[g].weights);
+        //        //Array.Copy(topGenomes[g].mutatableVariables, nets[i].mutatableVariables, mutVarSize);
+        //        nets[i].genome = topGenomes[g].genome;
+        //        nets[i].UpdateGenome();
+        //        nets[i].Mutate();
+        //        //nets[i].MutateMutVars();
         //    }
-        //    // Copy then mutate
+        //}
+        //// Create totally new neural networks with random weights
+        //for (int i = (int)(populationSize * 0.2 / topGenomes.Count) * (topGenomes.Count + 1); i < (int)(populationSize * 0.5); i++)
+        //{
+        //    nets[i].CopyWeights(nets[i].RandomizeWeights());
+        //    //nets[i].mutatableVariables = nets[i].RandomizeMutVars();
+        //    nets[i].ResetGenome();
+        //}
+        //// Continue using the best 50% of neural networks and mutate them a bit
+        //for (int i = (int)(populationSize * 0.5); i < populationSize - 1; i++)
+        //{
+        //    if (nets[i].genome.Substring(0, 8) == bestGenome.Substring(0, 8) && // If it is the same genome as the best
+        //        Array.IndexOf(nets[i].letters, nets[i].genome[8]) < 5) // And if the mutation level is less than 5 away from the original
+        //                                                               // Then randomize it to make population more diverse
+        //    {
+        //        //UnityEngine.Debug.Log("Resetting of:  " + i.ToString());
+        //        nets[i].ResetGenome();
+        //        nets[i].CopyWeights(nets[i].RandomizeWeights());
+        //        //nets[i].mutatableVariables = nets[i].RandomizeMutVars();
+        //    }
         //    else
         //    {
-        //        nets[i] = new NeuralNetwork(nets[populationSize - 1]);
         //        nets[i].Mutate();
+        //        //nets[i].mutatableVariables = nets[i].MutateMutVars(); // This causes problem in best NN
+        //        nets[i].UpdateGenome();
+        //        //UnityEngine.Debug.Log("Mutating Vars of:  " + i.ToString() + " , got: " + nets[i].mutatableVariables[0].ToString());
         //    }
         //}
 
-        //// Create copies of best-ever network and replace the worst neural networks
-        //for (int i = 0; i < (int)(populationSize * 0.2); i++)
+        //// Hanbdle the best network
+        ////Debug.Log("Best is index: " + (nets.Count - 1).ToString());
+        ////Debug.Log("Vars are: " + (persistenceNetwork.mutatableVariables[0]).ToString());
+        ////nets[nets.Count - 1] = new NeuralNetwork(persistenceNetwork);
+        //nets[nets.Count - 1] = new NeuralNetwork(topGenomes[0]);
+        ////nets[nets.Count - 1].neurons = persistenceNetwork.neurons;
+        ////nets[nets.Count - 1].genome = bestGenome;
+        ////Array.Copy(persistenceNetwork.mutatableVariables, nets[nets.Count - 1].mutatableVariables, mutVarSize);
+        ////Debug.Log("Vars are: " + (nets[nets.Count - 1].mutatableVariables[0]).ToString());
+
+        //// If any neural networks have an invalid genome, reset it and assign a genome
+        //for (int i = 0; i < populationSize; i++)
         //{
-        //    nets[i] = new NeuralNetwork(persistenceNetwork);
-        //    nets[i].Mutate();
+        //    if (nets[i].genome.Trim() == "")
+        //    {
+        //        nets[i].ResetGenome();
+        //        nets[i].CopyWeights(nets[i].RandomizeWeights());
+        //        //nets[i].mutatableVariables = nets[i].RandomizeMutVars();
+        //        Debug.LogWarning("Found broken genome " + i.ToString());
+        //        nets[i].Mutate();
+        //        nets[i].UpdateGenome();
+        //    }
+        //    nets[i].fitness = 0f;
+        //    nets[i].pendingFitness = 0f;
         //    nets[i].isBest = false;
-        //    nets[i].genome = bestGenome;
-        //    nets[i].UpdateGenome();
+        //    nets[i].netID = i;
+
+        //    // Save temp weights
+        //    BinaryFormatter bf = new BinaryFormatter();
+        //    using (FileStream fs = new FileStream("./Assets/dat/temp_weights.bin", FileMode.Create))
+        //        bf.Serialize(fs, nets[i].weights);
+        //    // Get hash of temp weights
+        //    nets[i].weightsHash = ByteArrayToString(new MD5CryptoServiceProvider().ComputeHash(System.IO.File.ReadAllBytes("./Assets/dat/temp_weights.bin")));
+
         //}
+        //nets[nets.Count - 1].isBest = true;
+        ////Array.Copy(persistenceNetwork.mutatableVariables, bestMutVars, mutVarSize);
+        ////bestMutVars = persistenceNetwork.mutatableVariables;
+
+
+
+        // OLD SYSTEM:
+        //
         // Create copies of top 3 genomes to replace the worst neural networks
         for (int g = 0; g < topGenomes.Count; g++)
         {
             for (int i = (int)(populationSize * 0.2 / topGenomes.Count) * g; i < (int)(populationSize * 0.2 / topGenomes.Count) * (g + 1); i++)
             {
                 nets[i] = new NeuralNetwork(topGenomes[g]);
+                //nets[i].CopyWeights(topGenomes[g].weights);
                 //Array.Copy(topGenomes[g].mutatableVariables, nets[i].mutatableVariables, mutVarSize);
-                nets[i].isBest = false;
                 nets[i].genome = topGenomes[g].genome;
                 nets[i].UpdateGenome();
                 nets[i].Mutate();
                 //nets[i].MutateMutVars();
             }
         }
-        // Create totally new neural networks with random weights
+        // Create create totally new neural networks with random weights
         for (int i = (int)(populationSize * 0.2 / topGenomes.Count) * (topGenomes.Count + 1); i < (int)(populationSize * 0.5); i++)
         {
-            nets[i].weights=nets[i].RandomizeWeights();
-            //nets[i].mutatableVariables = nets[i].RandomizeMutVars();
+            nets[i] = new NeuralNetwork(persistenceNetwork);
+            nets[i].weights = nets[i].RandomizeWeights();
             nets[i].isBest = false;
-            nets[i].ResetGenome();
+            nets[i].genome = nets[i].GenerateGenome();
         }
         // Continue using the best 50% of neural networks and mutate them a bit
         for (int i = (int)(populationSize * 0.5); i < populationSize - 1; i++)
         {
             if (nets[i].genome.Substring(0, 8) == bestGenome.Substring(0, 8) && // If it is the same genome as the best
-                Array.IndexOf(nets[i].letters, nets[i].genome[8]) < 5) // And if the mutation level is less than 5 away from the original
-                                                                       // Then randomize it to make population more diverse
+                Array.IndexOf(nets[i].letters, nets[i].genome[8]) < 5 && // And if the mutation level is less than 5 away from the original
+                i < populationSize-11)                                   // And it is not in the top 10
+                                                                         // Then randomize it to make population more diverse
             {
-                //UnityEngine.Debug.Log("Resetting of:  " + i.ToString());
                 nets[i].ResetGenome();
-                nets[i].weights = nets[i].RandomizeWeights();
-                //nets[i].mutatableVariables = nets[i].RandomizeMutVars();
+                nets[i].CopyWeights(nets[i].RandomizeWeights());
+                nets[i].isBest = false;
             }
             else
             {
+                nets[i] = new NeuralNetwork(nets[i]);
                 nets[i].Mutate();
-                //nets[i].mutatableVariables = nets[i].MutateMutVars(); // This causes problem in best NN
                 nets[i].isBest = false;
                 nets[i].UpdateGenome();
-                //UnityEngine.Debug.Log("Mutating Vars of:  " + i.ToString() + " , got: " + nets[i].mutatableVariables[0].ToString());
             }
         }
-        // If any neural networks have an invalid genome, reset it and assign a genome
-        for (int i = 0; i < populationSize; i++)
+        nets[populationSize - 1] = new NeuralNetwork(persistenceNetwork);
+        nets[populationSize - 1].isBest = true;
+
+
+    }
+
+    private string ByteArrayToString(byte[] arrInput)
+    {
+        int i;
+        StringBuilder sOutput = new StringBuilder(arrInput.Length);
+        for (i = 0; i < arrInput.Length; i++)
         {
-            if (nets[i].genome.Trim() == "")
-            {
-                nets[i].ResetGenome();
-                nets[i].weights = nets[i].RandomizeWeights();
-                //nets[i].mutatableVariables = nets[i].RandomizeMutVars();
-                Debug.LogWarning("Found broken genome " + i.ToString());
-                nets[i].Mutate();
-                nets[i].UpdateGenome();
-            }
-            nets[i].fitness = 0f;
-            nets[i].pendingFitness = 0f;
-            nets[i].fitness = 0f;
-            nets[i].isBest = false;
-            nets[i].netID = i;
+            sOutput.Append(arrInput[i].ToString("X2"));
         }
-
-        //Debug.Log("Best is index: " + (nets.Count - 1).ToString());
-        //Debug.Log("Vars are: " + (persistenceNetwork.mutatableVariables[0]).ToString());
-        //nets[nets.Count - 1] = new NeuralNetwork(persistenceNetwork);
-        nets[nets.Count - 1].weights = persistenceNetwork.weights;
-        nets[nets.Count - 1].neurons = persistenceNetwork.neurons;
-        nets[nets.Count - 1].isBest = true;
-        nets[nets.Count - 1].genome = bestGenome;
-        //Array.Copy(persistenceNetwork.mutatableVariables, nets[nets.Count - 1].mutatableVariables, mutVarSize);
-        //Debug.Log("Vars are: " + (nets[nets.Count - 1].mutatableVariables[0]).ToString());
-
-        //Array.Copy(persistenceNetwork.mutatableVariables, bestMutVars, mutVarSize);
-
-        bestMutVars = persistenceNetwork.mutatableVariables;
-
-        //CreateEntityBodies(nets, populationSize);
-        //return nets;
+        return sOutput.ToString();
     }
 
     void InitEntityNeuralNetworks()
@@ -379,9 +505,9 @@ public class NetManager : MonoBehaviour
 
                 net.learningRate = learningRate;
                 net.layers = layers;
-                net.mutVarSize = mutVarSize;
+                //net.mutVarSize = mutVarSize;
                 net.ResetGenome();
-                net.mutatableVariables = net.RandomizeMutVars();
+                //net.mutatableVariables = net.RandomizeMutVars();
 
                 nets.Add(net);
             }
@@ -393,10 +519,10 @@ public class NetManager : MonoBehaviour
 
                 net.learningRate = learningRate;
                 net.layers = layers;
-                net.mutVarSize = mutVarSize;
+                //net.mutVarSize = mutVarSize;
                 net.genome = bestGenome;
 
-                Array.Copy(persistenceNetwork.mutatableVariables, net.mutatableVariables, mutVarSize);
+                //Array.Copy(persistenceNetwork.mutatableVariables, net.mutatableVariables, mutVarSize);
 
                 nets.Add(net);
             }
@@ -469,11 +595,15 @@ public class NetManager : MonoBehaviour
             BinaryFormatter bf = new BinaryFormatter();
             using (FileStream fs = new FileStream("./Assets/dat/WeightSave.bin", FileMode.Open))
                 persistenceNetwork.weights = (double[][][])bf.Deserialize(fs);
-            // Load mutVar data into `persistenceNetwork`
-            BinaryFormatter bf2 = new BinaryFormatter();
-            using (FileStream fs2 = new FileStream("./Assets/dat/MutVars.bin", FileMode.Open))
-                persistenceNetwork.mutatableVariables = (double[])bf2.Deserialize(fs2);
-            bestMutVars = persistenceNetwork.mutatableVariables;
+            //// Load mutVar data into `persistenceNetwork`
+            //BinaryFormatter bf2 = new BinaryFormatter();
+            //using (FileStream fs2 = new FileStream("./Assets/dat/MutVars.bin", FileMode.Open))
+            //    persistenceNetwork.mutatableVariables = (double[])bf2.Deserialize(fs2);
+            //bestMutVars = persistenceNetwork.mutatableVariables;
+
+            // Get hash of best weights
+            bestHash = ByteArrayToString(new MD5CryptoServiceProvider().ComputeHash(System.IO.File.ReadAllBytes("./Assets/dat/WeightSave.bin")));
+
 
 
             // Load metadata like best error and generation
