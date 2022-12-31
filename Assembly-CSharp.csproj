@@ -60,11 +60,12 @@
     <Compile Include="Assets\TimeManager.cs" />
     <Compile Include="Assets\Scripts\NetManager.cs" />
     <Compile Include="Assets\Scripts\ShowOnlyAttribute.cs" />
-    <Compile Include="Assets\GotoMouse.cs" />
-    <Compile Include="Assets\LaserScript.cs" />
+    <Compile Include="Assets\Scripts\GotoMouse.cs" />
+    <Compile Include="Assets\Scripts\LaserScript.cs" />
     <Compile Include="Assets\Scripts\NeuralNetwork.cs" />
     <Compile Include="Assets\Scripts\IsColliding.cs" />
     <Compile Include="Assets\Scripts\Gyro.cs" />
+    <Compile Include="Assets\Scripts\CameraFollow.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\TextMesh Pro\Shaders\TMPro.cginc" />

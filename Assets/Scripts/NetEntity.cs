@@ -163,6 +163,7 @@ public class NetEntity : MonoBehaviour
     public bool heightIsGood = false;
     public bool slowRotationIsBad = false;
     public bool distanceIsGood = false;
+    public bool useAverageDistance = false;
     public bool directionChangeIsGood = false;
     public bool xVelocityIsGood = false;
     public bool outputAffectsSin = false;
@@ -274,7 +275,8 @@ public class NetEntity : MonoBehaviour
             float height = (float)senses[6].GetSensorValue(mainSprites[0].gameObject);
             totalheightDifference += 1f - height;
 
-            float distance = (float)senses[11].GetSensorValue(mainSprites[4].gameObject);
+            float d = (float)senses[11].GetSensorValue(mainSprites[4].gameObject);
+            float distance = (200f - (mainSprites[0].transform.position.x + 7.3f)) / 200f;
             totalDistanceOverTime += distance;
             if (distance < bestDistance)
                 bestDistance = distance;
@@ -286,9 +288,12 @@ public class NetEntity : MonoBehaviour
             //{
             net.pendingFitness = 0;
             if (distanceIsGood)
-                //net.pendingFitness += (bestDistance / 2.0f) +
-                net.pendingFitness += (totalDistanceOverTime / (float)timeElapsed) +
-                    (distance / 2.0f);
+                if (useAverageDistance)
+                    net.pendingFitness += (totalDistanceOverTime / (float)timeElapsed) +
+                        (distance / 2.0f);
+                else
+                    net.pendingFitness += (bestDistance / 2.0f) +
+                        (distance / 2.0f);
             if (directionChangeIsGood)
                 net.pendingFitness += finalErrorOffset +
                     Mathf.Pow(directionTimes[0], 2) / (float)(totalIterations * totalIterations) +
@@ -383,10 +388,10 @@ public class NetEntity : MonoBehaviour
         // Set the sprite layer to be the very front if this is the best network
         if (net.isBest)
             for (int i = 0; i < mainSprites.Length; i++)
-                mainSprites[i].sortingOrder = 100;
+                mainSprites[i].sortingOrder = 1000;
         else
             for (int i = 0; i < mainSprites.Length; i++)
-                mainSprites[i].sortingOrder = 0;
+                mainSprites[i].sortingOrder = netID;
 
         foreach (var s in senses)
             s.Initialize(mainSprites[0].gameObject);

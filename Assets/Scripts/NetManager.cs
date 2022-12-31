@@ -43,6 +43,8 @@ public class NetManager : MonoBehaviour
 
     public LaserScript laser;
 
+    public CameraFollow cameraFollow;
+
     //double promptMin = 0;
     //double promptMax = 0;
     //public double[][] prompt =
@@ -274,6 +276,7 @@ public class NetManager : MonoBehaviour
                 iterations = maxIterations;
 
                 CreateEntityBodies();
+                laser.ResetPosition();
 
                 generationText.text = generationNumber.ToString() + " : " + trial.ToString();
             }
@@ -332,6 +335,8 @@ public class NetManager : MonoBehaviour
             GameObject tempEntity = Instantiate(netEntityPrefab, spawnPoint);
             tempEntity.GetComponent<NetEntity>().Init(nets[i], generationNumber, layers[0], maxIterations, trial);
             entityList.Add(tempEntity);
+            if (i == 0)
+                cameraFollow.target = entityList[i].GetComponent<NetEntity>().mainSprites[0].transform;
         }
         //}
         //else
@@ -481,6 +486,7 @@ public class NetManager : MonoBehaviour
         for (int i = 0; i < populationSize; i++)
         {
             nets[i].isBest = false;
+            nets[i].netID = i;
         }
         nets[0] = new NeuralNetwork(persistenceNetwork);
         nets[0].isBest = true;
