@@ -41,9 +41,7 @@ public class NetManager : MonoBehaviour
 
     public TimeManager timeManager;
 
-    public LaserScript laser;
 
-    public CameraFollow cameraFollow;
 
     //double promptMin = 0;
     //double promptMax = 0;
@@ -95,7 +93,7 @@ public class NetManager : MonoBehaviour
         generationText.text = generationNumber.ToString() + " : " + trial.ToString();
 
         // If the hist.txt file does not exist, create it and add data labels
-        if(!File.Exists("./Assets/dat/hist.txt"))
+        if (!File.Exists("./Assets/dat/hist.txt"))
             using (StreamWriter sw = File.AppendText("./Assets/dat/hist.txt"))
                 sw.WriteLine("generation, Top Error, Gen Error");
     }
@@ -204,7 +202,11 @@ public class NetManager : MonoBehaviour
 
                 // Make sure final pendingFitness is added
                 for (int i = 0; i < populationSize; i++)
+                {
                     nets[i].AddFitness(nets[i].pendingFitness);
+                    // Average fitness from trials
+                    nets[i].SetFitness(nets[i].fitness/(float)maxTrialsPerGeneration);
+                }
 
                 nets.Sort();
 
@@ -276,7 +278,6 @@ public class NetManager : MonoBehaviour
                 iterations = maxIterations;
 
                 CreateEntityBodies();
-                laser.ResetPosition();
 
                 generationText.text = generationNumber.ToString() + " : " + trial.ToString();
             }
@@ -285,7 +286,6 @@ public class NetManager : MonoBehaviour
                 iterations = maxIterations;
                 trial += 1;
                 CreateEntityBodies();
-                laser.ResetPosition();
 
                 generationText.text = generationNumber.ToString() + " : " + trial.ToString();
             }
@@ -332,11 +332,9 @@ public class NetManager : MonoBehaviour
 
         for (int i = 0; i < populationSize; i++)
         {
-            GameObject tempEntity = Instantiate(netEntityPrefab, spawnPoint);
+            GameObject tempEntity = Instantiate(netEntityPrefab, spawnPoint.position + new Vector3(i * 15f, 0, 0), Quaternion.identity);
             tempEntity.GetComponent<NetEntity>().Init(nets[i], generationNumber, layers[0], maxIterations, trial);
             entityList.Add(tempEntity);
-            if (i == 0)
-                cameraFollow.target = entityList[i].GetComponent<NetEntity>().mainSprites[0].transform;
         }
         //}
         //else
@@ -469,8 +467,8 @@ public class NetManager : MonoBehaviour
         {
             if (nets[i].genome.Substring(0, 8) == bestGenome.Substring(0, 8) && // If it is the same genome as the best
                 Array.IndexOf(nets[i].letters, nets[i].genome[8]) < 5 && // And if the mutation level is less than 5 away from the original
-                i < populationSize-11)                                   // And it is not in the top 10
-                                                                         // Then randomize it to make population more diverse
+                i < populationSize - 11)                                   // And it is not in the top 10
+                                                                           // Then randomize it to make population more diverse
             {
                 nets[i].ResetGenome();
                 nets[i].CopyWeights(nets[i].RandomizeWeights());
@@ -490,7 +488,12 @@ public class NetManager : MonoBehaviour
         }
         nets[0] = new NeuralNetwork(persistenceNetwork);
         nets[0].isBest = true;
-        nets[0].genome = persistenceNetwork.genome;
+        nets[0].genome = bestGenome;
+
+        //nets[0] = new NeuralNetwork(topGenomes[0]);
+        //nets[0].genome = topGenomes[0].genome;
+        //nets[0].UpdateGenome();
+        //nets[0].isBest = true;
 
 
     }
