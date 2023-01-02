@@ -10,6 +10,7 @@ public class GrabberScript : MonoBehaviour
     IsColliding isCollidingScript;
     SpriteRenderer spriteRenderer;
     Animator anim;
+    public Transform grabbedObjectPinLocation;
 
     private void Awake()
     {
@@ -27,6 +28,7 @@ public class GrabberScript : MonoBehaviour
 
                 // Parent grabobject so it follows the grabber
                 grabObject.transform.parent = transform;
+                grabObject.transform.position = grabbedObjectPinLocation.position;
 
                 isGrabbing = true;
 

@@ -79,6 +79,9 @@ public class NetManager : MonoBehaviour
 
     public GameObject netEntityPrefab;
 
+    [Range(1, 20)]
+    public int slowAmount;
+
     //[ShowOnly] public double[] bestMutVarsBefore;
     //[ShowOnly] public double[] bestMutVars;
     #endregion
@@ -94,8 +97,16 @@ public class NetManager : MonoBehaviour
 
         // If the hist.txt file does not exist, create it and add data labels
         if (!File.Exists("./Assets/dat/hist.txt"))
+        {
+            // Generate headers for all trials if there are more than 1
+            string trialErrors = "";
+            if (maxTrialsPerGeneration > 1)
+                for (int i = 0; i < maxTrialsPerGeneration; i++)
+                    trialErrors += ", Trial " + i.ToString();
+            // Write headers to file
             using (StreamWriter sw = File.AppendText("./Assets/dat/hist.txt"))
-                sw.WriteLine("generation, Top Error, Gen Error");
+                sw.WriteLine("generation, Top Error, Gen Error" + trialErrors);
+        }
     }
 
     public void FixedUpdate()
@@ -205,7 +216,8 @@ public class NetManager : MonoBehaviour
                 {
                     nets[i].AddFitness(nets[i].pendingFitness);
                     // Average fitness from trials
-                    nets[i].SetFitness(nets[i].fitness/(float)maxTrialsPerGeneration);
+                    nets[i].SetFitness(nets[i].fitness / (float)maxTrialsPerGeneration);
+                    nets[i].trialFitnesses.Add(nets[i].pendingFitness);
                 }
 
                 nets.Sort();
@@ -245,12 +257,12 @@ public class NetManager : MonoBehaviour
                     bestEverError = bestError;
 
                     using (StreamWriter sw = File.AppendText("./Assets/dat/hist.txt"))
-                        sw.WriteLine((generationNumber).ToString() + ", " + bestEverError + ", " + bestError);
+                        sw.WriteLine((generationNumber).ToString() + ", " + bestEverError + ", " + bestError + GenerateTrialFitnessCSV(nets[nets.Count - 1].trialFitnesses));
 
                 }
                 else if (generationNumber % timeBetweenGenerationProgress == 0)
                     using (StreamWriter sw = File.AppendText("./Assets/dat/hist.txt"))
-                        sw.WriteLine((generationNumber).ToString() + ", " + bestEverError + ", " + bestError);
+                        sw.WriteLine((generationNumber).ToString() + ", " + bestEverError + ", " + bestError + GenerateTrialFitnessCSV(nets[nets.Count - 1].trialFitnesses));
 
                 // Find the top 3 *individual* genomes and add them to a `topGenomes` list
                 Debug.Log("lGenome: " + bestGenome);
@@ -294,10 +306,19 @@ public class NetManager : MonoBehaviour
         {
             iterations -= 1;
 
-            if (iterations % 10 == 0)
+            if (iterations % slowAmount == 0)
                 if (IterateNetEntities() == false || iterations <= 0)
                     iterations = 0;
         }
+    }
+
+    string GenerateTrialFitnessCSV(List<double> list)
+    {
+        string o = "";
+        if (maxTrialsPerGeneration > 1)
+            for (int i = 0; i < list.Count; i++)
+                o += ", " + list[i].ToString();
+        return o;
     }
 
     private void ListBestGenomes()
@@ -332,8 +353,8 @@ public class NetManager : MonoBehaviour
 
         for (int i = 0; i < populationSize; i++)
         {
-            GameObject tempEntity = Instantiate(netEntityPrefab, spawnPoint.position + new Vector3(i * 15f, 0, 0), Quaternion.identity);
-            tempEntity.GetComponent<NetEntity>().Init(nets[i], generationNumber, layers[0], maxIterations, trial);
+            GameObject tempEntity = Instantiate(netEntityPrefab, spawnPoint.position + new Vector3(i * 20f, 0, 0), Quaternion.identity);
+            tempEntity.GetComponent<NetEntity>().Init(nets[i], generationNumber, layers[0], maxIterations, trial, slowAmount);
             entityList.Add(tempEntity);
         }
         //}
@@ -485,6 +506,7 @@ public class NetManager : MonoBehaviour
         {
             nets[i].isBest = false;
             nets[i].netID = i;
+            nets[i].trialFitnesses = new List<double>();
         }
         nets[0] = new NeuralNetwork(persistenceNetwork);
         nets[0].isBest = true;
@@ -532,6 +554,7 @@ public class NetManager : MonoBehaviour
                 net.ResetGenome();
                 //net.mutatableVariables = net.RandomizeMutVars();
                 net.mutatableVariables[0] = 0.25f;
+                net.trialFitnesses = new List<double>();
 
                 nets.Add(net);
             }
@@ -546,6 +569,7 @@ public class NetManager : MonoBehaviour
                 //net.mutVarSize = mutVarSize;
                 net.genome = bestGenome;
                 net.mutatableVariables = persistenceNetwork.mutatableVariables;
+                net.trialFitnesses = new List<double>();
 
                 //Array.Copy(persistenceNetwork.mutatableVariables, net.mutatableVariables, mutVarSize);
 

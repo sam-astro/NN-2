@@ -18,6 +18,8 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
     public double fitness; //fitness of the network
     public double pendingFitness; // pending trial fitness of the network
 
+    public List<double> trialFitnesses = new List<double>();
+
     private float mutationFactor;
 
     public double[] mutatableVariables; // List of mutatable doubles, similar to weights but can be used in any way by the agent

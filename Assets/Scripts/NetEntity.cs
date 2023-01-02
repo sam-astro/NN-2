@@ -23,6 +23,7 @@ public class Sense
     [Header("Optional Variables")]
     public string objectToSenseForTag;
     public Transform objectToSenseFor;
+    public Transform compareToObject;
     public LayerMask intersectionMask;
     public float initialDistance = 10.0f;
     public float sinMultiplier = 10.0f;
@@ -84,18 +85,20 @@ public class Sense
     // Gets sensor value, normalized between 0 and 1
     public double GetSensorValue(GameObject obj)
     {
+        if (compareToObject == null)
+            compareToObject = obj.transform;
         double val = 0;
         if (distanceToObject)
-            val = Vector2.Distance(obj.transform.position, objectToSenseFor.position) / initialDistance;
+            val = Vector2.Distance(compareToObject.transform.position, objectToSenseFor.position) / initialDistance;
         else if (horizontalDifference)
-            val = (obj.transform.position.x - objectToSenseFor.position.x) / initialDistance;
+            val = (compareToObject.transform.position.x - objectToSenseFor.position.x) / initialDistance;
         //(objectToSenseFor.position.x < obj.transform.position.x ? -1 : 1); // Make negative if it is less than
         else if (verticalDifference)
-            val = (obj.transform.position.y - objectToSenseFor.position.y) / initialDistance;
+            val = (compareToObject.transform.position.y - objectToSenseFor.position.y) / initialDistance;
         //(objectToSenseFor.position.x < obj.transform.position.x ? -1 : 1); // Make negative if it is less than
         else if (intersectingTrueFalse)
         {
-            RaycastHit2D r = Physics2D.Linecast(obj.transform.position, objectToSenseFor.position, intersectionMask);
+            RaycastHit2D r = Physics2D.Linecast(compareToObject.transform.position, objectToSenseFor.position, intersectionMask);
             if (r)
                 val = 1;
             else
@@ -103,9 +106,9 @@ public class Sense
         }
         else if (intersectingDistance)
         {
-            RaycastHit2D r = Physics2D.Linecast(obj.transform.position, objectToSenseFor.position, intersectionMask);
+            RaycastHit2D r = Physics2D.Linecast(compareToObject.transform.position, objectToSenseFor.position, intersectionMask);
             if (r)
-                val = Vector2.Distance(r.point, obj.transform.position) / initialDistance;
+                val = Vector2.Distance(r.point, compareToObject.transform.position) / initialDistance;
             else
                 val = 1;
         }
@@ -143,18 +146,11 @@ public class NetEntity : MonoBehaviour
 
     public int numberOfInputs;
 
-    int timeElapsed = 0;
-
-    float totalRotationalDifference = 0;
-    float totalheightDifference = 0;
-    float totalDistanceOverTime = 0;
-    float totalXVelocity = 0;
+    [ShowOnly] public int timeElapsed = 0;
 
     public SpriteRenderer[] mainSprites;
     public HingeJoint2D[] hinges;
     public bool randomizeSpriteColor = true;
-
-    float bestDistance = 10000;
 
     [Header("Fitness Modifiers")]
     public bool bodyTouchingGroundIsBad = false;
@@ -176,7 +172,8 @@ public class NetEntity : MonoBehaviour
 
     [ShowOnly] public string genome = "blankgen";
     [ShowOnly] public double totalFitness;
-    int totalIterations;
+    [ShowOnly] public double tempFitness;
+    [ShowOnly] public int totalIterations;
     [ShowOnly] public int trial;
     public Vector2[] trialValues;
 
@@ -191,6 +188,14 @@ public class NetEntity : MonoBehaviour
     public GameObject objectGoal;
 
     float initialDistance = 1f;
+
+    float railMoveSpeed = 0f;
+
+    [ShowOnly] public float timeToGoal = 0f;
+
+    int elapseSlowAmount = 1;
+
+    Vector3 originalPosition;
 
     public bool Elapse()
     {
@@ -210,20 +215,48 @@ public class NetEntity : MonoBehaviour
 
                 for (int p = 0; p < inputs.Length; p++)
                 {
-                    //if (p == 4 || p == 5)
+                    //if (p == 6)
                     //    continue;
                     inputs[p] = senses[p].GetSensorValue(mainSprites[0].gameObject);
                 }
-                //inputs[0] = senses[0].GetSensorValue(timeElapsed, mainSprites[0].gameObject);
+                if (Vector2.Distance(grabber.transform.position, objectGoal.transform.position)<=0.3f)
+                    inputs[3] = 1f;
+                else
+                    inputs[3] = 0f;
+                //senses[6].lastOutput = (inputs[6] > 0 ? -1f : 1f) + (float)senses[6].GetSensorValue(mainSprites[0].gameObject);
+                //inputs[6] = (inputs[6]>0?-1f:1f)+inputs[6];
+                //inputs[6] = senses[6].lastOutput;
 
                 outputs = net.FeedForward(inputs);
             }
 
+            // Change rail move speed based on output
+
+            if (timeElapsed % 2 == 0)
+                railMoveSpeed = ((float)outputs[3] - 0.5f) * 9f;
+
+            float newX = Mathf.Clamp(mainSprites[0].transform.position.x + railMoveSpeed * Time.deltaTime, originalPosition.x - 3.5f, originalPosition.x + 3.5f);
+            Rigidbody2D bodyRb = mainSprites[0].GetComponent<Rigidbody2D>();
+            // Determine if the velocity should get added or not based on the current position and clamp parameters
+            if (railMoveSpeed > 0 && bodyRb.position.x >= originalPosition.x + 3.5f)
+                railMoveSpeed = 0;
+            else if (railMoveSpeed < 0 && bodyRb.position.x <= originalPosition.x - 3.5f)
+                railMoveSpeed = 0;
+            bodyRb.velocity = (new Vector2(
+                railMoveSpeed,
+                0
+                ));
+            //bodyRb.position = new Vector3(
+            //    Mathf.Clamp(bodyRb.position.x, originalPosition.x - 3.5f, originalPosition.x + 3.5f),
+            //    originalPosition.y,
+            //    originalPosition.z
+            //    );
+
             for (int i = 0; i < hinges.Length; i++)
             {
-                // Change motor speed based on output
                 if (timeElapsed % 2 == 0)
                 {
+                    // Change motor speed based on output
                     JointMotor2D changemotor = hinges[i].motor;
                     changemotor.motorSpeed = ((float)outputs[i] - 0.5f) * 180.0f;
                     hinges[i].motor = changemotor;
@@ -252,29 +285,28 @@ public class NetEntity : MonoBehaviour
                     }
             }
 
-            if (outputs[outputs.Length - 1] > 0.5f)
+            if (outputs[3] > 0.5f)
                 grabber.Grab();
             //else
             //    grabber.Drop();
 
-            // If the grabber is grabbing, then change the moveto location to the goal, otherwise change it back
-            if (grabber.isGrabbing)
-            {
-                senses[4].objectToSenseFor = objectGoal.transform;
-                senses[5].objectToSenseFor = objectGoal.transform;
-            }
-            else
-            {
-                senses[4].objectToSenseFor = grabbableObject.transform;
-                senses[5].objectToSenseFor = grabbableObject.transform;
-            }
+            //// If the grabber is grabbing, then change the moveto location to the goal, otherwise change it back
+            //if (grabber.isGrabbing)
+            //{
+            //    senses[4].objectToSenseFor = objectGoal.transform;
+            //    senses[5].objectToSenseFor = objectGoal.transform;
+            //    senses[6].objectToSenseFor = objectGoal.transform;
+            //}
+            //else
+            //{
+            //    senses[4].objectToSenseFor = grabbableObject.transform;
+            //    senses[5].objectToSenseFor = grabbableObject.transform;
+            //    senses[6].objectToSenseFor = grabbableObject.transform;
+            //}
 
             //// Set the sin multiplier based off of output 4
             //if (outputAffectsSin)
             //    senses[0].sinMultiplier = 5f * (float)outputs[4];
-
-            if (rotationIsBad)
-                totalRotationalDifference += Mathf.Abs(senses[1].lastOutput);
 
             // if (senses[2].GetSensorValue(gameObject) <= 0.25d) // If touching ground
             // {
@@ -302,18 +334,35 @@ public class NetEntity : MonoBehaviour
 
             //if (senseVal < bestDistance)
             //{
-            float goalDist = Vector2.Distance(grabbableObject.transform.position, objectGoal.transform.position);
+            //float goalDist = Vector2.Distance(grabber.transform.position, objectGoal.transform.position);
+            float goalDist = (float)senses[6].GetSensorValue(grabber.gameObject);
 
             // If the box is within a small range of the goal, it can count as winning this test
-            if (goalDist <= 0.3f)
+            if (goalDist <= 0.03f)
             {
-                net.pendingFitness = -0.1f;
+                net.pendingFitness = 0f;
+
+                //// Add best time to fitness, so the agent wants to reach the goal faster
+                //if (rewardTimeAlive)
+                //    net.pendingFitness += timeToGoal / 4f;
+
                 // Change goal color
                 objectGoal.GetComponent<SpriteRenderer>().color = Color.green;
-                //networkRunning = false;
             }
             else
+            {
                 net.pendingFitness = goalDist / initialDistance;
+
+                //// Keep increasing the timeToGoal variable until the player reaches the goal
+                //timeToGoal = (float)(timeElapsed) / ((float)totalIterations / (float)elapseSlowAmount);
+
+                //// Add current time to fitness, so the agent wants to reach the goal faster
+                //if (rewardTimeAlive)
+                //    net.pendingFitness += timeToGoal / 4f;
+
+                // Change goal color
+                objectGoal.GetComponent<SpriteRenderer>().color = Color.gray;
+            }
 
             //net.pendingFitness = (1.5f+ 3.68f) - (grabbableObject.transform.position.y+3.68f);
             //if (directionChangeIsGood)
@@ -372,13 +421,14 @@ public class NetEntity : MonoBehaviour
 
 
             totalFitness = net.fitness + net.pendingFitness;
+            tempFitness = net.pendingFitness;
 
             return true;
         }
         return false;
     }
 
-    public void Init(NeuralNetwork net, int generation, int numberOfInputs, int totalIterations, int trial)
+    public void Init(NeuralNetwork net, int generation, int numberOfInputs, int totalIterations, int trial, int elapseSlowAmount)
     {
         //transform.localPosition = Vector3.zero;
         //transform.eulerAngles = Quaternion.Euler(0, 0, trialValues[trial]).eulerAngles;
@@ -386,26 +436,40 @@ public class NetEntity : MonoBehaviour
         this.generation = generation;
         this.numberOfInputs = numberOfInputs;
         this.totalIterations = totalIterations;
-        this.totalRotationalDifference = 0;
         this.trial = trial;
         networkRunning = true;
         this.net.fitness += this.net.pendingFitness;
-        this.net.pendingFitness = 0;
-        this.genome = net.genome;
-        this.netID = net.netID;
-        this.weightsHash = net.weightsHash;
+        if (this.net.pendingFitness != 0f)
+            this.net.trialFitnesses.Add(this.net.pendingFitness);
+        this.net.pendingFitness = 0f;
+        genome = net.genome;
+        netID = net.netID;
+        weightsHash = net.weightsHash;
+        this.elapseSlowAmount = elapseSlowAmount;
         //net.error = 0;
         timeElapsed = 0;
-        bestDistance = 10000;
+        timeToGoal = 0;
+        tempFitness = 0;
 
-        grabbableObject.transform.position = new Vector3(trialValues[trial].x + transform.position.x, grabbableObject.transform.position.y);
-        objectGoal.transform.position = new Vector3(trialValues[trial].y + transform.position.x, objectGoal.transform.position.y);
+        //grabbableObject.transform.position = new Vector3(trialValues[trial].x + transform.position.x, grabbableObject.transform.position.y);
+        objectGoal.transform.position = new Vector3(trialValues[trial].x + transform.position.x, trialValues[trial].y);
+        //objectGoal.transform.position = new Vector3(trialValues[trial].y + transform.position.x, UnityEngine.Random.Range(-1.7f, -3.7f));
 
-        initialDistance = Vector2.Distance(grabbableObject.transform.position, objectGoal.transform.position);
+        //initialDistance = Vector2.Distance(grabbableObject.transform.position, objectGoal.transform.position);
+        initialDistance = Vector2.Distance(grabber.transform.position, objectGoal.transform.position);
 
+        originalPosition = mainSprites[0].transform.position;
 
-        senses[4].objectToSenseFor = grabbableObject.transform;
-        senses[5].objectToSenseFor = grabbableObject.transform;
+        mainSprites[0].GetComponent<Rigidbody2D>().position = new Vector3(
+            originalPosition.x,
+            originalPosition.y,
+            originalPosition.z
+            );
+        mainSprites[0].GetComponent<Rigidbody2D>().velocity = Vector3.zero;
+
+        //senses[4].objectToSenseFor = grabbableObject.transform;
+        //senses[5].objectToSenseFor = grabbableObject.transform;
+        //senses[6].objectToSenseFor = grabbableObject.transform;
 
         //// Set the sin multiplier based off of mutVar 0
         //if (outputAffectsSin)
@@ -416,13 +480,13 @@ public class NetEntity : MonoBehaviour
 
         // Show the crown if this is the best network
         bestCrown.SetActive(net.isBest);
-        // Set the sprite layer to be the very front if this is the best network
-        if (net.isBest)
-            for (int i = 0; i < mainSprites.Length; i++)
-                mainSprites[i].sortingOrder = 1000;
-        else
-            for (int i = 0; i < mainSprites.Length; i++)
-                mainSprites[i].sortingOrder = netID;
+        //// Set the sprite layer to be the very front if this is the best network
+        //if (net.isBest)
+        //    for (int i = 0; i < mainSprites.Length; i++)
+        //        mainSprites[i].sortingOrder = 1000;
+        //else
+        //    for (int i = 0; i < mainSprites.Length; i++)
+        //        mainSprites[i].sortingOrder = netID;
 
         foreach (var s in senses)
             s.Initialize(mainSprites[0].gameObject);
