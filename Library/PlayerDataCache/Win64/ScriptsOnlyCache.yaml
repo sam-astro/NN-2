@@ -34,10 +34,8 @@ ScriptsOnlyBuild:
     UnityEditor.Graphs.dll:
     - UnityEditor.Graphs.AnimationBlendTree.Graph
     - UnityEditor.Graphs.AnimationBlendTree.GraphGUI
-    - UnityEditor.Graphs.AnimationStateMachine.AnyStateNode
     - UnityEditor.Graphs.AnimationStateMachine.Graph
     - UnityEditor.Graphs.AnimationStateMachine.GraphGUI
-    - UnityEditor.Graphs.AnimationStateMachine.StateNode
     - UnityEditor.Graphs.AnimatorControllerTool
     UnityEditor.TestRunner.dll:
     - UnityEditor.TestTools.TestRunner.Api.CallbacksHolder
@@ -85,37 +83,37 @@ ScriptsOnlyBuild:
     - Class: 104
       Script: {instanceID: 0}
     - Class: 114
-      Script: {instanceID: 1572}
+      Script: {instanceID: 1580}
     - Class: 114
-      Script: {instanceID: 1864}
+      Script: {instanceID: 1872}
     - Class: 114
-      Script: {instanceID: 2272}
+      Script: {instanceID: 2280}
     - Class: 114
-      Script: {instanceID: 2706}
+      Script: {instanceID: 2714}
     - Class: 114
-      Script: {instanceID: 2878}
+      Script: {instanceID: 2886}
     - Class: 114
-      Script: {instanceID: 2928}
+      Script: {instanceID: 2936}
     - Class: 114
-      Script: {instanceID: 3114}
+      Script: {instanceID: 3122}
     - Class: 114
-      Script: {instanceID: 3136}
+      Script: {instanceID: 3144}
     - Class: 114
-      Script: {instanceID: 3362}
+      Script: {instanceID: 3370}
     - Class: 114
-      Script: {instanceID: 3504}
+      Script: {instanceID: 3512}
     - Class: 114
-      Script: {instanceID: 4348}
+      Script: {instanceID: 4130}
     - Class: 114
-      Script: {instanceID: 4892}
+      Script: {instanceID: 4358}
     - Class: 114
-      Script: {instanceID: 5162}
+      Script: {instanceID: 4902}
     - Class: 114
-      Script: {instanceID: 5292}
+      Script: {instanceID: 5172}
     - Class: 114
-      Script: {instanceID: 5816}
+      Script: {instanceID: 5302}
     - Class: 114
-      Script: {instanceID: 27978}
+      Script: {instanceID: 5826}
     - Class: 115
       Script: {instanceID: 0}
     - Class: 128
@@ -151,7 +149,7 @@ ScriptsOnlyBuild:
     className: Image
   - hash:
       serializedVersion: 2
-      Hash: b0ae9e862ea0a818c65edfefff444426
+      Hash: 1406c68c3087e19ec87a4675c2563be3
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: NetEntity
@@ -487,6 +485,12 @@ ScriptsOnlyBuild:
     className: PositionAsUV1
   - hash:
       serializedVersion: 2
+      Hash: 18ec5e31f6484742daead9f565e1ecaa
+    assemblyName: Assembly-CSharp.dll
+    namespaceName: 
+    className: GrabberScript
+  - hash:
+      serializedVersion: 2
       Hash: 87ff43d2baf3385cba327d8f803a4ebb
     assemblyName: Unity.Timeline.dll
     namespaceName: UnityEngine.Timeline
@@ -695,12 +699,6 @@ ScriptsOnlyBuild:
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: Gyro
-  - hash:
-      serializedVersion: 2
-      Hash: 7aadb5b417de614de9928611201277c5
-    assemblyName: Assembly-CSharp.dll
-    namespaceName: 
-    className: GrabberScript
   platform: 19
   scenePathNames:
   - Assets/Scenes/SampleScene.unity

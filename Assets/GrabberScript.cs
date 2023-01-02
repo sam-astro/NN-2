@@ -7,10 +7,11 @@ public class GrabberScript : MonoBehaviour
 {
     public GameObject grabObject;
     public bool isGrabbing;
-    IsColliding isCollidingScript;
+    [HideInInspector] public IsColliding isCollidingScript;
     SpriteRenderer spriteRenderer;
-    Animator anim;
+    [HideInInspector] public Animator anim;
     public Transform grabbedObjectPinLocation;
+    public bool canMoveIt;
 
     private void Awake()
     {
@@ -27,8 +28,12 @@ public class GrabberScript : MonoBehaviour
                 grabObject = isCollidingScript.colObject;
 
                 // Parent grabobject so it follows the grabber
-                grabObject.transform.parent = transform;
-                grabObject.transform.position = grabbedObjectPinLocation.position;
+                if (canMoveIt)
+                {
+                    grabObject.transform.parent = transform;
+                    grabObject.transform.position = grabbedObjectPinLocation.position;
+                    grabObject.GetComponent<Rigidbody2D>().simulated = false;
+                }
 
                 isGrabbing = true;
 
@@ -36,7 +41,6 @@ public class GrabberScript : MonoBehaviour
 
                 //spriteRenderer.color = Color.green;
 
-                grabObject.GetComponent<Rigidbody2D>().simulated = false;
             }
     }
 
@@ -45,7 +49,11 @@ public class GrabberScript : MonoBehaviour
         if (isGrabbing)
         {
             // Unparent grabobject so it no longer follows the grabber
-            grabObject.transform.parent = transform.parent.parent;
+            if (canMoveIt)
+            {
+                grabObject.transform.parent = transform.parent.parent;
+                grabObject.GetComponent<Rigidbody2D>().simulated = true;
+            }
 
             isGrabbing = false;
 
@@ -53,7 +61,6 @@ public class GrabberScript : MonoBehaviour
 
             //spriteRenderer.color = Color.red;
 
-            grabObject.GetComponent<Rigidbody2D>().simulated = true;
 
 
             grabObject = null;

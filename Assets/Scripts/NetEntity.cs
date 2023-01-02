@@ -197,6 +197,15 @@ public class NetEntity : MonoBehaviour
 
     Vector3 originalPosition;
 
+    public Gradient accuracyGradient;
+
+    [HideInInspector]
+    public NetUI netUI;
+
+    Vector3 targetLocation;
+
+    float totalDistance;
+
     public bool Elapse()
     {
         if (networkRunning == true)
@@ -219,15 +228,21 @@ public class NetEntity : MonoBehaviour
                     //    continue;
                     inputs[p] = senses[p].GetSensorValue(mainSprites[0].gameObject);
                 }
-                if (Vector2.Distance(grabber.transform.position, objectGoal.transform.position)<=0.3f)
+                //if (Vector2.Distance(grabber.transform.position, targetLocation) <= 0.3f)
+                if (grabber.isCollidingScript.isColliding)
                     inputs[3] = 1f;
                 else
-                    inputs[3] = 0f;
-                //senses[6].lastOutput = (inputs[6] > 0 ? -1f : 1f) + (float)senses[6].GetSensorValue(mainSprites[0].gameObject);
+                    inputs[3] = -1f;
+                senses[3].lastOutput = (float)inputs[3];
                 //inputs[6] = (inputs[6]>0?-1f:1f)+inputs[6];
                 //inputs[6] = senses[6].lastOutput;
 
                 outputs = net.FeedForward(inputs);
+                if (net.isBest)
+                {
+                    netUI.UpdateOutputs(outputs);
+                    netUI.UpdateInputs(inputs);
+                }
             }
 
             // Change rail move speed based on output
@@ -262,47 +277,54 @@ public class NetEntity : MonoBehaviour
                     hinges[i].motor = changemotor;
                 }
 
-                // Get direction and see if it changed for joints
-                if (directionChangeIsGood)
-                    if (i <= 1)
-                    {
-                        bool direction = hinges[i].motor.motorSpeed > 0 ? true : false;
-                        if (directions[i] == direction)
-                        {  // It is still going in the same direction
-                           //directionTimes[i] += 1+Mathf.Abs(hinges[i].motor.motorSpeed)/90.0f;
-                            directionTimes[i] += 1;
-                        }
-                        else // It changed direction
-                        {
-                            finalErrorOffset += Mathf.Pow(directionTimes[i], 2) / (float)(totalIterations * totalIterations);
-                            directionTimes[i] = 0;
-                            directions[i] = !directions[i];
-                        }
-                        if (slowRotationIsBad)
-                            // If slow motor speed, also add penalty
-                            if (Mathf.Abs(hinges[i].motor.motorSpeed) < 20)
-                                directionTimes[i] += (20f - Mathf.Abs(hinges[i].motor.motorSpeed)) / 20f;
-                    }
+                //// Get direction and see if it changed for joints
+                //if (directionChangeIsGood)
+                //    if (i <= 1)
+                //    {
+                //        bool direction = hinges[i].motor.motorSpeed > 0 ? true : false;
+                //        if (directions[i] == direction)
+                //        {  // It is still going in the same direction
+                //           //directionTimes[i] += 1+Mathf.Abs(hinges[i].motor.motorSpeed)/90.0f;
+                //            directionTimes[i] += 1;
+                //        }
+                //        else // It changed direction
+                //        {
+                //            finalErrorOffset += Mathf.Pow(directionTimes[i], 2) / (float)(totalIterations * totalIterations);
+                //            directionTimes[i] = 0;
+                //            directions[i] = !directions[i];
+                //        }
+                //        if (slowRotationIsBad)
+                //            // If slow motor speed, also add penalty
+                //            if (Mathf.Abs(hinges[i].motor.motorSpeed) < 20)
+                //                directionTimes[i] += (20f - Mathf.Abs(hinges[i].motor.motorSpeed)) / 20f;
+                //    }
             }
 
-            if (outputs[3] > 0.5f)
+            if (outputs[3] > 0.5f && !grabber.isGrabbing)
+            {
+                finalErrorOffset = -0.2f;
                 grabber.Grab();
+            }
+            if (grabber.isGrabbing)
+                targetLocation = objectGoal.transform.position;
             //else
             //    grabber.Drop();
 
-            //// If the grabber is grabbing, then change the moveto location to the goal, otherwise change it back
-            //if (grabber.isGrabbing)
-            //{
-            //    senses[4].objectToSenseFor = objectGoal.transform;
-            //    senses[5].objectToSenseFor = objectGoal.transform;
-            //    senses[6].objectToSenseFor = objectGoal.transform;
-            //}
-            //else
-            //{
-            //    senses[4].objectToSenseFor = grabbableObject.transform;
-            //    senses[5].objectToSenseFor = grabbableObject.transform;
-            //    senses[6].objectToSenseFor = grabbableObject.transform;
-            //}
+            // If the grabber is grabbing, then change the moveto location to the goal, otherwise change it back
+            if (grabber.isGrabbing)
+            {
+                senses[3].objectToSenseFor = objectGoal.transform;
+                senses[4].objectToSenseFor = objectGoal.transform;
+                senses[5].objectToSenseFor = objectGoal.transform;
+                senses[6].objectToSenseFor = objectGoal.transform;
+            }
+            else
+            {
+                senses[3].objectToSenseFor = grabbableObject.transform;
+                senses[4].objectToSenseFor = grabbableObject.transform;
+                senses[5].objectToSenseFor = grabbableObject.transform;
+                senses[6].objectToSenseFor = grabbableObject.transform;
+            }
 
             //// Set the sin multiplier based off of output 4
             //if (outputAffectsSin)
@@ -334,35 +356,39 @@ public class NetEntity : MonoBehaviour
 
             //if (senseVal < bestDistance)
             //{
-            //float goalDist = Vector2.Distance(grabber.transform.position, objectGoal.transform.position);
-            float goalDist = (float)senses[6].GetSensorValue(grabber.gameObject);
+            float goalDist = Vector2.Distance(grabbableObject.transform.position, objectGoal.transform.position);
+            //float goalDist = (float)senses[6].GetSensorValue(grabber.gameObject);
+            totalDistance += Vector2.Distance(grabber.transform.position, targetLocation);
 
-            // If the box is within a small range of the goal, it can count as winning this test
-            if (goalDist <= 0.03f)
-            {
-                net.pendingFitness = 0f;
+            //// If the box is within a small range of the goal and holding object, it can count as winning this test
+            //if (goalDist <= 0.3f && grabber.isGrabbing)
+            //{
+            //    net.pendingFitness = -0.05f + goalDist/initialDistance + finalErrorOffset;
 
-                //// Add best time to fitness, so the agent wants to reach the goal faster
-                //if (rewardTimeAlive)
-                //    net.pendingFitness += timeToGoal / 4f;
+            //    //grabber.anim.SetBool("grabbing", true);
 
-                // Change goal color
-                objectGoal.GetComponent<SpriteRenderer>().color = Color.green;
-            }
-            else
-            {
-                net.pendingFitness = goalDist / initialDistance;
+            //    //// Add best time to fitness, so the agent wants to reach the goal faster
+            //    //if (rewardTimeAlive)
+            //    //    net.pendingFitness += timeToGoal / 4f;
 
-                //// Keep increasing the timeToGoal variable until the player reaches the goal
-                //timeToGoal = (float)(timeElapsed) / ((float)totalIterations / (float)elapseSlowAmount);
+            //    // Change goal color
+            //    objectGoal.GetComponent<SpriteRenderer>().color = Color.green;
+            //}
+            //else
+            //{
+            //    net.pendingFitness = goalDist/initialDistance + finalErrorOffset;
 
-                //// Add current time to fitness, so the agent wants to reach the goal faster
-                //if (rewardTimeAlive)
-                //    net.pendingFitness += timeToGoal / 4f;
+            //    //// Keep increasing the timeToGoal variable until the player reaches the goal
+            //    //timeToGoal = (float)(timeElapsed) / ((float)totalIterations / (float)elapseSlowAmount);
 
-                // Change goal color
-                objectGoal.GetComponent<SpriteRenderer>().color = Color.gray;
-            }
+            //    //// Add current time to fitness, so the agent wants to reach the goal faster
+            //    //if (rewardTimeAlive)
+            //    //    net.pendingFitness += timeToGoal / 4f;
+
+            //    // Change goal color
+            //    objectGoal.GetComponent<SpriteRenderer>().color = Color.gray;
+            //}
+            net.pendingFitness = (grabber.isGrabbing)?goalDist / initialDistance + finalErrorOffset:2f;
 
             //net.pendingFitness = (1.5f+ 3.68f) - (grabbableObject.transform.position.y+3.68f);
             //if (directionChangeIsGood)
@@ -428,6 +454,22 @@ public class NetEntity : MonoBehaviour
         return false;
     }
 
+    private void OnDrawGizmos()
+    {
+        if (networkRunning && net.isBest)
+        {
+            // Draw line from grabber to next target
+            if (targetLocation != objectGoal.transform.position)
+            {
+                Gizmos.color = accuracyGradient.Evaluate(Mathf.Clamp(1f - Vector2.Distance(grabber.transform.position, targetLocation)/8f, 0, 1));
+                Gizmos.DrawLine(grabber.transform.position, targetLocation);
+            }
+            // Draw line from box to goal
+            Gizmos.color = accuracyGradient.Evaluate(Mathf.Clamp(1f - Vector2.Distance(grabbableObject.transform.position, objectGoal.transform.position) / 8f, 0, 1));
+            Gizmos.DrawLine(grabbableObject.transform.position, objectGoal.transform.position);
+        }
+    }
+
     public void Init(NeuralNetwork net, int generation, int numberOfInputs, int totalIterations, int trial, int elapseSlowAmount)
     {
         //transform.localPosition = Vector3.zero;
@@ -450,13 +492,16 @@ public class NetEntity : MonoBehaviour
         timeElapsed = 0;
         timeToGoal = 0;
         tempFitness = 0;
+        totalDistance = 0;
+        finalErrorOffset = 1;
 
-        //grabbableObject.transform.position = new Vector3(trialValues[trial].x + transform.position.x, grabbableObject.transform.position.y);
-        objectGoal.transform.position = new Vector3(trialValues[trial].x + transform.position.x, trialValues[trial].y);
-        //objectGoal.transform.position = new Vector3(trialValues[trial].y + transform.position.x, UnityEngine.Random.Range(-1.7f, -3.7f));
+        grabbableObject.transform.position = new Vector3(trialValues[trial].x + transform.position.x, grabbableObject.transform.position.y);
+        //objectGoal.transform.position = new Vector3(trialValues[trial].x + transform.position.x, UnityEngine.Random.Range(-1.7f, -3.7f));
+        objectGoal.transform.position = new Vector3(trialValues[trial].y + transform.position.x, objectGoal.transform.position.y);
 
-        //initialDistance = Vector2.Distance(grabbableObject.transform.position, objectGoal.transform.position);
-        initialDistance = Vector2.Distance(grabber.transform.position, objectGoal.transform.position);
+        initialDistance = Vector2.Distance(grabbableObject.transform.position, objectGoal.transform.position);
+        //initialDistance = Vector2.Distance(grabber.transform.position, objectGoal.transform.position);
+        targetLocation = grabbableObject.transform.position;
 
         originalPosition = mainSprites[0].transform.position;
 
@@ -467,6 +512,8 @@ public class NetEntity : MonoBehaviour
             );
         mainSprites[0].GetComponent<Rigidbody2D>().velocity = Vector3.zero;
 
+        if (net.isBest)
+            netUI.UpdateWeightLines(net.weights);
         //senses[4].objectToSenseFor = grabbableObject.transform;
         //senses[5].objectToSenseFor = grabbableObject.transform;
         //senses[6].objectToSenseFor = grabbableObject.transform;

@@ -82,6 +82,8 @@ public class NetManager : MonoBehaviour
     [Range(1, 20)]
     public int slowAmount;
 
+    public NetUI netUI;
+
     //[ShowOnly] public double[] bestMutVarsBefore;
     //[ShowOnly] public double[] bestMutVars;
     #endregion
@@ -354,6 +356,10 @@ public class NetManager : MonoBehaviour
         for (int i = 0; i < populationSize; i++)
         {
             GameObject tempEntity = Instantiate(netEntityPrefab, spawnPoint.position + new Vector3(i * 20f, 0, 0), Quaternion.identity);
+
+            if (i == 0)
+                tempEntity.GetComponent<NetEntity>().netUI = netUI;
+
             tempEntity.GetComponent<NetEntity>().Init(nets[i], generationNumber, layers[0], maxIterations, trial, slowAmount);
             entityList.Add(tempEntity);
         }
