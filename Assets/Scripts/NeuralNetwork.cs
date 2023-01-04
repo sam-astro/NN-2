@@ -15,6 +15,8 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
     
     public float learningRate = 0.033f; // Learning rate
 
+    public bool isBest = false;
+
     /// <summary>
     /// Constructor setting up layers
     /// </summary>
