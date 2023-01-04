@@ -358,37 +358,40 @@ public class NetEntity : MonoBehaviour
             //{
             float goalDist = Vector2.Distance(grabbableObject.transform.position, objectGoal.transform.position);
             //float goalDist = (float)senses[6].GetSensorValue(grabber.gameObject);
-            totalDistance += Vector2.Distance(grabber.transform.position, targetLocation);
+            //totalDistance += Vector2.Distance(grabber.transform.position, targetLocation);
+            totalDistance += goalDist;
 
-            //// If the box is within a small range of the goal and holding object, it can count as winning this test
-            //if (goalDist <= 0.3f && grabber.isGrabbing)
-            //{
-            //    net.pendingFitness = -0.05f + goalDist/initialDistance + finalErrorOffset;
+            // If the box is within a small range of the goal and holding object, it can count as winning this test
+            if (goalDist <= 0.3f && grabber.isGrabbing)
+            {
+                //net.pendingFitness = -0.05f + goalDist / initialDistance + finalErrorOffset;
 
-            //    //grabber.anim.SetBool("grabbing", true);
+                //grabber.anim.SetBool("grabbing", true);
 
-            //    //// Add best time to fitness, so the agent wants to reach the goal faster
-            //    //if (rewardTimeAlive)
-            //    //    net.pendingFitness += timeToGoal / 4f;
+                //// Add best time to fitness, so the agent wants to reach the goal faster
+                //if (rewardTimeAlive)
+                //    net.pendingFitness += timeToGoal / 4f;
 
-            //    // Change goal color
-            //    objectGoal.GetComponent<SpriteRenderer>().color = Color.green;
-            //}
-            //else
-            //{
-            //    net.pendingFitness = goalDist/initialDistance + finalErrorOffset;
+                // Change goal color
+                objectGoal.GetComponent<SpriteRenderer>().color = Color.green;
+            }
+            else
+            {
+                timeToGoal += 1;
+                //net.pendingFitness = goalDist / initialDistance + finalErrorOffset;
 
-            //    //// Keep increasing the timeToGoal variable until the player reaches the goal
-            //    //timeToGoal = (float)(timeElapsed) / ((float)totalIterations / (float)elapseSlowAmount);
+                //// Keep increasing the timeToGoal variable until the player reaches the goal
+                //timeToGoal = (float)(timeElapsed) / ((float)totalIterations / (float)elapseSlowAmount);
 
-            //    //// Add current time to fitness, so the agent wants to reach the goal faster
-            //    //if (rewardTimeAlive)
-            //    //    net.pendingFitness += timeToGoal / 4f;
+                //// Add current time to fitness, so the agent wants to reach the goal faster
+                //if (rewardTimeAlive)
+                //    net.pendingFitness += timeToGoal / 4f;
 
-            //    // Change goal color
-            //    objectGoal.GetComponent<SpriteRenderer>().color = Color.gray;
-            //}
-            net.pendingFitness = (grabber.isGrabbing)?goalDist / initialDistance + finalErrorOffset:2f;
+                // Change goal color
+                objectGoal.GetComponent<SpriteRenderer>().color = Color.gray;
+            }
+            net.pendingFitness = (grabber.isGrabbing) ? (goalDist / initialDistance + finalErrorOffset) : 2f+ Vector2.Distance(grabber.transform.position, targetLocation)*2f;
+            net.pendingFitness += (totalDistance / timeToGoal);
 
             //net.pendingFitness = (1.5f+ 3.68f) - (grabbableObject.transform.position.y+3.68f);
             //if (directionChangeIsGood)
@@ -461,7 +464,7 @@ public class NetEntity : MonoBehaviour
             // Draw line from grabber to next target
             if (targetLocation != objectGoal.transform.position)
             {
-                Gizmos.color = accuracyGradient.Evaluate(Mathf.Clamp(1f - Vector2.Distance(grabber.transform.position, targetLocation)/8f, 0, 1));
+                Gizmos.color = accuracyGradient.Evaluate(Mathf.Clamp(1f - Vector2.Distance(grabber.transform.position, targetLocation) / 8f, 0, 1));
                 Gizmos.DrawLine(grabber.transform.position, targetLocation);
             }
             // Draw line from box to goal
@@ -497,7 +500,7 @@ public class NetEntity : MonoBehaviour
 
         grabbableObject.transform.position = new Vector3(trialValues[trial].x + transform.position.x, grabbableObject.transform.position.y);
         //objectGoal.transform.position = new Vector3(trialValues[trial].x + transform.position.x, UnityEngine.Random.Range(-1.7f, -3.7f));
-        objectGoal.transform.position = new Vector3(trialValues[trial].y + transform.position.x, objectGoal.transform.position.y);
+        objectGoal.transform.position = new Vector3(trialValues[trial].y + transform.position.x, (trial <= 1) ? objectGoal.transform.position.y:-3.7f);
 
         initialDistance = Vector2.Distance(grabbableObject.transform.position, objectGoal.transform.position);
         //initialDistance = Vector2.Distance(grabber.transform.position, objectGoal.transform.position);

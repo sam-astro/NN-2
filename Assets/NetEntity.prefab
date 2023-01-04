@@ -1844,10 +1844,10 @@ MonoBehaviour:
   totalIterations: 0
   trial: 0
   trialValues:
-  - {x: 2.5, y: -2.5}
-  - {x: 2.5, y: 3}
+  - {x: -2, y: 3}
+  - {x: 2, y: -3}
   - {x: -3, y: 3}
-  - {x: -3, y: -2.5}
+  - {x: 3, y: -3}
   mutVars: []
   netID: 0
   weightsHash: 

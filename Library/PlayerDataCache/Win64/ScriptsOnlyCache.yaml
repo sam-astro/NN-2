@@ -7,6 +7,7 @@ ScriptsOnlyBuild:
     - IsColliding
     - NetEntity
     - NetManager
+    - NetUI
     - TimeManager
     Unity.2D.Animation.Editor.dll:
     - UnityEditor.U2D.Animation.BoneGizmo
@@ -83,38 +84,42 @@ ScriptsOnlyBuild:
     - Class: 104
       Script: {instanceID: 0}
     - Class: 114
-      Script: {instanceID: 1580}
+      Script: {instanceID: 1572}
     - Class: 114
-      Script: {instanceID: 1872}
+      Script: {instanceID: 1864}
     - Class: 114
-      Script: {instanceID: 2280}
+      Script: {instanceID: 2272}
     - Class: 114
-      Script: {instanceID: 2714}
+      Script: {instanceID: 2706}
     - Class: 114
-      Script: {instanceID: 2886}
+      Script: {instanceID: 2878}
     - Class: 114
-      Script: {instanceID: 2936}
+      Script: {instanceID: 2928}
     - Class: 114
-      Script: {instanceID: 3122}
+      Script: {instanceID: 3114}
     - Class: 114
-      Script: {instanceID: 3144}
+      Script: {instanceID: 3136}
     - Class: 114
-      Script: {instanceID: 3370}
+      Script: {instanceID: 3362}
     - Class: 114
-      Script: {instanceID: 3512}
+      Script: {instanceID: 3504}
     - Class: 114
-      Script: {instanceID: 4130}
+      Script: {instanceID: 3556}
     - Class: 114
-      Script: {instanceID: 4358}
+      Script: {instanceID: 4124}
     - Class: 114
-      Script: {instanceID: 4902}
+      Script: {instanceID: 4352}
     - Class: 114
-      Script: {instanceID: 5172}
+      Script: {instanceID: 4896}
     - Class: 114
-      Script: {instanceID: 5302}
+      Script: {instanceID: 5166}
     - Class: 114
-      Script: {instanceID: 5826}
+      Script: {instanceID: 5296}
+    - Class: 114
+      Script: {instanceID: 5820}
     - Class: 115
+      Script: {instanceID: 0}
+    - Class: 120
       Script: {instanceID: 0}
     - Class: 128
       Script: {instanceID: 0}
@@ -149,7 +154,7 @@ ScriptsOnlyBuild:
     className: Image
   - hash:
       serializedVersion: 2
-      Hash: 1406c68c3087e19ec87a4675c2563be3
+      Hash: 6d4fe7d2f94793cfd54cb124e9c29591
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: NetEntity
@@ -407,10 +412,16 @@ ScriptsOnlyBuild:
     className: SpriteShapeController
   - hash:
       serializedVersion: 2
-      Hash: 8868856b388364c365b3e7dbbd38b64f
+      Hash: b5ba012fe52437d53a85d9fc5736dd5f
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: NetManager
+  - hash:
+      serializedVersion: 2
+      Hash: 61375a83a8c3575cca57bb090b111108
+    assemblyName: Assembly-CSharp.dll
+    namespaceName: 
+    className: NetUI
   - hash:
       serializedVersion: 2
       Hash: 4fd8bf02e3089425d3502e26c44ba31a
@@ -485,7 +496,7 @@ ScriptsOnlyBuild:
     className: PositionAsUV1
   - hash:
       serializedVersion: 2
-      Hash: 18ec5e31f6484742daead9f565e1ecaa
+      Hash: 94f2335a8fb12524f43f462a32777c9e
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: GrabberScript

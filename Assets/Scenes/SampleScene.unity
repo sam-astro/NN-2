@@ -280,7 +280,7 @@ MonoBehaviour:
   layers: 0700000014000000280000005000000005000000
   learningRate: 0
   iterations: 0
-  maxIterations: 2000
+  maxIterations: 4000
   mutVarSize: 1
   maxTrialsPerGeneration: 4
   trial: 0
