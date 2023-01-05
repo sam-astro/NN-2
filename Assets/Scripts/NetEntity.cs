@@ -391,7 +391,17 @@ public class NetEntity : MonoBehaviour
 
         //mutVars = net.mutatableVariables;
         if (net.isBest)
+        {
+            netUI.RemakeDrawing(net.droppedNeurons);
             netUI.UpdateWeightLines(net.weights);
+
+            // Count total dropped neurons and print
+            int total = 0;
+            for (int i = 0; i < net.droppedNeurons.Length; i++)
+                for (int j = 0; j < net.droppedNeurons[i].Length; j++)
+                    total += net.droppedNeurons[i][j] == true ? 1 : 0;
+            Debug.Log(total);
+        }
 
         // Show the crown if this is the best network
         bestCrown.SetActive(net.isBest);

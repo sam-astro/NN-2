@@ -14,6 +14,15 @@ using UnityEngine;
 using TMPro;
 using System.Security.Cryptography;
 
+[System.Serializable]
+class SaveData
+{
+    public double[][][] weights;
+    public double[][] mutVars;
+    public bool[][] droppedNeurons;
+
+}
+
 public class NetManager : MonoBehaviour
 {
     public int populationSize = 100;
@@ -224,9 +233,11 @@ public class NetManager : MonoBehaviour
                         ((int)Time.realtimeSinceStartup + timeManager.offsetTime).ToString() + "#" +
                         bestGenome);
 
+                    // Save best weights
                     BinaryFormatter bf = new BinaryFormatter();
                     using (FileStream fs = new FileStream("./Assets/dat/WeightSave.bin", FileMode.Create))
                         bf.Serialize(fs, persistenceNetwork.weights);
+
                     // Get hash of best weights
                     bestHash = ByteArrayToString(new MD5CryptoServiceProvider().ComputeHash(System.IO.File.ReadAllBytes("./Assets/dat/WeightSave.bin")));
 
@@ -235,6 +246,11 @@ public class NetManager : MonoBehaviour
                     using (FileStream fs2 = new FileStream("./Assets/dat/MutVars.bin", FileMode.Create))
                         bf2.Serialize(fs2, persistenceNetwork.mutatableVariables);
 
+                    // Save best dropped neurons
+                    BinaryFormatter bf3 = new BinaryFormatter();
+                    using (FileStream fs3 = new FileStream("./Assets/dat/DroppedNeurons.bin", FileMode.Create))
+                        bf3.Serialize(fs3, persistenceNetwork.droppedNeurons);
+
                     persistence.Close();
                 }
 
@@ -242,6 +258,7 @@ public class NetManager : MonoBehaviour
                 {
                     persistenceNetwork.weights = nets[nets.Count - 1].weights;
                     persistenceNetwork.mutatableVariables = nets[nets.Count - 1].mutatableVariables;
+                    persistenceNetwork.droppedNeurons = nets[nets.Count - 1].droppedNeurons;
                     persistenceNetwork.genome = nets[nets.Count - 1].genome;
                     bestEverError = bestError;
 
@@ -458,6 +475,7 @@ public class NetManager : MonoBehaviour
                 nets[i].genome = topGenomes[g].genome;
                 nets[i].UpdateGenome();
                 nets[i].Mutate();
+                nets[i].droppedNeurons = nets[i].MutateDroppedNeurons();
                 nets[i].mutatableVariables = nets[i].MutateMutVars();
             }
         }
@@ -466,6 +484,7 @@ public class NetManager : MonoBehaviour
         {
             nets[i] = new NeuralNetwork(persistenceNetwork);
             nets[i].weights = nets[i].RandomizeWeights();
+            nets[i].droppedNeurons = nets[i].RandomizeDroppedNeurons();
             nets[i].genome = nets[i].GenerateGenome();
             nets[i].mutatableVariables = nets[i].MutateMutVars();
         }
@@ -479,11 +498,13 @@ public class NetManager : MonoBehaviour
             {
                 nets[i].ResetGenome();
                 nets[i].CopyWeights(nets[i].RandomizeWeights());
+                nets[i].droppedNeurons = nets[i].RandomizeDroppedNeurons();
             }
             else
             {
                 nets[i] = new NeuralNetwork(nets[i]);
                 nets[i].Mutate();
+                nets[i].droppedNeurons = nets[i].MutateDroppedNeurons();
                 nets[i].UpdateGenome();
                 nets[i].mutatableVariables = nets[i].MutateMutVars();
             }
@@ -532,6 +553,8 @@ public class NetManager : MonoBehaviour
                 net.layers = layers;
                 //net.mutVarSize = mutVarSize;
                 net.ResetGenome();
+                net.CopyWeights(net.RandomizeWeights());
+                net.droppedNeurons = net.RandomizeDroppedNeurons();
                 //net.mutatableVariables = net.RandomizeMutVars();
                 net.mutatableVariables[0] = 0.25f;
 
@@ -561,6 +584,8 @@ public class NetManager : MonoBehaviour
             bestGenome = nets[0].GenerateGenome();
             persistenceNetwork.genome = bestGenome;
             persistenceNetwork.mutatableVariables[0] = 0.25f;
+            persistenceNetwork.CopyWeights(persistenceNetwork.RandomizeWeights());
+            persistenceNetwork.droppedNeurons = persistenceNetwork.RandomizeDroppedNeurons();
             //persistenceNetwork.mutatableVariables = persistenceNetwork.RandomizeMutVars();
             //persistenceNetwork.RandomizeWeights();
         }
@@ -628,6 +653,10 @@ public class NetManager : MonoBehaviour
             BinaryFormatter bf2 = new BinaryFormatter();
             using (FileStream fs2 = new FileStream("./Assets/dat/MutVars.bin", FileMode.Open))
                 persistenceNetwork.mutatableVariables = (double[])bf2.Deserialize(fs2);
+            // Load dropped neurons data into `persistenceNetwork`
+            BinaryFormatter bf3 = new BinaryFormatter();
+            using (FileStream fs3 = new FileStream("./Assets/dat/DroppedNeurons.bin", FileMode.Open))
+                persistenceNetwork.droppedNeurons = (bool[][])bf3.Deserialize(fs3);
             //bestMutVars = persistenceNetwork.mutatableVariables;
 
             // Get hash of best weights

@@ -268,7 +268,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moving: 1
-  speed: 1
+  speed: 0.75
 --- !u!61 &510059494
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -423,6 +423,7 @@ MonoBehaviour:
   lastWorst: 100000000
   lastBest: 100000000
   bestEverError: 100000
+  entityList: []
   netEntityPrefab: {fileID: 7647521876100407775, guid: 1a697f95b04bb3c49a95245d48113a8b, type: 3}
 --- !u!20 &519420031
 Camera:
@@ -1238,6 +1239,35 @@ MonoBehaviour:
   linePrefab: {fileID: 6007363563210719088, guid: d891fe48ab20ae24982f540fa9c19c5d, type: 3}
   nodePrefab: {fileID: 2789386080513097262, guid: 651da8648dca79147ae0c41be584aab2, type: 3}
   netManager: {fileID: 519420030}
+  grNegPos:
+    serializedVersion: 2
+    key0: {r: 0, g: 0.46979856, b: 1, a: 1}
+    key1: {r: 0, g: 1, b: 0.00002193451, a: 1}
+    key2: {r: 1, g: 0.1462264, b: 0.77837694, a: 0}
+    key3: {r: 0, g: 0, b: 0, a: 0}
+    key4: {r: 0, g: 0, b: 0, a: 0}
+    key5: {r: 0, g: 0, b: 0, a: 0}
+    key6: {r: 0, g: 0, b: 0, a: 0}
+    key7: {r: 0, g: 0, b: 0, a: 0}
+    ctime0: 20432
+    ctime1: 32382
+    ctime2: 45296
+    ctime3: 0
+    ctime4: 0
+    ctime5: 0
+    ctime6: 0
+    ctime7: 0
+    atime0: 0
+    atime1: 65535
+    atime2: 0
+    atime3: 0
+    atime4: 0
+    atime5: 0
+    atime6: 0
+    atime7: 0
+    m_Mode: 0
+    m_NumColorKeys: 3
+    m_NumAlphaKeys: 2
 --- !u!4 &1242479536
 Transform:
   m_ObjectHideFlags: 0

@@ -136,6 +136,8 @@ ScriptsOnlyBuild:
       Script: {instanceID: 0}
     - Class: 233
       Script: {instanceID: 0}
+    - Class: 850595691
+      Script: {instanceID: 0}
   scriptHashData:
   - hash:
       serializedVersion: 2
@@ -409,7 +411,7 @@ ScriptsOnlyBuild:
     className: SpriteShapeController
   - hash:
       serializedVersion: 2
-      Hash: 8399f60ed6b63fdc59a94bf1d3b5fe8f
+      Hash: 139bf6d4e0a64d8db9211812dc15c0a9
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: NetManager
@@ -697,10 +699,16 @@ ScriptsOnlyBuild:
     className: Gyro
   - hash:
       serializedVersion: 2
-      Hash: 61375a83a8c3575cca57bb090b111108
+      Hash: ca68be14a012d97d4fb5193e366f3826
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: NetUI
+  - hash:
+      serializedVersion: 2
+      Hash: ff7f58b226cfe4de0dc241bd88d5a904
+    assemblyName: Assembly-CSharp.dll
+    namespaceName: 
+    className: Outline
   platform: 19
   scenePathNames:
   - Assets/Scenes/SampleScene.unity
