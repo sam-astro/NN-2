@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 51837856}
   - component: {fileID: 51837858}
   - component: {fileID: 51837857}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Knee-B
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -107,7 +107,7 @@ GameObject:
   - component: {fileID: 1186856165}
   - component: {fileID: 1186856167}
   - component: {fileID: 1186856166}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Knee-A
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -350,7 +350,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6689386372796925862}
   - component: {fileID: 4800183973290087751}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: sensors
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -395,7 +395,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1514972417380233598}
   - component: {fileID: 5720690118940588543}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: sensors (2)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -440,7 +440,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4892928517897823918}
   - component: {fileID: 326991005606072571}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: sensors (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -656,7 +656,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2045146956392664397}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: GroundSensor (8)
   m_TagString: Untagged
   m_Icon: {fileID: 3443629218296621865, guid: 0000000000000000d000000000000000, type: 0}
@@ -686,7 +686,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3666513846738028067}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: GroundSensor (1)
   m_TagString: Untagged
   m_Icon: {fileID: 7866945982896999795, guid: 0000000000000000d000000000000000, type: 0}
@@ -1061,7 +1061,7 @@ GameObject:
   m_Component:
   - component: {fileID: 431616144762280655}
   - component: {fileID: 8328437645740922422}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: NetEntity
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1401,6 +1401,7 @@ MonoBehaviour:
   heightIsGood: 0
   slowRotationIsBad: 0
   distanceIsGood: 1
+  useAverageDistance: 0
   directionChangeIsGood: 0
   xVelocityIsGood: 0
   outputAffectsSin: 1
@@ -1418,6 +1419,7 @@ MonoBehaviour:
   netID: 0
   weightsHash: 
   bestCrown: {fileID: 7733096843526706533}
+  netUI: {fileID: 0}
 --- !u!1 &7733096843526706533
 GameObject:
   m_ObjectHideFlags: 0
@@ -1428,7 +1430,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5505451291856599952}
   - component: {fileID: 231584376013966461}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Crown
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1509,7 +1511,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3391282529441331521}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: GroundSensor (2)
   m_TagString: Untagged
   m_Icon: {fileID: 3443629218296621865, guid: 0000000000000000d000000000000000, type: 0}

@@ -58,7 +58,7 @@ public class NetUI : MonoBehaviour
                 {
                     lines[i - 1][j][k] = Instantiate(linePrefab, new Vector3(0, 0, -0.7f), Quaternion.identity).GetComponent<LineRenderer>();
                     lines[i - 1][j][k].transform.parent = transform;
-                    lines[i - 1][j][k].gameObject.hideFlags=HideFlags.HideInHierarchy;
+                    lines[i - 1][j][k].gameObject.hideFlags = HideFlags.HideInHierarchy;
                     LineRenderer lr = lines[i - 1][j][k];
                     lr.SetPosition(0, nodes[i - 1][k].transform.position);
                     lr.SetPosition(1, nodes[i][j].transform.position);
@@ -103,27 +103,28 @@ public class NetUI : MonoBehaviour
 
     public void UpdateWeightLines(double[][][] weights)
     {
-        for (int i = 0; i < lines.Length; i++)
-        {
-            for (int j = 0; j < lines[i].Length; j++)
+        if (weights != null)
+            for (int i = 0; i < lines.Length; i++)
             {
-                for (int k = 0; k < lines[i][j].Length; k++)
+                for (int j = 0; j < lines[i].Length; j++)
                 {
-                    // Set color, blue is negative, red is positive, (clear is 0), and the thicker a
-                    // line is the higher and closer it is to +=1
-                    Color c = weights[i][j][k] > 0 ? Color.red : Color.blue;
-                    if (weights[i][j][k] == 0)
-                        c = Color.clear;
-                    float width = Mathf.Abs((float)weights[i][j][k]) / 10f;
-                    lines[i][j][k].startColor = c;
-                    lines[i][j][k].endColor = c;
-                    lines[i][j][k].startWidth = width;
-                    lines[i][j][k].endWidth = width;
-                    //lines[i][j][k].sortingOrder = 1500+(100-(int)(width*1000));
-                    lines[i][j][k].sortingOrder = 1500 + (UnityEngine.Random.Range(0, 500));
+                    for (int k = 0; k < lines[i][j].Length; k++)
+                    {
+                        // Set color, blue is negative, red is positive, (clear is 0), and the thicker a
+                        // line is the higher and closer it is to +=1
+                        Color c = weights[i][j][k] > 0 ? Color.red : Color.blue;
+                        if (weights[i][j][k] == 0)
+                            c = Color.clear;
+                        float width = Mathf.Abs((float)weights[i][j][k]) / 10f;
+                        lines[i][j][k].startColor = c;
+                        lines[i][j][k].endColor = c;
+                        lines[i][j][k].startWidth = width;
+                        lines[i][j][k].endWidth = width;
+                        //lines[i][j][k].sortingOrder = 1500+(100-(int)(width*1000));
+                        lines[i][j][k].sortingOrder = 1500 + (UnityEngine.Random.Range(0, 500));
+                    }
                 }
             }
-        }
     }
 
     public void UpdateOutputs(double[] outputs)

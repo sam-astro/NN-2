@@ -18,6 +18,7 @@ public class IsColliding : MonoBehaviour
 		}
 		else if (collision.gameObject.tag == "danger")
 		{
+			isColliding = true;
 			failed = true;
 		}
 	}

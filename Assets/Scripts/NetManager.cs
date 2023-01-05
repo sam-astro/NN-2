@@ -79,7 +79,7 @@ public class NetManager : MonoBehaviour
 
     bool queuedForUpload = false;
     private List<NeuralNetwork> nets;
-    private List<GameObject> entityList = null;
+    public List<GameObject> entityList = null;
     //bool startup = true;
 
     public GameObject netEntityPrefab;
@@ -336,13 +336,12 @@ public class NetManager : MonoBehaviour
         for (int i = 0; i < populationSize; i++)
         {
             GameObject tempEntity = Instantiate(netEntityPrefab, spawnPoint);
+            entityList.Add(tempEntity);
             if (i == 0)
             {
-                cameraFollow.target = tempEntity.GetComponent<NetEntity>().mainSprites[0].transform;
-                tempEntity.GetComponent<NetEntity>().netUI = netUI;
+                cameraFollow.target = entityList[i].GetComponent<NetEntity>().mainSprites[0].transform;
             }
-            tempEntity.GetComponent<NetEntity>().Init(nets[i], generationNumber, layers[0], maxIterations, trial);
-            entityList.Add(tempEntity);
+            entityList[i].GetComponent<NetEntity>().Init(nets[i], generationNumber, layers[0], maxIterations, trial, netUI);
         }
         //}
         //else
@@ -555,7 +554,7 @@ public class NetManager : MonoBehaviour
                 nets.Add(net);
             }
         }
-        nets[0].isBest = true;
+        //nets[0].isBest = true;
 
         if (bestGenome == "")
         {

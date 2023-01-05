@@ -363,7 +363,7 @@ public class NetEntity : MonoBehaviour
         return false;
     }
 
-    public void Init(NeuralNetwork neti, int generation, int numberOfInputs, int totalIterations, int trial)
+    public void Init(NeuralNetwork neti, int generation, int numberOfInputs, int totalIterations, int trial, NetUI netUI)
     {
         transform.localPosition = Vector3.zero;
         transform.eulerAngles = Quaternion.Euler(0, 0, trialValues[trial]).eulerAngles;
@@ -379,6 +379,7 @@ public class NetEntity : MonoBehaviour
         this.genome = net.genome;
         this.netID = net.netID;
         this.weightsHash = net.weightsHash;
+        this.netUI = netUI;
         //net.error = 0;
         timeElapsed = 0;
         bestDistance = 10000;

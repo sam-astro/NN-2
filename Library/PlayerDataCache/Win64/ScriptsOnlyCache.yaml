@@ -1,17 +1,20 @@
 ScriptsOnlyBuild:
   usedScripts:
     Assembly-CSharp.dll:
+    - CameraFollow
     - GotoMouse
     - Gyro
     - IsColliding
     - LaserScript
     - NetEntity
     - NetManager
+    - NetUI
     - TimeManager
     Unity.2D.Animation.Editor.dll:
     - UnityEditor.U2D.Animation.BoneGizmo
     Unity.2D.IK.Editor.dll:
     - UnityEditor.U2D.IK.IKEditorManager
+    - UnityEditor.U2D.IK.IKGizmos
     Unity.2D.Tilemap.Editor.dll:
     - UnityEditor.Tilemaps.GridPaintingState
     - UnityEditor.Tilemaps.GridPaletteBrushes
@@ -55,7 +58,13 @@ ScriptsOnlyBuild:
       Script: {instanceID: 0}
     - Class: 21
       Script: {instanceID: 0}
+    - Class: 23
+      Script: {instanceID: 0}
     - Class: 28
+      Script: {instanceID: 0}
+    - Class: 33
+      Script: {instanceID: 0}
+    - Class: 43
       Script: {instanceID: 0}
     - Class: 48
       Script: {instanceID: 0}
@@ -70,38 +79,44 @@ ScriptsOnlyBuild:
     - Class: 104
       Script: {instanceID: 0}
     - Class: 114
-      Script: {instanceID: 1572}
+      Script: {instanceID: 1590}
     - Class: 114
-      Script: {instanceID: 1864}
+      Script: {instanceID: 1882}
     - Class: 114
-      Script: {instanceID: 2270}
+      Script: {instanceID: 1888}
     - Class: 114
-      Script: {instanceID: 2704}
+      Script: {instanceID: 2290}
     - Class: 114
-      Script: {instanceID: 2876}
+      Script: {instanceID: 2724}
     - Class: 114
-      Script: {instanceID: 2926}
+      Script: {instanceID: 2896}
     - Class: 114
-      Script: {instanceID: 3112}
+      Script: {instanceID: 2946}
     - Class: 114
-      Script: {instanceID: 3134}
+      Script: {instanceID: 3132}
     - Class: 114
-      Script: {instanceID: 3360}
+      Script: {instanceID: 3154}
     - Class: 114
-      Script: {instanceID: 3502}
+      Script: {instanceID: 3380}
     - Class: 114
-      Script: {instanceID: 4346}
+      Script: {instanceID: 3522}
     - Class: 114
-      Script: {instanceID: 4586}
+      Script: {instanceID: 4366}
     - Class: 114
-      Script: {instanceID: 4890}
+      Script: {instanceID: 4606}
     - Class: 114
-      Script: {instanceID: 5160}
+      Script: {instanceID: 4910}
     - Class: 114
-      Script: {instanceID: 5290}
+      Script: {instanceID: 5180}
     - Class: 114
-      Script: {instanceID: 5814}
+      Script: {instanceID: 5310}
+    - Class: 114
+      Script: {instanceID: 5834}
+    - Class: 114
+      Script: {instanceID: 23064}
     - Class: 115
+      Script: {instanceID: 0}
+    - Class: 120
       Script: {instanceID: 0}
     - Class: 128
       Script: {instanceID: 0}
@@ -136,7 +151,7 @@ ScriptsOnlyBuild:
     className: Image
   - hash:
       serializedVersion: 2
-      Hash: 321928265787846151f821ec80e191f4
+      Hash: 39de056a6cee00d5218501c5e54f19f3
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: NetEntity
@@ -206,6 +221,12 @@ ScriptsOnlyBuild:
     assemblyName: Unity.TextMeshPro.dll
     namespaceName: TMPro
     className: TMP_FontAsset
+  - hash:
+      serializedVersion: 2
+      Hash: 79d27f6a64695bb64fd23932ac9e9fde
+    assemblyName: Assembly-CSharp.dll
+    namespaceName: 
+    className: CameraFollow
   - hash:
       serializedVersion: 2
       Hash: c3d3430df9e3ea95e3e3d587961390fb
@@ -388,7 +409,7 @@ ScriptsOnlyBuild:
     className: SpriteShapeController
   - hash:
       serializedVersion: 2
-      Hash: 40e8add849301b0aca9aed7863658352
+      Hash: 8399f60ed6b63fdc59a94bf1d3b5fe8f
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: NetManager
@@ -674,6 +695,12 @@ ScriptsOnlyBuild:
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: Gyro
+  - hash:
+      serializedVersion: 2
+      Hash: 61375a83a8c3575cca57bb090b111108
+    assemblyName: Assembly-CSharp.dll
+    namespaceName: 
+    className: NetUI
   platform: 19
   scenePathNames:
   - Assets/Scenes/SampleScene.unity
