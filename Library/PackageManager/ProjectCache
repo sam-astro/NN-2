@@ -146,6 +146,7 @@ m_PackageAssets:
         - 9.0.0
         - 9.0.1
         - 10.0.0-pre.1
+        - 10.0.0-pre.2
         compatible:
         - 5.0.9
         - 5.0.10
@@ -361,6 +362,7 @@ m_PackageAssets:
         - 6.0.4
         - 6.0.5
         - 6.0.6
+        - 6.0.7
         - 7.0.0-pre.3
         - 7.0.0-pre.4
         - 7.0.0
@@ -371,7 +373,9 @@ m_PackageAssets:
         - 8.0.0-pre.3
         - 8.0.0
         - 8.0.1
+        - 8.0.2
         - 9.0.0-pre.1
+        - 9.0.0-pre.2
         compatible:
         - 4.1.2
         - 4.1.3
@@ -579,6 +583,7 @@ m_PackageAssets:
         - 9.0.0
         - 9.0.1
         - 10.0.0-pre.1
+        - 10.0.0-pre.2
         compatible:
         - 5.1.6
         - 5.1.7
@@ -1082,7 +1087,7 @@ m_PackageAssets:
         email: 
         url: 
       category: 
-      type: 
+      type: asset
       description: Code editor integration for supporting Visual Studio Code as code
         editor for unity. Adds support for generating csproj files for intellisense
         purposes, auto discovery of installations, etc.
@@ -1129,7 +1134,7 @@ m_PackageAssets:
         isDefault: 1
         capabilities: 7
       hasRegistry: 1
-      hideInEditor: 1
+      hideInEditor: 0
       entitlements:
         isAllowed: 1
       isAssetStorePackage: 0
@@ -1197,6 +1202,7 @@ m_PackageAssets:
         - 1.1.33
         - 1.3.0
         - 1.3.1
+        - 1.3.2
         - 2.0.1-exp.1
         - 2.0.1-exp.2
         - 2.0.1-pre.12
@@ -1208,6 +1214,7 @@ m_PackageAssets:
         - 1.1.33
         - 1.3.0
         - 1.3.1
+        - 1.3.2
         - 2.0.1-exp.1
         - 2.0.1-exp.2
         - 2.0.1-pre.12
@@ -1264,7 +1271,7 @@ m_PackageAssets:
         email: 
         url: 
       category: Text Rendering
-      type: 
+      type: asset
       description: 'TextMeshPro is the ultimate text solution for Unity. It''s the
         perfect replacement for Unity''s UI Text and the legacy Text Mesh.
 
@@ -1373,12 +1380,14 @@ m_PackageAssets:
         - 3.2.0-pre.1
         - 3.2.0-pre.2
         - 3.2.0-pre.3
+        - 3.2.0-pre.4
         - 4.0.0-pre.1
         compatible:
         - 3.0.6
         - 3.2.0-pre.1
         - 3.2.0-pre.2
         - 3.2.0-pre.3
+        - 3.2.0-pre.4
         verified: 3.0.6
       dependencies:
       - name: com.unity.ugui
@@ -1404,7 +1413,7 @@ m_PackageAssets:
         isDefault: 1
         capabilities: 7
       hasRegistry: 1
-      hideInEditor: 1
+      hideInEditor: 0
       entitlements:
         isAllowed: 1
       isAssetStorePackage: 0
@@ -3405,7 +3414,7 @@ m_PackageAssets:
         email: 
         url: 
       category: Libraries
-      type: 
+      type: asset
       description: Custom version of the nunit package build to work with Unity.
         Used by the Unity Test Framework.
       status: 4
@@ -3444,7 +3453,7 @@ m_PackageAssets:
         isDefault: 1
         capabilities: 7
       hasRegistry: 1
-      hideInEditor: 1
+      hideInEditor: 0
       entitlements:
         isAllowed: 1
       isAssetStorePackage: 0
@@ -3470,7 +3479,7 @@ m_PackageAssets:
         email: 
         url: 
       category: 
-      type: 
+      type: library
       description: 'Newtonsoft Json for use in Unity projects and Unity packages.
         Currently synced to version 12.0.2.
 
@@ -3550,7 +3559,7 @@ m_PackageAssets:
         email: 
         url: 
       category: 
-      type: 
+      type: asset
       description: 'This package defines common components used by multiple Game
         Service packages.
 
@@ -3575,6 +3584,9 @@ m_PackageAssets:
         - 1.4.1
         - 1.4.2
         - 1.4.3
+        - 1.5.2
+        - 1.6.0
+        - 1.7.0
         compatible:
         - 1.0.1
         - 1.1.0-pre.7
@@ -3591,6 +3603,9 @@ m_PackageAssets:
         - 1.4.1
         - 1.4.2
         - 1.4.3
+        - 1.5.2
+        - 1.6.0
+        - 1.7.0
         verified: 1.0.1
       dependencies:
       - name: com.unity.modules.unitywebrequest
@@ -3607,7 +3622,7 @@ m_PackageAssets:
         isDefault: 1
         capabilities: 7
       hasRegistry: 1
-      hideInEditor: 1
+      hideInEditor: 0
       entitlements:
         isAllowed: 1
       isAssetStorePackage: 0

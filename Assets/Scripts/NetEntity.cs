@@ -184,6 +184,8 @@ public class NetEntity : MonoBehaviour
 
     public GameObject bestCrown;
 
+    [HideInInspector] public NetUI netUI;
+
     public bool Elapse()
     {
         if (networkRunning == true)
@@ -209,6 +211,11 @@ public class NetEntity : MonoBehaviour
                 inputs[0] = senses[0].GetSensorValue(timeElapsed, mainSprites[0].gameObject);
 
                 outputs = net.FeedForward(inputs);
+                if (net.isBest)
+                {
+                    netUI.UpdateInputs(inputs);
+                    netUI.UpdateOutputs(outputs);
+                }
             }
 
             for (int i = 0; i < hinges.Length; i++)
@@ -356,11 +363,11 @@ public class NetEntity : MonoBehaviour
         return false;
     }
 
-    public void Init(NeuralNetwork net, int generation, int numberOfInputs, int totalIterations, int trial)
+    public void Init(NeuralNetwork neti, int generation, int numberOfInputs, int totalIterations, int trial)
     {
         transform.localPosition = Vector3.zero;
         transform.eulerAngles = Quaternion.Euler(0, 0, trialValues[trial]).eulerAngles;
-        this.net = net;
+        this.net = neti;
         this.generation = generation;
         this.numberOfInputs = numberOfInputs;
         this.totalIterations = totalIterations;
@@ -382,6 +389,8 @@ public class NetEntity : MonoBehaviour
         //senses[0].sinMultiplier = 2.0f * (float)net.mutatableVariables[0];
 
         //mutVars = net.mutatableVariables;
+        if (net.isBest)
+            netUI.UpdateWeightLines(net.weights);
 
         // Show the crown if this is the best network
         bestCrown.SetActive(net.isBest);
