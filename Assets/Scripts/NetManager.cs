@@ -21,6 +21,7 @@ class SaveData
     public double[][][] weights;
     public double[] mutVars;
     public bool[][] droppedNeurons;
+    public bool[][][] droppedWeights;
     public int[] layers;
 }
 
