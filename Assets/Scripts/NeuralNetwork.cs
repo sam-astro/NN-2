@@ -538,7 +538,7 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
                 if (randomNumber <= dropChance)
                     drTemp[i][j] = !drTemp[i][j];
             }
-        droppedNeurons = drTemp;
+        //droppedNeurons = drTemp;
         return drTemp;
     }
 
