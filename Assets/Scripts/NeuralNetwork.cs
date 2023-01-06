@@ -219,22 +219,24 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
         return weightsList.ToArray();
     }
 
-    public bool[][] RandomizeDroppedWeights()
+    public bool[][][] RandomizeDroppedWeights()
     {
-        bool[][] drTemp = droppedWeights;
+        bool[][][] drTemp = droppedWeights;
         for (int i = 1; i < droppedWeights.Length - 1; i++)
             for (int j = 0; j < droppedWeights[i].Length; j++)
-                drTemp[i][j] = UnityEngine.Random.Range(0, 100) <= 10;
+                for (int k = 0; k < droppedWeights[i][j].Length; k++)
+                    drTemp[i][j][k] = UnityEngine.Random.Range(0, 100) <= 10;
         droppedWeights = drTemp;
         return drTemp;
     }
 
-    public bool[][] InitDroppedWeights()
+    public bool[][][] InitDroppedWeights()
     {
-        bool[][] drTemp = droppedWeights;
+        bool[][][] drTemp = droppedWeights;
         for (int i = 1; i < droppedWeights.Length - 1; i++)
             for (int j = 0; j < droppedWeights[i].Length; j++)
-                drTemp[i][j] = UnityEngine.Random.Range(0, 100) <= 100-startingNeuronPercent;
+                for (int k = 0; k < droppedWeights[i][j].Length; k++)
+                    drTemp[i][j][k] = UnityEngine.Random.Range(0, 100) <= 100-startingNeuronPercent;
         droppedWeights = drTemp;
         return drTemp;
     }
@@ -570,7 +572,8 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
         int total = 0;
         for (int i = 0; i < droppedWeights.Length; i++)
             for (int j = 0; j < droppedWeights[i].Length; j++)
-                total += droppedWeights[i][j] == true ? 1 : 0;
+                for (int k = 0; k < droppedWeights[i][j].Length; k++)
+                    total += droppedWeights[i][j][k] == true ? 1 : 0;
         return total;
     }
 
@@ -606,19 +609,20 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
     /// <summary>
     /// Mutate neural network dropped weights
     /// </summary>
-    public bool[][] MutateDroppedWeights()
+    public bool[][][] MutateDroppedWeights()
     {
-        bool[][] drTemp = droppedWeights;
+        bool[][][] drTemp = droppedWeights;
         // randomly change the dropped weights
         for (int i = 1; i < droppedWeights.Length - 1; i++)
             for (int j = 0; j < droppedWeights[i].Length; j++)
-            {
-                double randomNumber = UnityEngine.Random.Range(0, 100) + 1;
-
-                // If number is in 4%, toggle weight
-                if (randomNumber <= dropChance)
-                    drTemp[i][j] = !drTemp[i][j];
-            }
+                for (int k = 0; k < droppedWeights[i][j].Length; k++)
+                {
+                    double randomNumber = UnityEngine.Random.Range(0, 100) + 1;
+    
+                    // If number is in 4%, toggle weight
+                    if (randomNumber <= dropChance)
+                        drTemp[i][j][k] = !drTemp[i][j][k];
+                }
         droppedWeights = drTemp;
         return drTemp;
     }
