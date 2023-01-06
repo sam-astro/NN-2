@@ -12,8 +12,9 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
 {
     public int[] layers; //layers
     public double[][] neurons; //neuron matix
-    public double[][] neuronError; //calculated error for each neuroon
+    public double[][] neuronError; //calculated error for each neuron
     public bool[][] droppedNeurons; //dropped neuron matix
+    public bool[][][] droppedWeights; //dropped weights matix
     public double[][][] weights; //weight matrix
     public double fitness; //fitness of the network
     public double pendingFitness; // pending trial fitness of the network
@@ -95,7 +96,7 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
         //this.mutVarSize = copyNetwork.mutVarSize;
         InitNeurons();
         InitWeights(copyNetwork.weights);
-        CopyDroppped(copyNetwork.droppedNeurons);
+        CopyDroppped(copyNetwork.droppedNeurons, copyNetwork.droppedWeights);
 
         mutVarSize = copyNetwork.mutVarSize;
         for (int i = 0; i < mutVarSize; i++)
@@ -119,11 +120,15 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
         }
     }
 
-    public void CopyDroppped(bool[][] copyDroppedNeurons)
+    public void CopyDroppped(bool[][] copyDroppedNeurons, bool[][][] copyDroppedWeights)
     {
         for (int i = 0; i < copyDroppedNeurons.Length; i++)
             for (int j = 0; j < copyDroppedNeurons[i].Length; j++)
                 droppedNeurons[i][j] = copyDroppedNeurons[i][j];
+        for (int i = 0; i < copyDroppedWeights.Length; i++)
+            for (int j = 0; j < copyDroppedWeights[i].Length; j++)
+                for (int k = 0; k < copyDroppedWeights[i][j].Length; k++)
+                    droppedWeights[i][j][k] = copyDroppedWeights[i][j][k];
     }
 
     public string GenerateGenome()
@@ -160,7 +165,24 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
         for (int i = 0; i < layers.Length; i++) //run through all layers
             dNeuronsList.Add(new bool[layers[i] + 1]); //add layer to neuron list
         droppedNeurons = dNeuronsList.ToArray(); //convert list to array
-        //InitDroppedNeurons();
+
+        //Dropped weights Initialization
+        List<bool[][]> dweightsList = new List<bool[][]>();
+        for (int i = 1; i < neurons.Length; i++)
+        {
+            List<bool[]> dlayerWeightsList = new List<bool[]>();
+            int neuronsInPreviousLayer = neurons[i - 1].Length;
+            for (int j = 0; j < neurons[i].Length; j++)
+            {
+                bool[] dneuronWeights = new double[neuronsInPreviousLayer];
+                for (int k = 0; k < neuronsInPreviousLayer; k++)
+                    dneuronWeights[k] = UnityEngine.Random.Range(0, 100) <= 10;
+                dlayerWeightsList.Add(neuronWeights);
+            }
+            dweightsList.Add(dlayerWeightsList.ToArray());
+        }
+        droppedWeights = dweightsList.ToArray();
+        
     }
 
     public double[][][] RandomizeWeights()
@@ -195,6 +217,26 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
 
         //weights = weightsList.ToArray(); //convert to 3D array
         return weightsList.ToArray();
+    }
+
+    public bool[][] RandomizeDroppedWeights()
+    {
+        bool[][] drTemp = droppedWeights;
+        for (int i = 1; i < droppedWeights.Length - 1; i++)
+            for (int j = 0; j < droppedWeights[i].Length; j++)
+                drTemp[i][j] = UnityEngine.Random.Range(0, 100) <= 10;
+        droppedWeights = drTemp;
+        return drTemp;
+    }
+
+    public bool[][] InitDroppedWeights()
+    {
+        bool[][] drTemp = droppedWeights;
+        for (int i = 1; i < droppedWeights.Length - 1; i++)
+            for (int j = 0; j < droppedWeights[i].Length; j++)
+                drTemp[i][j] = UnityEngine.Random.Range(0, 100) <= 100-startingNeuronPercent;
+        droppedWeights = drTemp;
+        return drTemp;
     }
 
     public bool[][] RandomizeDroppedNeurons()
@@ -307,8 +349,9 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
                 // For all synapses connected to that neuron, add up the weight*neuron
                 for (int k = 0; k < neurons[i - 1].Length - 1; k++)
                 {
-                    // If the previous neuron is dropped, skip
-                    if (droppedNeurons[i - 1][k] == true)
+                    // If the previous neuron is dropped OR current weight is dropped, skip
+                    if (droppedNeurons[i - 1][k] == true||
+                    droppedWeights[i - 1][j][k]==true)
                         continue;
                     // Otherwise add to total value weight*neuron
                     value += (weights[i - 1][j][k] * neurons[i - 1][k]);
@@ -521,6 +564,16 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
         return total;
     }
 
+    public int CountDroppedWeights()
+    {
+        // Count total dropped weights
+        int total = 0;
+        for (int i = 0; i < droppedWeights.Length; i++)
+            for (int j = 0; j < droppedWeights[i].Length; j++)
+                total += droppedWeights[i][j] == true ? 1 : 0;
+        return total;
+    }
+
     public int CountTotalNeurons()
     {
         // Count total neurons
@@ -547,6 +600,26 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
                     drTemp[i][j] = !drTemp[i][j];
             }
         droppedNeurons = drTemp;
+        return drTemp;
+    }
+
+    /// <summary>
+    /// Mutate neural network dropped weights
+    /// </summary>
+    public bool[][] MutateDroppedWeights()
+    {
+        bool[][] drTemp = droppedWeights;
+        // randomly change the dropped weights
+        for (int i = 1; i < droppedWeights.Length - 1; i++)
+            for (int j = 0; j < droppedWeights[i].Length; j++)
+            {
+                double randomNumber = UnityEngine.Random.Range(0, 100) + 1;
+
+                // If number is in 4%, toggle weight
+                if (randomNumber <= dropChance)
+                    drTemp[i][j] = !drTemp[i][j];
+            }
+        droppedWeights = drTemp;
         return drTemp;
     }
 
