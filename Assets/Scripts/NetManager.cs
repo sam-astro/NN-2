@@ -62,7 +62,10 @@ public class NetManager : MonoBehaviour
 
     public NetUI netUI;
 
-    public bool optimizeAndShrinkNet = false;
+    bool optimizeAndShrinkNet = false;
+
+    [Range(0, 100)]
+    public int startingNeuronPercent = 97;
 
     //double promptMin = 0;
     //double promptMax = 0;
@@ -289,13 +292,13 @@ public class NetManager : MonoBehaviour
                 }
 
                 // Change the best ever network data and score to beat if it matches any criteria below
-                if ((bestError < bestEverError && !optimizeAndShrinkNet) || // If the error is better than the best ever
-                    generationNumber == 0 ||  // If this is the first generation
+                if ((bestError < bestEverError&&!optimizeAndShrinkNet) || // If the error is better than the best ever
+                    generationNumber == 0||  // If this is the first generation
 
                     // If the optimizeAndShrinkNet option is true, and the used
                     // neuron amount is less than the previous best, but the error
                     // is still within 3% or lower of the best ever to not have too much of a deviation
-                    (optimizeAndShrinkNet && (nets[nets.Count - 1].CountDroppedNeurons() >= bestDroppedNeuronsAmnt) && (bestError <= bestEverError * 1.005f)))
+                    (optimizeAndShrinkNet && (nets[nets.Count - 1].CountDroppedNeurons() >= bestDroppedNeuronsAmnt) && (bestError <= bestEverError*1.005f)))
                 {
                     //if (optimizeAndShrinkNet && (nets[nets.Count - 1].CountDroppedNeurons() < bestDroppedNeuronsAmnt))
                     //    goto skip0;
@@ -310,7 +313,7 @@ public class NetManager : MonoBehaviour
                     //skip0:
 
                     using (StreamWriter sw = File.AppendText("./Assets/dat/hist.csv"))
-                        sw.WriteLine((generationNumber).ToString() + ", " + bestEverError + ", " + bestError + ", " + ((float)bestDroppedNeuronsAmnt / (float)totalNeurons).ToString());
+                        sw.WriteLine((generationNumber).ToString() + ", " + bestEverError + ", " + bestError+", "+((float)bestDroppedNeuronsAmnt / (float)totalNeurons).ToString());
 
                 }
                 else if (generationNumber % timeBetweenGenerationProgress == 0)
@@ -346,7 +349,7 @@ public class NetManager : MonoBehaviour
                 laser.ResetPosition();
 
                 generationText.text = generationNumber.ToString() + " : " + trial.ToString();
-                droppedNeuronsText.text = "Dropped Neurons: " + bestDroppedNeuronsAmnt.ToString() + ", " + Math.Round((float)bestDroppedNeuronsAmnt / (float)totalNeurons * 100f, 1).ToString() + "%";
+                droppedNeuronsText.text = "Dropped Neurons: " + bestDroppedNeuronsAmnt.ToString() + ", " + Math.Round((float)bestDroppedNeuronsAmnt/ (float)totalNeurons*100f, 1).ToString() + "%";
             }
             else // Otherwise, create next trial and reset entities
             {
@@ -533,19 +536,30 @@ public class NetManager : MonoBehaviour
             for (int i = (int)(populationSize * 0.2 / topGenomes.Count) * (topGenomes.Count + 1); i < (int)(populationSize * 0.5); i++)
             {
                 nets[i] = new NeuralNetwork(persistenceNetwork);
-                nets[i].droppedNeurons = persistenceNetwork.droppedNeurons;
                 nets[i].droppedNeurons = nets[i].MutateDroppedNeurons();
-                nets[i].genome = persistenceNetwork.genome;
+                nets[i].genome = nets[i].GenerateGenome();
                 nets[i].mutatableVariables = nets[i].MutateMutVars();
-                nets[i].UpdateGenome();
             }
             // Continue using the best 50% of neural networks and mutate them a bit
             for (int i = (int)(populationSize * 0.5); i < populationSize; i++)
             {
-                nets[i] = new NeuralNetwork(nets[i]);
-                nets[i].droppedNeurons = nets[i].MutateDroppedNeurons();
-                nets[i].UpdateGenome();
-                nets[i].mutatableVariables = nets[i].MutateMutVars();
+                if (nets[i].genome.Substring(0, 8) == bestGenome.Substring(0, 8) && // If it is the same genome as the best
+                    Array.IndexOf(nets[i].letters, nets[i].genome[8]) < 5 && // And if the mutation level is less than 5 away from the original
+                    i < populationSize - 11)                                   // And it is not in the top 10
+                                                                               // Then randomize it to make population more diverse
+                {
+                    nets[i].ResetGenome();
+                    nets[i].CopyWeights(nets[i].RandomizeWeights());
+                    nets[i].droppedNeurons = nets[i].RandomizeDroppedNeurons();
+                }
+                else
+                {
+                    nets[i] = new NeuralNetwork(nets[i]);
+                    nets[i].Mutate();
+                    nets[i].droppedNeurons = nets[i].MutateDroppedNeurons();
+                    nets[i].UpdateGenome();
+                    nets[i].mutatableVariables = nets[i].MutateMutVars();
+                }
             }
         }
         // Otherwise, use normal distribution and randomization on population
@@ -644,9 +658,11 @@ public class NetManager : MonoBehaviour
                 //net.mutVarSize = mutVarSize;
                 net.ResetGenome();
                 net.CopyWeights(net.RandomizeWeights());
-                net.droppedNeurons = net.RandomizeDroppedNeurons();
+                //net.droppedNeurons = net.RandomizeDroppedNeurons();
                 //net.mutatableVariables = net.RandomizeMutVars();
                 net.mutatableVariables[0] = 0.25f;
+                net.startingNeuronPercent = startingNeuronPercent;
+                net.droppedNeurons = net.InitDroppedNeurons();
 
                 nets.Add(net);
             }
@@ -661,6 +677,7 @@ public class NetManager : MonoBehaviour
                 //net.mutVarSize = mutVarSize;
                 net.genome = bestGenome;
                 net.mutatableVariables = persistenceNetwork.mutatableVariables;
+                net.startingNeuronPercent = startingNeuronPercent;
 
                 //Array.Copy(persistenceNetwork.mutatableVariables, net.mutatableVariables, mutVarSize);
 
@@ -675,7 +692,9 @@ public class NetManager : MonoBehaviour
             persistenceNetwork.genome = bestGenome;
             persistenceNetwork.mutatableVariables[0] = 0.25f;
             persistenceNetwork.CopyWeights(persistenceNetwork.RandomizeWeights());
-            persistenceNetwork.droppedNeurons = persistenceNetwork.RandomizeDroppedNeurons();
+            persistenceNetwork.startingNeuronPercent = startingNeuronPercent;
+            //persistenceNetwork.InitDroppedNeurons();
+            persistenceNetwork.droppedNeurons = persistenceNetwork.InitDroppedNeurons();
             //persistenceNetwork.mutatableVariables = persistenceNetwork.RandomizeMutVars();
             //persistenceNetwork.RandomizeWeights();
         }

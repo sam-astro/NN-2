@@ -283,7 +283,7 @@ public class NetEntity : MonoBehaviour
             totalheightDifference += 1f - height;
 
             float d = (float)senses[11].GetSensorValue(mainSprites[4].gameObject);
-            float distance = (200f - (mainSprites[0].transform.position.x + 7.3f)) / 200f;
+            float distance = (80f - (mainSprites[0].transform.position.x + 7.3f)) / 80f;
             totalDistanceOverTime += distance;
             if (distance < bestDistance)
                 bestDistance = distance;

@@ -516,7 +516,7 @@ MonoBehaviour:
   layers: 0900000032000000140000003200000005000000
   learningRate: 0
   iterations: 0
-  maxIterations: 16000
+  maxIterations: 6000
   mutVarSize: 1
   maxTrialsPerGeneration: 1
   trial: 0
@@ -530,7 +530,7 @@ MonoBehaviour:
   laser: {fileID: 510059493}
   cameraFollow: {fileID: 519420034}
   netUI: {fileID: 1242479535}
-  optimizeAndShrinkNet: 0
+  startingNeuronPercent: 0
   amntLeft: 0
   bestGenome: 
   bestHash: 

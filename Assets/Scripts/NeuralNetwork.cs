@@ -35,6 +35,8 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
 
     public string weightsHash = "";
 
+    public int startingNeuronPercent = 97;
+
     public char[] letters =
 {
     'a', 'b', 'c',
@@ -120,12 +122,8 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
     public void CopyDroppped(bool[][] copyDroppedNeurons)
     {
         for (int i = 0; i < copyDroppedNeurons.Length; i++)
-        {
             for (int j = 0; j < copyDroppedNeurons[i].Length; j++)
-            {
                 droppedNeurons[i][j] = copyDroppedNeurons[i][j];
-            }
-        }
     }
 
     public string GenerateGenome()
@@ -162,7 +160,7 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
         for (int i = 0; i < layers.Length; i++) //run through all layers
             dNeuronsList.Add(new bool[layers[i] + 1]); //add layer to neuron list
         droppedNeurons = dNeuronsList.ToArray(); //convert list to array
-
+        //InitDroppedNeurons();
     }
 
     public double[][][] RandomizeWeights()
@@ -205,6 +203,16 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
         for (int i = 1; i < droppedNeurons.Length - 1; i++)
             for (int j = 0; j < droppedNeurons[i].Length; j++)
                 drTemp[i][j] = UnityEngine.Random.Range(0, 100) <= 10;
+        droppedNeurons = drTemp;
+        return drTemp;
+    }
+
+    public bool[][] InitDroppedNeurons()
+    {
+        bool[][] drTemp = droppedNeurons;
+        for (int i = 1; i < droppedNeurons.Length - 1; i++)
+            for (int j = 0; j < droppedNeurons[i].Length; j++)
+                drTemp[i][j] = UnityEngine.Random.Range(0, 100) <= 100-startingNeuronPercent;
         droppedNeurons = drTemp;
         return drTemp;
     }
@@ -538,7 +546,7 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
                 if (randomNumber <= dropChance)
                     drTemp[i][j] = !drTemp[i][j];
             }
-        //droppedNeurons = drTemp;
+        droppedNeurons = drTemp;
         return drTemp;
     }
 
