@@ -1397,7 +1397,7 @@ MonoBehaviour:
   upperLegsTouchingGroundIsBad: 1
   touchingLaserIsBad: 1
   rotationIsBad: 0
-  rewardTimeAlive: 0
+  rewardTimeAlive: 1
   heightIsGood: 0
   slowRotationIsBad: 0
   distanceIsGood: 1

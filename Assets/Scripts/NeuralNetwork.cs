@@ -23,6 +23,8 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
     public double[] mutatableVariables; // List of mutatable doubles, similar to weights but can be used in any way by the agent
     public int mutVarSize = 1;
 
+    public int dropChance = 3;
+
     public int netID = 0;
 
     public float learningRate = 1f;
@@ -282,15 +284,15 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
         //itterate over all neurons and compute feedforward values 
         for (int i = 1; i < neurons.Length; i++) // For each layer
         {
-            for (int j = 0; j < neurons[i].Length-1; j++) // For each neuron in that layer (excluding fake bias node)
+            for (int j = 0; j < neurons[i].Length - 1; j++) // For each neuron in that layer (excluding fake bias node)
             {
                 // If the current neuron is dropped, skip
                 //if (j < droppedNeurons[i].Length)
-                    if (droppedNeurons[i][j] == true)
-                    {
-                        neurons[i][j] = 1;
-                        continue;
-                    }
+                if (droppedNeurons[i][j] == true)
+                {
+                    neurons[i][j] = 1;
+                    continue;
+                }
 
                 double value = 0f;
 
@@ -501,6 +503,25 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
         }
     }
 
+    public int CountDroppedNeurons()
+    {
+        // Count total dropped neurons
+        int total = 0;
+        for (int i = 0; i < droppedNeurons.Length; i++)
+            for (int j = 0; j < droppedNeurons[i].Length; j++)
+                total += droppedNeurons[i][j] == true ? 1 : 0;
+        return total;
+    }
+
+    public int CountTotalNeurons()
+    {
+        // Count total neurons
+        int total = 0;
+        for (int i = 1; i < neurons.Length; i++)
+            total+= neurons[i].Length - 1;
+        return total;
+    }
+
     /// <summary>
     /// Mutate neural network dropped neurons
     /// </summary>
@@ -511,10 +532,10 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
         for (int i = 1; i < droppedNeurons.Length - 1; i++)
             for (int j = 0; j < droppedNeurons[i].Length; j++)
             {
-                double randomNumber = UnityEngine.Random.Range(0, 100);
+                double randomNumber = UnityEngine.Random.Range(0, 100) + 1;
 
                 // If number is in 4%, toggle neuron
-                if (randomNumber <= 3f)
+                if (randomNumber <= dropChance)
                     drTemp[i][j] = !drTemp[i][j];
             }
         droppedNeurons = drTemp;

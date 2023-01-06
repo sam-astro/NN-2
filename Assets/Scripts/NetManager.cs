@@ -11,6 +11,7 @@ using System.Collections.Specialized;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Runtime.Serialization;
 using UnityEngine;
+using UnityEngine.UI;
 using TMPro;
 using System.Security.Cryptography;
 
@@ -18,9 +19,9 @@ using System.Security.Cryptography;
 class SaveData
 {
     public double[][][] weights;
-    public double[][] mutVars;
+    public double[] mutVars;
     public bool[][] droppedNeurons;
-
+    public int[] layers;
 }
 
 public class NetManager : MonoBehaviour
@@ -46,7 +47,11 @@ public class NetManager : MonoBehaviour
     public Transform spawnPoint;
 
     public TMP_Text generationText;
+    public TMP_Text droppedNeuronsText;
     public TMP_Text genomeList;
+    public Slider dropChanceSlider;
+    public Toggle optimizeAndShrinkToggle;
+    int dropChance = 3;
 
     public TimeManager timeManager;
 
@@ -56,6 +61,8 @@ public class NetManager : MonoBehaviour
 
 
     public NetUI netUI;
+
+    public bool optimizeAndShrinkNet = false;
 
     //double promptMin = 0;
     //double promptMax = 0;
@@ -93,6 +100,9 @@ public class NetManager : MonoBehaviour
 
     public GameObject netEntityPrefab;
 
+    int bestDroppedNeuronsAmnt = 0;
+    int totalNeurons = 0;
+
     //[ShowOnly] public double[] bestMutVarsBefore;
     //[ShowOnly] public double[] bestMutVars;
     #endregion
@@ -106,10 +116,12 @@ public class NetManager : MonoBehaviour
 
         generationText.text = generationNumber.ToString() + " : " + trial.ToString();
 
-        // If the hist.txt file does not exist, create it and add data labels
-        if (!File.Exists("./Assets/dat/hist.txt"))
-            using (StreamWriter sw = File.AppendText("./Assets/dat/hist.txt"))
-                sw.WriteLine("generation, Top Error, Gen Error");
+        totalNeurons = persistenceNetwork.CountTotalNeurons();
+
+        // If the hist.csv file does not exist, create it and add data labels
+        if (!File.Exists("./Assets/dat/hist.csv"))
+            using (StreamWriter sw = File.AppendText("./Assets/dat/hist.csv"))
+                sw.WriteLine("generation, Top Error, Gen Error, Dropped %");
     }
 
     public void FixedUpdate()
@@ -143,7 +155,7 @@ public class NetManager : MonoBehaviour
                 //    bestEverError = bestError;
                 //    bestGenome = persistenceNetwork.genome.Substring(0, 8) + "a";
 
-                //    using (StreamWriter sw = File.AppendText("./Assets/dat/hist.txt"))
+                //    using (StreamWriter sw = File.AppendText("./Assets/dat/hist.csv"))
                 //        sw.WriteLine((generationNumber).ToString() + ", " + bestEverError);
 
                 //    // Save best weights
@@ -161,7 +173,7 @@ public class NetManager : MonoBehaviour
 
                 //}
                 //else if (generationNumber % timeBetweenGenerationProgress == 0)
-                //    using (StreamWriter sw = File.AppendText("./Assets/dat/hist.txt"))
+                //    using (StreamWriter sw = File.AppendText("./Assets/dat/hist.csv"))
                 //        sw.WriteLine((generationNumber).ToString() + ", " + bestEverError);
 
                 //if (generationNumber % timeBetweenSave == 0 && timeBetweenSave != -1)
@@ -214,14 +226,21 @@ public class NetManager : MonoBehaviour
 
                 generationText.text = "processing...";
 
+                dropChance = (int)dropChanceSlider.value;
+
                 // Make sure final pendingFitness is added
                 for (int i = 0; i < populationSize; i++)
+                {
                     nets[i].AddFitness(nets[i].pendingFitness);
+                    nets[i].dropChance = dropChance; // (Also apply drop chance here before the finalizer)
+                }
 
                 nets.Sort();
 
                 bestError = nets[nets.Count - 1].fitness;
                 worstError = nets[0].fitness;
+
+                optimizeAndShrinkNet = optimizeAndShrinkToggle.isOn;
 
                 if (generationNumber % timeBetweenSave == 0 && timeBetweenSave != -1)
                 {
@@ -233,42 +252,66 @@ public class NetManager : MonoBehaviour
                         ((int)Time.realtimeSinceStartup + timeManager.offsetTime).ToString() + "#" +
                         bestGenome);
 
-                    // Save best weights
-                    BinaryFormatter bf = new BinaryFormatter();
-                    using (FileStream fs = new FileStream("./Assets/dat/WeightSave.bin", FileMode.Create))
-                        bf.Serialize(fs, persistenceNetwork.weights);
+                    #region OLD SAVE SYSTEM
+                    //// Save best weights
+                    //BinaryFormatter bf = new BinaryFormatter();
+                    //using (FileStream fs = new FileStream("./Assets/dat/WeightSave.bin", FileMode.Create))
+                    //    bf.Serialize(fs, persistenceNetwork.weights);
 
-                    // Get hash of best weights
-                    bestHash = ByteArrayToString(new MD5CryptoServiceProvider().ComputeHash(System.IO.File.ReadAllBytes("./Assets/dat/WeightSave.bin")));
+                    //// Get hash of best weights
+                    //bestHash = ByteArrayToString(new MD5CryptoServiceProvider().ComputeHash(System.IO.File.ReadAllBytes("./Assets/dat/WeightSave.bin")));
 
-                    // Save best mutatable variables
-                    BinaryFormatter bf2 = new BinaryFormatter();
-                    using (FileStream fs2 = new FileStream("./Assets/dat/MutVars.bin", FileMode.Create))
-                        bf2.Serialize(fs2, persistenceNetwork.mutatableVariables);
+                    //// Save best mutatable variables
+                    //BinaryFormatter bf2 = new BinaryFormatter();
+                    //using (FileStream fs2 = new FileStream("./Assets/dat/MutVars.bin", FileMode.Create))
+                    //    bf2.Serialize(fs2, persistenceNetwork.mutatableVariables);
 
-                    // Save best dropped neurons
+                    //// Save best dropped neurons
+                    //BinaryFormatter bf3 = new BinaryFormatter();
+                    //using (FileStream fs3 = new FileStream("./Assets/dat/DroppedNeurons.bin", FileMode.Create))
+                    //    bf3.Serialize(fs3, persistenceNetwork.droppedNeurons);
+                    #endregion
+
+
+                    // NEW SAVE SYSTEM
+
+                    // Save all data into file
+                    SaveData sd = new SaveData();
+                    sd.droppedNeurons = persistenceNetwork.droppedNeurons;
+                    sd.weights = persistenceNetwork.weights;
+                    sd.layers = persistenceNetwork.layers;
+                    sd.mutVars = persistenceNetwork.mutatableVariables;
                     BinaryFormatter bf3 = new BinaryFormatter();
-                    using (FileStream fs3 = new FileStream("./Assets/dat/DroppedNeurons.bin", FileMode.Create))
-                        bf3.Serialize(fs3, persistenceNetwork.droppedNeurons);
+                    using (FileStream fs3 = new FileStream("./Assets/dat/NetworkSaveData.bin", FileMode.Create))
+                        bf3.Serialize(fs3, sd);
 
                     persistence.Close();
                 }
 
-                if (bestError < bestEverError || queuedForUpload == true || generationNumber == 0)
+                // Change the best ever network data and score to beat if it matches any criteria below
+                if ((bestError < bestEverError && !optimizeAndShrinkNet) || // If the error is better than the best ever
+                    generationNumber == 0 ||  // If this is the first generation
+
+                    // If the optimizeAndShrinkNet option is true, and the used
+                    // neuron amount is less than the previous best, but the error
+                    // is still within 3% or lower of the best ever to not have too much of a deviation
+                    (optimizeAndShrinkNet && (nets[nets.Count - 1].CountDroppedNeurons() >= bestDroppedNeuronsAmnt) && (bestError <= bestEverError * 1.03f)))
                 {
                     persistenceNetwork.weights = nets[nets.Count - 1].weights;
                     persistenceNetwork.mutatableVariables = nets[nets.Count - 1].mutatableVariables;
                     persistenceNetwork.droppedNeurons = nets[nets.Count - 1].droppedNeurons;
                     persistenceNetwork.genome = nets[nets.Count - 1].genome;
-                    bestEverError = bestError;
+                    if (bestError < bestEverError)
+                        bestEverError = bestError;
+                    bestDroppedNeuronsAmnt = nets[nets.Count - 1].CountDroppedNeurons();
 
-                    using (StreamWriter sw = File.AppendText("./Assets/dat/hist.txt"))
-                        sw.WriteLine((generationNumber).ToString() + ", " + bestEverError + ", " + bestError);
+                    using (StreamWriter sw = File.AppendText("./Assets/dat/hist.csv"))
+                        sw.WriteLine((generationNumber).ToString() + ", " + bestEverError + ", " + bestError+", "+((float)bestDroppedNeuronsAmnt / (float)totalNeurons).ToString());
 
                 }
                 else if (generationNumber % timeBetweenGenerationProgress == 0)
-                    using (StreamWriter sw = File.AppendText("./Assets/dat/hist.txt"))
-                        sw.WriteLine((generationNumber).ToString() + ", " + bestEverError + ", " + bestError);
+                    using (StreamWriter sw = File.AppendText("./Assets/dat/hist.csv"))
+                        sw.WriteLine((generationNumber).ToString() + ", " + bestEverError + ", " + bestError + ", " + ((float)bestDroppedNeuronsAmnt / (float)totalNeurons).ToString());
 
                 // Find the top 3 *individual* genomes and add them to a `topGenomes` list
                 Debug.Log("lGenome: " + bestGenome);
@@ -299,6 +342,7 @@ public class NetManager : MonoBehaviour
                 laser.ResetPosition();
 
                 generationText.text = generationNumber.ToString() + " : " + trial.ToString();
+                droppedNeuronsText.text = "Dropped Neurons: " + bestDroppedNeuronsAmnt.ToString() + ", " + Math.Round((float)bestDroppedNeuronsAmnt/ (float)totalNeurons*100f, 1).ToString() + "%";
             }
             else // Otherwise, create next trial and reset entities
             {
@@ -464,49 +508,82 @@ public class NetManager : MonoBehaviour
 
         // OLD SYSTEM:
         //
-        // Create copies of top 3 genomes to replace the worst neural networks
-        for (int g = 0; g < topGenomes.Count; g++)
+        // If using the optimizers, just create many versions of the best ever network and mutate slightly
+        if (optimizeAndShrinkNet)
         {
-            for (int i = (int)(populationSize * 0.2 / topGenomes.Count) * g; i < (int)(populationSize * 0.2 / topGenomes.Count) * (g + 1); i++)
+            for (int i = 1; i < populationSize; i++)
             {
-                nets[i] = new NeuralNetwork(topGenomes[g]);
-                //nets[i].CopyWeights(topGenomes[g].weights);
-                //Array.Copy(topGenomes[g].mutatableVariables, nets[i].mutatableVariables, mutVarSize);
-                nets[i].genome = topGenomes[g].genome;
-                nets[i].UpdateGenome();
-                nets[i].Mutate();
-                nets[i].droppedNeurons = nets[i].MutateDroppedNeurons();
-                nets[i].mutatableVariables = nets[i].MutateMutVars();
+                // If the network is offspring of the best one
+                // (and less than 5 mutations different), just mutate it a little
+                if(nets[i].genome.Substring(0, 8)==persistenceNetwork.genome.Substring(0, 8)&&
+                    Array.IndexOf(nets[i].letters, nets[i].genome[8]) < 5)
+                {
+                    nets[i].droppedNeurons = nets[i].MutateDroppedNeurons();
+                    nets[i].mutatableVariables = nets[i].MutateMutVars();
+                    nets[i].Mutate();
+                    nets[i].UpdateGenome();
+                }
+                // Otherwise if it is a different genome or too different reset to best network
+                else
+                {
+                    nets[i] = new NeuralNetwork(persistenceNetwork);
+                    nets[i].genome = persistenceNetwork.genome;
+                    nets[i].droppedNeurons = nets[i].MutateDroppedNeurons();
+                    nets[i].mutatableVariables = nets[i].MutateMutVars();
+                    nets[i].Mutate();
+                    nets[i].UpdateGenome();
+                }
+                nets[i].isBest = false;
+                nets[i].netID = i;
             }
         }
-        // Create create totally new neural networks with random weights
-        for (int i = (int)(populationSize * 0.2 / topGenomes.Count) * (topGenomes.Count + 1); i < (int)(populationSize * 0.5); i++)
+        // Otherwise, use normal distribution and randomization on population
+        else
         {
-            nets[i] = new NeuralNetwork(persistenceNetwork);
-            nets[i].weights = nets[i].RandomizeWeights();
-            nets[i].droppedNeurons = nets[i].RandomizeDroppedNeurons();
-            nets[i].genome = nets[i].GenerateGenome();
-            nets[i].mutatableVariables = nets[i].MutateMutVars();
-        }
-        // Continue using the best 50% of neural networks and mutate them a bit
-        for (int i = (int)(populationSize * 0.5); i < populationSize - 1; i++)
-        {
-            if (nets[i].genome.Substring(0, 8) == bestGenome.Substring(0, 8) && // If it is the same genome as the best
-                Array.IndexOf(nets[i].letters, nets[i].genome[8]) < 5 && // And if the mutation level is less than 5 away from the original
-                i < populationSize - 11)                                   // And it is not in the top 10
-                                                                           // Then randomize it to make population more diverse
+            // Create copies of top 3 genomes to replace the worst neural networks
+            for (int g = 0; g < topGenomes.Count; g++)
             {
-                nets[i].ResetGenome();
-                nets[i].CopyWeights(nets[i].RandomizeWeights());
+                for (int i = (int)(populationSize * 0.2 / topGenomes.Count) * g; i < (int)(populationSize * 0.2 / topGenomes.Count) * (g + 1); i++)
+                {
+                    nets[i] = new NeuralNetwork(topGenomes[g]);
+                    //nets[i].CopyWeights(topGenomes[g].weights);
+                    //Array.Copy(topGenomes[g].mutatableVariables, nets[i].mutatableVariables, mutVarSize);
+                    nets[i].genome = topGenomes[g].genome;
+                    nets[i].Mutate();
+                    nets[i].UpdateGenome();
+                    nets[i].droppedNeurons = nets[i].MutateDroppedNeurons();
+                    nets[i].mutatableVariables = nets[i].MutateMutVars();
+                }
+            }
+            // Create create totally new neural networks with random weights
+            for (int i = (int)(populationSize * 0.2 / topGenomes.Count) * (topGenomes.Count + 1); i < (int)(populationSize * 0.5); i++)
+            {
+                nets[i] = new NeuralNetwork(persistenceNetwork);
+                nets[i].weights = nets[i].RandomizeWeights();
                 nets[i].droppedNeurons = nets[i].RandomizeDroppedNeurons();
-            }
-            else
-            {
-                nets[i] = new NeuralNetwork(nets[i]);
-                nets[i].Mutate();
-                nets[i].droppedNeurons = nets[i].MutateDroppedNeurons();
-                nets[i].UpdateGenome();
+                nets[i].genome = nets[i].GenerateGenome();
                 nets[i].mutatableVariables = nets[i].MutateMutVars();
+            }
+            // Continue using the best 50% of neural networks and mutate them a bit
+            for (int i = (int)(populationSize * 0.5); i < populationSize; i++)
+            {
+                if (nets[i].genome.Substring(0, 8) == bestGenome.Substring(0, 8) && // If it is the same genome as the best
+                    Array.IndexOf(nets[i].letters, nets[i].genome[8]) < 5 && // And if the mutation level is less than 5 away from the original
+                    i < populationSize - 11)                                   // And it is not in the top 10
+                                                                               // Then randomize it to make population more diverse
+                {
+                    nets[i].ResetGenome();
+                    nets[i].CopyWeights(nets[i].RandomizeWeights());
+                    nets[i].droppedNeurons = nets[i].RandomizeDroppedNeurons();
+                }
+                else
+                {
+                    nets[i] = new NeuralNetwork(nets[i]);
+                    nets[i].Mutate();
+                    nets[i].droppedNeurons = nets[i].MutateDroppedNeurons();
+                    nets[i].UpdateGenome();
+                    nets[i].mutatableVariables = nets[i].MutateMutVars();
+                }
             }
         }
         for (int i = 0; i < populationSize; i++)
@@ -593,6 +670,11 @@ public class NetManager : MonoBehaviour
         //startup = false;
     }
 
+    public void ToggleOptimizer()
+    {
+        optimizeAndShrinkNet = !optimizeAndShrinkNet;
+    }
+
     double[][] NormalizeData(double[][] input, double min, double max)
     {
         // Normalize the values between 0.0 and 1.0 based on min and max
@@ -639,29 +721,39 @@ public class NetManager : MonoBehaviour
         try
         {
             int[] layersWithBiases = layers;
-            //for (int i = 0; i < layers.Length; i++)
-            //    layersWithBiases[i] += 1;
             persistenceNetwork = new NeuralNetwork(layersWithBiases, null);
-            //for (int i = 0; i < persistenceNetwork.weights.Length; i++)
-            //    Debug.Log("w: " + persistenceNetwork.weights[i].Length);
 
-            // Load weights data into `persistenceNetwork`
-            BinaryFormatter bf = new BinaryFormatter();
-            using (FileStream fs = new FileStream("./Assets/dat/WeightSave.bin", FileMode.Open))
-                persistenceNetwork.weights = (double[][][])bf.Deserialize(fs);
-            // Load mutVar data into `persistenceNetwork`
-            BinaryFormatter bf2 = new BinaryFormatter();
-            using (FileStream fs2 = new FileStream("./Assets/dat/MutVars.bin", FileMode.Open))
-                persistenceNetwork.mutatableVariables = (double[])bf2.Deserialize(fs2);
-            // Load dropped neurons data into `persistenceNetwork`
+            #region OLD LOADING SYSTEM
+            // OLD LOADING SYSTEM
+            //// Load weights data into `persistenceNetwork`
+            //BinaryFormatter bf = new BinaryFormatter();
+            //using (FileStream fs = new FileStream("./Assets/dat/WeightSave.bin", FileMode.Open))
+            //    persistenceNetwork.weights = (double[][][])bf.Deserialize(fs);
+            //// Load mutVar data into `persistenceNetwork`
+            //BinaryFormatter bf2 = new BinaryFormatter();
+            //using (FileStream fs2 = new FileStream("./Assets/dat/MutVars.bin", FileMode.Open))
+            //    persistenceNetwork.mutatableVariables = (double[])bf2.Deserialize(fs2);
+            //// Load dropped neurons data into `persistenceNetwork`
+            //BinaryFormatter bf3 = new BinaryFormatter();
+            //using (FileStream fs3 = new FileStream("./Assets/dat/DroppedNeurons.bin", FileMode.Open))
+            //    persistenceNetwork.droppedNeurons = (bool[][])bf3.Deserialize(fs3);
+            ////bestMutVars = persistenceNetwork.mutatableVariables;
+
+            //// Get hash of best weights
+            //bestHash = ByteArrayToString(new MD5CryptoServiceProvider().ComputeHash(System.IO.File.ReadAllBytes("./Assets/dat/WeightSave.bin")));
+            #endregion
+
+            // NEW LOADING SYSTEM
+
+            // Load save data into persistence network
+            SaveData sd = new SaveData();
             BinaryFormatter bf3 = new BinaryFormatter();
-            using (FileStream fs3 = new FileStream("./Assets/dat/DroppedNeurons.bin", FileMode.Open))
-                persistenceNetwork.droppedNeurons = (bool[][])bf3.Deserialize(fs3);
-            //bestMutVars = persistenceNetwork.mutatableVariables;
-
-            // Get hash of best weights
-            bestHash = ByteArrayToString(new MD5CryptoServiceProvider().ComputeHash(System.IO.File.ReadAllBytes("./Assets/dat/WeightSave.bin")));
-
+            using (FileStream fs3 = new FileStream("./Assets/dat/NetworkSaveData.bin", FileMode.Open))
+                sd = (SaveData)bf3.Deserialize(fs3);
+            persistenceNetwork.weights = sd.weights;
+            persistenceNetwork.mutatableVariables = sd.mutVars;
+            persistenceNetwork.droppedNeurons = sd.droppedNeurons;
+            bestDroppedNeuronsAmnt = persistenceNetwork.CountDroppedNeurons();
 
 
             // Load metadata like best error and generation
@@ -677,57 +769,51 @@ public class NetManager : MonoBehaviour
         }
         catch (Exception)
         {
-            Debug.LogWarning("Failed to load weights data");
+            Debug.LogWarning("Failed to load network data, possible mismatch in size?");
         }
     }
 
     static void Upload(float fitness)
     {
-        Console.ForegroundColor = ConsoleColor.Magenta;
-
         File.Copy("./Assets/dat/WeightSave.dat", "./Assets/dat/" + fitness + "_WeightSave.dat");
-        Console.WriteLine("* Copied \"./Assets/dat/WeightSave.dat\" to \"./Assets/dat/" + fitness + "_WeightSave.dat\"");
+        Debug.Log("* Copied \"./Assets/dat/WeightSave.dat\" to \"./Assets/dat/" + fitness + "_WeightSave.dat\"");
         File.Copy("./Assets/dat/WeightSaveMeta.mta", "./Assets/dat/" + fitness + "_WeightSaveMeta.mta");
-        Console.WriteLine("* Copied \"./Assets/dat/WeightSaveMeta.mta\" to \"./Assets/dat/" + fitness + "_WeightSaveMeta.mta\"");
+        Debug.Log("* Copied \"./Assets/dat/WeightSaveMeta.mta\" to \"./Assets/dat/" + fitness + "_WeightSaveMeta.mta\"");
 
         // Upload weight save
-        Console.WriteLine("* Uploading \"./Assets/dat/" + fitness + "_WeightSave.dat\" to http://achillium.us.to/digitneuralnet/");
+        Debug.Log("* Uploading \"./Assets/dat/" + fitness + "_WeightSave.dat\" to http://achillium.us.to/digitneuralnet/");
         System.Net.WebClient Client = new System.Net.WebClient();
         Client.Headers.Add("enctype", "multipart/form-data");
         byte[] result = Client.UploadFile("http://achillium.us.to/digitneuralnet/uploadweights.php", "POST", "./Assets/dat/" + fitness + "_WeightSave.dat");
         string s = System.Text.Encoding.UTF8.GetString(result, 0, result.Length);
-        Console.WriteLine("* Uploaded \"./Assets/dat/" + fitness + "_WeightSave.dat\"");
+        Debug.Log("* Uploaded \"./Assets/dat/" + fitness + "_WeightSave.dat\"");
 
         // Upload weight save meta
-        Console.WriteLine("* Uploading \"./Assets/dat/" + fitness + "_WeightSaveMeta.mta\" to http://achillium.us.to/digitneuralnet/");
+        Debug.Log("* Uploading \"./Assets/dat/" + fitness + "_WeightSaveMeta.mta\" to http://achillium.us.to/digitneuralnet/");
         System.Net.WebClient ClientTwo = new System.Net.WebClient();
         ClientTwo.Headers.Add("enctype", "multipart/form-data");
         byte[] resultTwo = ClientTwo.UploadFile("http://achillium.us.to/digitneuralnet/uploadweights.php", "POST", "./Assets/dat/" + fitness + "_WeightSaveMeta.mta");
         string sTwo = System.Text.Encoding.UTF8.GetString(resultTwo, 0, resultTwo.Length);
-        Console.WriteLine("* Uploaded \"./Assets/dat/" + fitness + "_WeightSaveMeta.mta\"");
+        Debug.Log("* Uploaded \"./Assets/dat/" + fitness + "_WeightSaveMeta.mta\"");
 
         File.Delete("./Assets/dat/" + fitness + "_WeightSave.dat");
-        Console.WriteLine("* Deleted Copy at \"./Assets/dat/" + fitness + "_WeightSave.dat\"");
+        Debug.Log("* Deleted Copy at \"./Assets/dat/" + fitness + "_WeightSave.dat\"");
         File.Delete("./Assets/dat/" + fitness + "_WeightSaveMeta.mta");
-        Console.WriteLine("* Deleted Copy at \"./Assets/dat/" + fitness + "_WeightSaveMeta.mta\"");
+        Debug.Log("* Deleted Copy at \"./Assets/dat/" + fitness + "_WeightSaveMeta.mta\"");
 
-        Console.ForegroundColor = ConsoleColor.Green;
-        Console.WriteLine("* Synced with server");
-        Console.ResetColor();
+        Debug.Log("* Synced with server");
     }
 
     static void Download(string s)
     {
-        Console.ForegroundColor = ConsoleColor.Magenta;
-
         System.Net.WebClient Client = new System.Net.WebClient();
 
-        Console.WriteLine("* Downloading \"" + s + "_WeightSave.dat\" from http://achillium.us.to/digitneuralnet/" + s + "_WeightSave.dat");
+        Debug.Log("* Downloading \"" + s + "_WeightSave.dat\" from http://achillium.us.to/digitneuralnet/" + s + "_WeightSave.dat");
         Client.DownloadFile(new Uri("http://achillium.us.to/digitneuralnet/" + s + "_WeightSave.dat"), @".\dat\temp_WeightSave.dat");
-        Console.WriteLine("* Downloaded \"" + s + "_WeightSave.dat\"");
-        Console.WriteLine("* Downloading \"" + s + "_WeightSaveMeta.mta\" from http://achillium.us.to/digitneuralnet/" + s + "_WeightSaveMeta.mta");
+        Debug.Log("* Downloaded \"" + s + "_WeightSave.dat\"");
+        Debug.Log("* Downloading \"" + s + "_WeightSaveMeta.mta\" from http://achillium.us.to/digitneuralnet/" + s + "_WeightSaveMeta.mta");
         Client.DownloadFile(new Uri("http://achillium.us.to/digitneuralnet/" + s + "_WeightSaveMeta.mta"), @".\dat\temp_WeightSaveMeta.mta");
-        Console.WriteLine("* Downloaded \"" + s + "_WeightSaveMeta.mta\"");
+        Debug.Log("* Downloaded \"" + s + "_WeightSaveMeta.mta\"");
 
         if (File.Exists("./Assets/dat/temp_WeightSave.dat"))
         {
@@ -751,8 +837,6 @@ public class NetManager : MonoBehaviour
         persistence.WriteLine((generationNumber).ToString() + "#" + s);
         persistence.Close();
 
-        Console.ForegroundColor = ConsoleColor.Green;
-        Console.WriteLine("* Synced with server");
-        Console.ResetColor();
+        Debug.Log("* Synced with server");
     }
 }
