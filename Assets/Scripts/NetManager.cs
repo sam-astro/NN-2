@@ -281,6 +281,7 @@ public class NetManager : MonoBehaviour
                     // Save all data into file
                     SaveData sd = new SaveData();
                     sd.droppedNeurons = persistenceNetwork.droppedNeurons;
+                    sd.droppedWeights = persistenceNetwork.droppedWeights;
                     sd.weights = persistenceNetwork.weights;
                     sd.layers = persistenceNetwork.layers;
                     sd.mutVars = persistenceNetwork.mutatableVariables;
@@ -305,6 +306,7 @@ public class NetManager : MonoBehaviour
                     persistenceNetwork.weights = nets[nets.Count - 1].weights;
                     persistenceNetwork.mutatableVariables = nets[nets.Count - 1].mutatableVariables;
                     persistenceNetwork.droppedNeurons = nets[nets.Count - 1].droppedNeurons;
+                    persistenceNetwork.droppedWeights = nets[nets.Count - 1].droppedWeights;
                     persistenceNetwork.genome = nets[nets.Count - 1].genome;
                     if (bestError < bestEverError)
                         bestEverError = bestError;
@@ -530,6 +532,7 @@ public class NetManager : MonoBehaviour
                     nets[i].Mutate();
                     nets[i].UpdateGenome();
                     nets[i].droppedNeurons = nets[i].MutateDroppedNeurons();
+                    nets[i].droppedWeights = nets[i].MutateDroppedWeights();
                     nets[i].mutatableVariables = nets[i].MutateMutVars();
                 }
             }
@@ -537,6 +540,7 @@ public class NetManager : MonoBehaviour
             {
                 nets[i] = new NeuralNetwork(persistenceNetwork);
                 nets[i].droppedNeurons = nets[i].MutateDroppedNeurons();
+                nets[i].droppedWeights = nets[i].MutateDroppedWeights();
                 nets[i].genome = nets[i].GenerateGenome();
                 nets[i].mutatableVariables = nets[i].MutateMutVars();
             }
@@ -551,12 +555,14 @@ public class NetManager : MonoBehaviour
                     nets[i].ResetGenome();
                     nets[i].CopyWeights(nets[i].RandomizeWeights());
                     nets[i].droppedNeurons = nets[i].RandomizeDroppedNeurons();
+                    nets[i].droppedWeights = nets[i].RandomizeDroppedWeights();
                 }
                 else
                 {
                     nets[i] = new NeuralNetwork(nets[i]);
                     nets[i].Mutate();
                     nets[i].droppedNeurons = nets[i].MutateDroppedNeurons();
+                    nets[i].droppedWeights = nets[i].MutateDroppedWeights();
                     nets[i].UpdateGenome();
                     nets[i].mutatableVariables = nets[i].MutateMutVars();
                 }
@@ -577,6 +583,7 @@ public class NetManager : MonoBehaviour
                     nets[i].Mutate();
                     nets[i].UpdateGenome();
                     nets[i].droppedNeurons = nets[i].MutateDroppedNeurons();
+                    nets[i].droppedWeights = nets[i].MutateDroppedWeights();
                     nets[i].mutatableVariables = nets[i].MutateMutVars();
                 }
             }
@@ -586,6 +593,7 @@ public class NetManager : MonoBehaviour
                 nets[i] = new NeuralNetwork(persistenceNetwork);
                 nets[i].weights = nets[i].RandomizeWeights();
                 nets[i].droppedNeurons = nets[i].RandomizeDroppedNeurons();
+                nets[i].droppedWeights = nets[i].RandomizeDroppedWeights();
                 nets[i].genome = nets[i].GenerateGenome();
                 nets[i].mutatableVariables = nets[i].MutateMutVars();
             }
@@ -600,12 +608,14 @@ public class NetManager : MonoBehaviour
                     nets[i].ResetGenome();
                     nets[i].CopyWeights(nets[i].RandomizeWeights());
                     nets[i].droppedNeurons = nets[i].RandomizeDroppedNeurons();
+                    nets[i].droppedWeights = nets[i].RandomizeDroppedWeights();
                 }
                 else
                 {
                     nets[i] = new NeuralNetwork(nets[i]);
                     nets[i].Mutate();
                     nets[i].droppedNeurons = nets[i].MutateDroppedNeurons();
+                    nets[i].droppedWeights = nets[i].MutateDroppedWeights();
                     nets[i].UpdateGenome();
                     nets[i].mutatableVariables = nets[i].MutateMutVars();
                 }
@@ -618,6 +628,7 @@ public class NetManager : MonoBehaviour
         }
         nets[0] = new NeuralNetwork(persistenceNetwork);
         nets[0].droppedNeurons = persistenceNetwork.droppedNeurons;
+        nets[0].droppedWeights = persistenceNetwork.droppedWeights;
         nets[0].mutatableVariables = persistenceNetwork.mutatableVariables;
         nets[0].genome = persistenceNetwork.genome;
         nets[0].isBest = true;
@@ -663,6 +674,7 @@ public class NetManager : MonoBehaviour
                 net.mutatableVariables[0] = 0.25f;
                 net.startingNeuronPercent = startingNeuronPercent;
                 net.droppedNeurons = net.InitDroppedNeurons();
+                net.droppedWeights = net.InitDroppedWeights();
 
                 nets.Add(net);
             }
@@ -695,6 +707,7 @@ public class NetManager : MonoBehaviour
             persistenceNetwork.startingNeuronPercent = startingNeuronPercent;
             //persistenceNetwork.InitDroppedNeurons();
             persistenceNetwork.droppedNeurons = persistenceNetwork.InitDroppedNeurons();
+            persistenceNetwork.droppedWeights = persistenceNetwork.InitDroppedWeights();
             //persistenceNetwork.mutatableVariables = persistenceNetwork.RandomizeMutVars();
             //persistenceNetwork.RandomizeWeights();
         }
@@ -780,6 +793,7 @@ public class NetManager : MonoBehaviour
             persistenceNetwork.weights = sd.weights;
             persistenceNetwork.mutatableVariables = sd.mutVars;
             persistenceNetwork.droppedNeurons = sd.droppedNeurons;
+            persistenceNetwork.droppedWeights = sd.droppedWeights;
             bestDroppedNeuronsAmnt = persistenceNetwork.CountDroppedNeurons();
 
 
