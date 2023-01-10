@@ -513,7 +513,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   populationSize: 200
-  layers: 0900000032000000140000003200000005000000
+  layers: 09000000640000000f0000000f0000006400000005000000
   learningRate: 0
   iterations: 0
   maxIterations: 6000
@@ -530,7 +530,7 @@ MonoBehaviour:
   laser: {fileID: 510059493}
   cameraFollow: {fileID: 519420034}
   netUI: {fileID: 1242479535}
-  startingNeuronPercent: 0
+  startingNeuronPercent: 100
   amntLeft: 0
   bestGenome: 
   bestHash: 

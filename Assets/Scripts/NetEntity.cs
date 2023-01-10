@@ -392,7 +392,7 @@ public class NetEntity : MonoBehaviour
         //mutVars = net.mutatableVariables;
         if (net.isBest)
         {
-            netUI.RemakeDrawing(net.droppedNeurons);
+            netUI.RemakeDrawing(net.droppedNeurons, net.droppedWeights);
             netUI.UpdateWeightLines(net.weights);
 
             // Count total dropped neurons and print

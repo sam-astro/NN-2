@@ -66,9 +66,9 @@
     <Compile Include="Assets\Scripts\GotoMouse.cs" />
     <Compile Include="Assets\Scripts\LaserScript.cs" />
     <Compile Include="Assets\Scripts\NeuralNetwork.cs" />
+    <Compile Include="Assets\UpdateText.cs" />
     <Compile Include="Assets\Scripts\IsColliding.cs" />
     <Compile Include="Assets\Scripts\Gyro.cs" />
-    <Compile Include="Assets\UpdateText.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\TextMesh Pro\Shaders\TMPro.cginc" />

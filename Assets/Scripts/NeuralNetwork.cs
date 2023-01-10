@@ -174,10 +174,10 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
             int neuronsInPreviousLayer = neurons[i - 1].Length;
             for (int j = 0; j < neurons[i].Length; j++)
             {
-                bool[] dneuronWeights = new double[neuronsInPreviousLayer];
+                bool[] dneuronWeights = new bool[neuronsInPreviousLayer];
                 for (int k = 0; k < neuronsInPreviousLayer; k++)
                     dneuronWeights[k] = UnityEngine.Random.Range(0, 100) <= 10;
-                dlayerWeightsList.Add(neuronWeights);
+                dlayerWeightsList.Add(dneuronWeights);
             }
             dweightsList.Add(dlayerWeightsList.ToArray());
         }
@@ -222,7 +222,7 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
     public bool[][][] RandomizeDroppedWeights()
     {
         bool[][][] drTemp = droppedWeights;
-        for (int i = 1; i < droppedWeights.Length - 1; i++)
+        for (int i = 0; i < droppedWeights.Length; i++)
             for (int j = 0; j < droppedWeights[i].Length; j++)
                 for (int k = 0; k < droppedWeights[i][j].Length; k++)
                     drTemp[i][j][k] = UnityEngine.Random.Range(0, 100) <= 10;
@@ -233,7 +233,7 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
     public bool[][][] InitDroppedWeights()
     {
         bool[][][] drTemp = droppedWeights;
-        for (int i = 1; i < droppedWeights.Length - 1; i++)
+        for (int i = 0; i < droppedWeights.Length; i++)
             for (int j = 0; j < droppedWeights[i].Length; j++)
                 for (int k = 0; k < droppedWeights[i][j].Length; k++)
                     drTemp[i][j][k] = UnityEngine.Random.Range(0, 100) <= 100-startingNeuronPercent;
@@ -613,7 +613,7 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
     {
         bool[][][] drTemp = droppedWeights;
         // randomly change the dropped weights
-        for (int i = 1; i < droppedWeights.Length - 1; i++)
+        for (int i = 0; i < droppedWeights.Length; i++)
             for (int j = 0; j < droppedWeights[i].Length; j++)
                 for (int k = 0; k < droppedWeights[i][j].Length; k++)
                 {

@@ -15,6 +15,7 @@ public class NetUI : MonoBehaviour
     [HideInInspector] public LineRenderer[][][] lines;
 
     [HideInInspector] public bool[][] droppedNeurons;
+    [HideInInspector] public bool[][][] droppedWeights;
 
     float height = 0;
     float finalHeight;
@@ -43,9 +44,10 @@ public class NetUI : MonoBehaviour
         transform.localScale = new Vector3(7f / finalHeight, 7f / finalHeight, 7f / finalHeight);
     }
 
-    public void RemakeDrawing(bool[][] droppedNeurons)
+    public void RemakeDrawing(bool[][] droppedNeurons, bool[][][] droppedWeights)
     {
         this.droppedNeurons = droppedNeurons;
+        this.droppedWeights = droppedWeights;
 
         DestroyAll();
 
@@ -112,9 +114,6 @@ public class NetUI : MonoBehaviour
                     nodes[i][j].transform.localScale = new Vector3(scaleAmount, scaleAmount, scaleAmount);
                     nodes[i][j].gameObject.hideFlags = HideFlags.HideInHierarchy;
                     nodes[i][j].transform.parent = transform;
-                }
-                else
-                {
                 }
                 curY += shiftDistance;
             }
@@ -189,15 +188,15 @@ public class NetUI : MonoBehaviour
                 {
                     for (int k = 0; k < lines[i][j].Length; k++)
                     {
-                        // if the neuron is not dropped, then update its line
-                        if (lines[i][j][k] != null)
+                        // if the neuron and synapse is not dropped, then update its line
+                        if (lines[i][j][k] != null&&droppedWeights[i][j][k]==true)
                         {
                             //// Set color, blue is negative, red is positive, (clear is 0), and the thicker a
                             //// line is the higher and closer it is to +=1
                             //Color c = weights[i][j][k] > 0 ? Color.red : Color.blue;
-                            //if (weights[i][j][k] == 0)
-                            //    c = Color.clear;
                             Color c = grNegPos.Evaluate(Mathf.Clamp(((float)weights[i][j][k]+1f)/2f, 0f, 1f));
+                            if (weights[i][j][k] == 0)
+                                c = Color.clear;
                             float width = Mathf.Abs((float)weights[i][j][k]) / 10f+0.03f;
                             lines[i][j][k].startColor = c;
                             lines[i][j][k].endColor = c;
@@ -205,6 +204,13 @@ public class NetUI : MonoBehaviour
                             lines[i][j][k].endWidth = width;
                             //lines[i][j][k].sortingOrder = 1500 + ((int)(width * 500));
                             lines[i][j][k].sortingOrder = 1500 + (UnityEngine.Random.Range(0, 500));
+                        }
+                        else if (lines[i][j][k] != null && droppedWeights[i][j][k] == false)
+                        {
+                            lines[i][j][k].startWidth = 0;
+                            lines[i][j][k].endWidth = 0;
+                            lines[i][j][k].startColor = Color.clear;
+                            lines[i][j][k].endColor = Color.clear;
                         }
                     }
                 }
