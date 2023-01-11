@@ -9,6 +9,8 @@ using WaveUtils;
 
 using SoundComparer.WaveUtils;
 
+using Spectrogram;
+
 public class VoiceMaker : MonoBehaviour
 {
     public AudioClip[] inputClips;
@@ -37,6 +39,11 @@ public class VoiceMaker : MonoBehaviour
     WaveSound ws;
     WaveSound ws2;
 
+    public AudioClip trialOutput;
+    public AudioClip expectedOutput;
+
+    //Spectrogram.Spectrogram sp = new Spectrogram.Spectrogram;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -55,6 +62,7 @@ public class VoiceMaker : MonoBehaviour
 
         //PlayPrompt();
     }
+
 
     // Update is called once per frame
     void Update()
@@ -200,7 +208,78 @@ public class VoiceMaker : MonoBehaviour
         SavWav savWav = new SavWav();
         savWav.Save("testOutput.wav", final);
 
+        SaveSpectrogram(expectedOutput, "./Assets/expectedSpectrogram.png");
+        SaveSpectrogram(trialOutput, "./Assets/trialSpectrogram.png");
+
+
         playSound = true;
         currentSoundIndex = -1;
+    }
+
+    public void SaveSpectrogram(AudioClip audioClip, string path)
+    {
+        // Generate spectrogram of wave file
+        var sg = new SpectrogramGenerator(1024, fftSize: 256, stepSize: 100, maxFreq: 3000);
+        float[] finalData = new float[audioClip.samples];
+        audioClip.GetData(finalData, 0);
+        double[] converted = new double[finalData.Length];
+        for (int i = 0; i < converted.Length; i++)
+            converted[i] = (float)finalData[i];
+        sg.Add(converted);
+
+        double[][] ou = sg.GetFFTs().ToArray();
+        Texture2D tex = new Texture2D(ou.Length, ou[0].Length);
+        for (int x = 0; x < ou.Length; x++)
+        {
+            for (int y = 0; y < ou[x].Length; y++)
+            {
+                float col = (float)ou[x][y] * 100f;
+
+                int neighbors = CountNeighbors(ref ou, x, y, 0.3f, 100f);
+                if (neighbors == 0)
+                    col = 0;
+
+                col = Mathf.Clamp(col, 0, 1) >= 0.015f ? 1 : 0;
+                tex.SetPixel(x, y, new Color(col, col, col));
+            }
+        }
+        tex.Apply();
+        //sg.SaveImage("testOutputSpectrogram.png");
+        SaveTextureAsPNG(tex, path);
+    }
+
+    public int CountNeighbors(ref double[][] m, int x, int y, float threshold, float multiplier, bool includeDiagonals = false)
+    {
+        int count = 0;
+        // Cross
+        if (x - 1 >= 0)
+            count += m[x - 1][y] * multiplier >= threshold ? 1 : 0;
+        if (x + 1 < m.Length)
+            count += m[x + 1][y] * multiplier >= threshold ? 1 : 0;
+        if (y - 1 >= 0)
+            count += m[x][y - 1] * multiplier >= threshold ? 1 : 0;
+        if (y + 1 < m[0].Length)
+            count += m[x][y + 1] * multiplier >= threshold ? 1 : 0;
+        // Diagonals
+        if (includeDiagonals)
+        {
+            if (x - 1 >= 0 && y - 1 >= 0)
+                count += m[x - 1][y - 1] * multiplier >= threshold ? 1 : 0;
+            if (x + 1 < m.Length && y + 1 < m[0].Length)
+                count += m[x + 1][y + 1] * multiplier >= threshold ? 1 : 0;
+            if (y - 1 >= 0 && x + 1 < m.Length)
+                count += m[x + 1][y - 1] * multiplier >= threshold ? 1 : 0;
+            if (y + 1 < m[0].Length && x - 1 >= 0)
+                count += m[x - 1][y + 1] * multiplier >= threshold ? 1 : 0;
+        }
+
+        return count;
+    }
+
+    public static void SaveTextureAsPNG(Texture2D _texture, string _fullPath)
+    {
+        byte[] _bytes = _texture.EncodeToPNG();
+        System.IO.File.WriteAllBytes(_fullPath, _bytes);
+        Debug.Log(_bytes.Length / 1024 + "Kb was saved as: " + _fullPath);
     }
 }

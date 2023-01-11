@@ -403,6 +403,8 @@ MonoBehaviour:
   promptInput: {fileID: 2125317475}
   timeScale: 1
   overlapAmount: 0.1
+  trialOutput: {fileID: 8300000, guid: 6b5f383cf2742b34aa158e982ef96f40, type: 3}
+  expectedOutput: {fileID: 8300000, guid: 2dd260653d87d6245962a2572dbea8a7, type: 3}
 --- !u!20 &519420031
 Camera:
   m_ObjectHideFlags: 0

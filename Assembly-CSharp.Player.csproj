@@ -66,42 +66,58 @@
     <Compile Include="Assets\Scripts\NetManager.cs" />
     <Compile Include="Assets\NetUI\NetUI.cs" />
     <Compile Include="Assets\Scripts\ShowOnlyAttribute.cs" />
+    <Compile Include="Assets\Voice\PitchShifter.cs" />
     <Compile Include="Assets\Voice\WebGLSupport\WebGLInput\Mobile\WebGLInputMobile.cs" />
     <Compile Include="Assets\Voice\WebGLSupport\WebGLInput\Wrapper\WrappedTMPInputField.cs" />
     <Compile Include="Assets\Scripts\GotoMouse.cs" />
+    <Compile Include="Assets\Voice\SoundComparer\src\FormComparer.cs" />
+    <Compile Include="Assets\Voice\SoundComparer\src\DigitalFilter\FIRFilters.cs" />
     <Compile Include="Assets\Scripts\LaserScript.cs" />
     <Compile Include="Assets\Scripts\NeuralNetwork.cs" />
     <Compile Include="Assets\Voice\Wave.cs" />
+    <Compile Include="Assets\Voice\SoundComparer\src\WaveUtils\WaveSound.cs" />
     <Compile Include="Assets\Voice\WebGLSupport\WebGLWindow\WebGLWindow.cs" />
+    <Compile Include="Assets\Voice\SoundComparer\src\DigitalFilter\FFT.cs" />
     <Compile Include="Assets\UpdateText.cs" />
     <Compile Include="Assets\Scripts\IsColliding.cs" />
     <Compile Include="Assets\Voice\WebGLSupport\WebGLInput\Wrapper\IInputField.cs" />
+    <Compile Include="Assets\Voice\SoundComparer\src\WaveUtils\WaveControl.cs" />
     <Compile Include="Assets\Scripts\Gyro.cs" />
     <Compile Include="Assets\Voice\WebGLSupport\WebGLInput\Detail\RebuildChecker.cs" />
-    <Compile Include="Assets\Voice\PitchShifter.cs" />
-    <Compile Include="Assets\Voice\SoundComparer\src\DigitalFilter\FIRFilters.cs" />
-    <Compile Include="Assets\Voice\SoundComparer\src\DigitalFilter\FFT.cs" />
-    <Compile Include="Assets\Voice\SoundComparer\src\FormComparer.cs" />
-    <Compile Include="Assets\Voice\SoundComparer\src\WaveUtils\WaveControl.cs" />
-    <Compile Include="Assets\Voice\SoundComparer\src\WaveUtils\WaveSound.cs" />
     <Compile Include="Assets\Voice\SoundComparer\src\WaveUtils\WaveFormat.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\TextMesh Pro\Shaders\TMPro.cginc" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile Overlay.shader" />
+    <None Include="Assets\Packages\Spectrogram.1.6.1\lib\netstandard2.0\Spectrogram.dll" />
+    <None Include="Assets\Packages\System.Buffers.4.5.1\LICENSE.TXT" />
     <None Include="Assets\Voice\TextMesh Pro\Shaders\TMP_SDF-Surface-Mobile.shader" />
     <None Include="Assets\Voice\TextMesh Pro\Fonts\LiberationSans - OFL.txt" />
     <None Include="Assets\Voice\TextMesh Pro\Shaders\TMP_SDF-Surface.shader" />
+    <None Include="Assets\Packages\System.Drawing.Common.4.6.1\useSharedDesignerContext.txt" />
     <None Include="Assets\Voice\TextMesh Pro\Shaders\TMP_SDF-Mobile Masking.shader" />
+    <None Include="Assets\Packages\System.Memory.4.5.5\useSharedDesignerContext.txt" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_Bitmap.shader" />
+    <None Include="Assets\Packages\System.Drawing.Common.4.6.1\LICENSE.TXT" />
+    <None Include="Assets\Packages\System.Runtime.CompilerServices.Unsafe.4.5.3\version.txt" />
+    <None Include="Assets\Packages\System.Runtime.CompilerServices.Unsafe.4.5.3\LICENSE.TXT" />
+    <None Include="Assets\Packages\System.Buffers.4.5.1\lib\netstandard2.0\System.Buffers.dll" />
+    <None Include="Assets\Packages\System.Runtime.CompilerServices.Unsafe.4.5.3\lib\netstandard2.0\System.Runtime.CompilerServices.Unsafe.dll" />
     <None Include="Assets\Voice\TextMesh Pro\Shaders\TMPro.cginc" />
     <None Include="Assets\Voice\TextMesh Pro\Shaders\TMPro_Mobile.cginc" />
     <None Include="Assets\TextMesh Pro\Shaders\TMPro_Mobile.cginc" />
+    <None Include="Assets\Packages\System.Drawing.Common.4.6.1\lib\netstandard2.0\System.Drawing.Common.dll" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF SSD.shader" />
     <None Include="Assets\QuickOutline\Resources\Shaders\OutlineMask.shader" />
+    <None Include="Assets\Packages\System.Buffers.4.5.1\version.txt" />
+    <None Include="Assets\Packages\System.Buffers.4.5.1\THIRD-PARTY-NOTICES.TXT" />
     <None Include="Assets\Voice\TextMesh Pro\Shaders\TMP_SDF.shader" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Surface-Mobile.shader" />
     <None Include="Assets\Voice\TextMesh Pro\Shaders\TMP_Sprite.shader" />
+    <None Include="Assets\Packages\System.Memory.4.5.5\lib\netstandard2.0\System.Memory.dll" />
+    <None Include="Assets\Packages\System.Runtime.CompilerServices.Unsafe.4.5.3\lib\netstandard2.0\System.Runtime.CompilerServices.Unsafe.xml" />
+    <None Include="Assets\Packages\System.Runtime.CompilerServices.Unsafe.4.5.3\useSharedDesignerContext.txt" />
+    <None Include="Assets\Packages\System.Buffers.4.5.1\lib\netstandard2.0\System.Buffers.xml" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Surface.shader" />
     <None Include="Assets\Voice\TextMesh Pro\Resources\LineBreaking Following Characters.txt" />
     <None Include="Assets\TextMesh Pro\Sprites\EmojiOne Attribution.txt" />
@@ -113,25 +129,35 @@
     <None Include="Assets\Voice\TextMesh Pro\Shaders\TMPro_Surface.cginc" />
     <None Include="Assets\TextMesh Pro\Shaders\TMPro_Properties.cginc" />
     <None Include="Assets\QuickOutline\Readme.txt" />
+    <None Include="Assets\Packages\System.Buffers.4.5.1\useSharedDesignerContext.txt" />
     <None Include="Assets\Voice\TextMesh Pro\Shaders\TMP_SDF-Mobile.shader" />
     <None Include="Assets\TextMesh Pro\Shaders\TMPro_Surface.cginc" />
     <None Include="Assets\Voice\TextMesh Pro\Shaders\TMP_SDF Overlay.shader" />
+    <None Include="Assets\Packages\System.Memory.4.5.5\version.txt" />
     <None Include="Assets\Voice\TextMesh Pro\Shaders\TMP_SDF-Mobile SSD.shader" />
     <None Include="Assets\TextMesh Pro\Resources\LineBreaking Following Characters.txt" />
     <None Include="Assets\Voice\TextMesh Pro\Shaders\TMP_SDF SSD.shader" />
+    <None Include="Assets\Packages\System.Drawing.Common.4.6.1\version.txt" />
     <None Include="Assets\Voice\TextMesh Pro\Shaders\TMP_Bitmap-Custom-Atlas.shader" />
+    <None Include="Assets\Packages\System.Drawing.Common.4.6.1\THIRD-PARTY-NOTICES.TXT" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile Masking.shader" />
     <None Include="Assets\Voice\TextMesh Pro\Sprites\EmojiOne Attribution.txt" />
     <None Include="Assets\Voice\TextMesh Pro\Shaders\TMPro_Properties.cginc" />
+    <None Include="Assets\Packages\System.Memory.4.5.5\LICENSE.TXT" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF Overlay.shader" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_Bitmap-Mobile.shader" />
+    <None Include="Assets\Packages\System.Runtime.CompilerServices.Unsafe.4.5.3\THIRD-PARTY-NOTICES.TXT" />
     <None Include="Assets\QuickOutline\Resources\Shaders\OutlineFill.shader" />
     <None Include="Assets\TextMesh Pro\Fonts\LiberationSans - OFL.txt" />
     <None Include="Assets\Voice\TextMesh Pro\Resources\LineBreaking Leading Characters.txt" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile.shader" />
     <None Include="Assets\Voice\TextMesh Pro\Shaders\TMP_Bitmap.shader" />
+    <None Include="Assets\Packages\System.Memory.4.5.5\THIRD-PARTY-NOTICES.TXT" />
+    <None Include="Assets\Packages\System.Memory.4.5.5\lib\netstandard2.0\System.Memory.xml" />
+    <None Include="Assets\Packages\FftSharp.1.1.6\lib\netstandard2.0\FftSharp.xml" />
     <None Include="Assets\Voice\TextMesh Pro\Shaders\TMP_Bitmap-Mobile.shader" />
     <None Include="Assets\Voice\TextMesh Pro\Shaders\TMP_SDF-Mobile Overlay.shader" />
+    <None Include="Assets\Packages\FftSharp.1.1.6\lib\netstandard2.0\FftSharp.dll" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_Sprite.shader" />
   </ItemGroup>
   <ItemGroup>
@@ -389,6 +415,24 @@
     </Reference>
     <Reference Include="Newtonsoft.Json">
       <HintPath>Library\PackageCache\com.unity.nuget.newtonsoft-json@2.0.0\Runtime\AOT\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Runtime.CompilerServices.Unsafe">
+      <HintPath>Assets\Packages\System.Runtime.CompilerServices.Unsafe.4.5.3\lib\netstandard2.0\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Buffers">
+      <HintPath>Assets\Packages\System.Buffers.4.5.1\lib\netstandard2.0\System.Buffers.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Memory">
+      <HintPath>Assets\Packages\System.Memory.4.5.5\lib\netstandard2.0\System.Memory.dll</HintPath>
+    </Reference>
+    <Reference Include="FftSharp">
+      <HintPath>Assets\Packages\FftSharp.1.1.6\lib\netstandard2.0\FftSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Drawing.Common">
+      <HintPath>Assets\Packages\System.Drawing.Common.4.6.1\lib\netstandard2.0\System.Drawing.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="Spectrogram">
+      <HintPath>Assets\Packages\Spectrogram.1.6.1\lib\netstandard2.0\Spectrogram.dll</HintPath>
     </Reference>
     <Reference Include="netstandard">
       <HintPath>C:\Program Files\Unity\Hub\Editor\2020.3.25f1\Editor\Data\NetStandard\ref\2.0.0\netstandard.dll</HintPath>
