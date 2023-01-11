@@ -79,6 +79,12 @@
     <Compile Include="Assets\Scripts\Gyro.cs" />
     <Compile Include="Assets\Voice\WebGLSupport\WebGLInput\Detail\RebuildChecker.cs" />
     <Compile Include="Assets\Voice\PitchShifter.cs" />
+    <Compile Include="Assets\Voice\SoundComparer\src\DigitalFilter\FIRFilters.cs" />
+    <Compile Include="Assets\Voice\SoundComparer\src\DigitalFilter\FFT.cs" />
+    <Compile Include="Assets\Voice\SoundComparer\src\FormComparer.cs" />
+    <Compile Include="Assets\Voice\SoundComparer\src\WaveUtils\WaveControl.cs" />
+    <Compile Include="Assets\Voice\SoundComparer\src\WaveUtils\WaveSound.cs" />
+    <Compile Include="Assets\Voice\SoundComparer\src\WaveUtils\WaveFormat.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\TextMesh Pro\Shaders\TMPro.cginc" />

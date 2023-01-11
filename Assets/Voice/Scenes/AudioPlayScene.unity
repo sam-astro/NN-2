@@ -351,7 +351,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 14dbe18fbbdf5304ca241feb89c5db91, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  clips:
+  inputClips:
   - {fileID: 8300000, guid: 711b01d6524ede146941957ffb165d95, type: 3}
   - {fileID: 8300000, guid: 3ae9569db84860d42aa49894da5c2cb5, type: 3}
   - {fileID: 8300000, guid: 3013d5f7e0291e1469c899ecaa2fa0d1, type: 3}
@@ -399,7 +399,7 @@ MonoBehaviour:
   prompt: th ee _ qu i k _ b r ow n _ f o k s _ j u m p s _ oh v er _ th ee _ l ay
     z ee _ d o g
   promptSources: []
-  playSound: 1
+  playSound: 0
   promptInput: {fileID: 2125317475}
   timeScale: 1
   overlapAmount: 0.1

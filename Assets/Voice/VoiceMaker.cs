@@ -7,6 +7,8 @@ using TMPro;
 
 using WaveUtils;
 
+using SoundComparer.WaveUtils;
+
 public class VoiceMaker : MonoBehaviour
 {
     public AudioClip[] inputClips;
@@ -32,6 +34,9 @@ public class VoiceMaker : MonoBehaviour
 
     private AudioFX AudioEffectMaker = new AudioFX();
 
+    WaveSound ws;
+    WaveSound ws2;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -43,8 +48,12 @@ public class VoiceMaker : MonoBehaviour
             //OutputClips.Add(new Clip(inputClips[i]));
         }
 
+        ws = new WaveSound("./Assets/Voice/testOutput.wav");
+        ws.ReadWavFile();
+        ws2 = new WaveSound("./Assets/Voice/expectedOutput.wav");
+        ws2.ReadWavFile();
 
-        PlayPrompt();
+        //PlayPrompt();
     }
 
     // Update is called once per frame
@@ -130,12 +139,18 @@ public class VoiceMaker : MonoBehaviour
         //SavWav savWav = new SavWav();
         //savWav.Save("testOutput.wav", final);
 
+        // Compare
+        WaveSound ws = new WaveSound("./Assets/Voice/full.wav");
+        ws.ReadWavFile();
+
+
         return score;
     }
 
 
     public void PlayPrompt()
     {
+        Debug.Log("Simmilarity: " + ws.Compare(ws2).ToString() + "%");
         //return;
         prompt = promptInput.text;
         promptArray = new string[] { "" };
@@ -167,7 +182,7 @@ public class VoiceMaker : MonoBehaviour
                 {
                     promptSources.Add(sources[j]);
                     //Debug.Log("soundFound: " + promptArray[i]);
-                    Debug.Log("     " + j + " " + inputClips[j].name + " " + promptArray[i] + "  true");
+                    //Debug.Log("     " + j + " " + inputClips[j].name + " " + promptArray[i] + "  true");
                 }
                 //else
                 //    Debug.Log("     " + j + " " + inputClips[j].name + " " + promptArray[i] + "  false");
