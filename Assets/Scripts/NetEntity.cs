@@ -178,6 +178,7 @@ public class NetEntity : MonoBehaviour
     public NetEntity opponent = new NetEntity();
 
     [HideInInspector] public NetUI netUI;
+    public BoardDrawer boardDrawer;
     
     public bool HasWon(int team){
         double piece = -1;
@@ -210,30 +211,31 @@ public class NetEntity : MonoBehaviour
         if (networkRunning == true)
         {
 
-            //string weightLengths = "";
-            //for (int i = 0; i < net.weights.Length; i++)
-            //{
-            //    weightLengths += net.weights[i].Length * net.weights[i][0].Length + ", ";
-            //}
-            //Debug.Log(weightLengths);
+            double[] inputs = gameBoard;
 
-
-                double[] inputs = gameBoard;
-
-                outputs = net.FeedForward(inputs);
-                if (net.isBest)
+            outputs = net.FeedForward(inputs);
+            if (net.isBest)
+            {
+                netUI.UpdateInputs(inputs);
+                netUI.UpdateOutputs(outputs);
+            }
+            
+            
+            // Sort all outputs from least to greatest
+            var sorted = outputs
+                .Select((x, i) => new KeyValuePair<double, int>(x, i))
+                .OrderBy(x => x.Key)
+                .ToList();
+            List<double> B = sorted.Select(x => x.Key).ToList();
+            List<int> idx = sorted.Select(x => x.Value).ToList();
+            
+            for(int i = idx.Length-1; i >= 0; i--){
+                // Make sure the current game board location is empty, otherwise go to next greatest choice
+                if(gameBoard[idx[i]]==0.5d)
                 {
-                    netUI.UpdateInputs(inputs);
-                    netUI.UpdateOutputs(outputs);
-                }
-                
-            int highestIndex = 0;
-            double highestValue = 0;
-            for(int i = 0; i < outputs.Length; i++){
-                if(outputs[i]>highestValue)
-                {
-                    highestIndex = i;
-                    highestValue = outputs[i];
+                    // Place piece
+                    gameBoard[idx[i]] = team == 1 ? 1 : -1;
+                    break;
                 }
             }
                 
@@ -244,11 +246,20 @@ public class NetEntity : MonoBehaviour
             //bestDistance = senseVal;
             //}
 
-
+            // Check if this network has won, and end the game if so.
             if(HasWon(team)){
                 networkRunning = false;
-                net.pendingFitness += -0.1f;
+                net.pendingFitness += -0.1f; // Give point bonus since they won
+                opponent.networkRunning = false;
+                opponent.pendingFitness += 0.1f; // Give opponent point penalty since they lost
                 return false;
+            }
+            
+            if(team == 1){
+                // Prompt the other player network to move
+                opponent.gameBoard = gameBoard; // copy new game board to opponent
+                opponent.Elapse(); // Get opponent move
+                gameBoard = opponent.gameBoard; // Update our gameboard
             }
 
 
