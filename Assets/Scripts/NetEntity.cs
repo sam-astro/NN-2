@@ -284,9 +284,9 @@ public class NetEntity : MonoBehaviour
         timeElapsed = 0;
         bestDistance = 10000;
         
-        if(team == 0)
-            opponent = Instantiate(gameObject, transform);
-            opponent.Init(opponentNet, generation, numberOfInputs, totalIterations, trial, !team, this);
+        if(team == 0) {
+            opponent = Instantiate(gameObject, transform).GetComponent<NetEntity>();
+            opponent.Init(opponentNet, generation, numberOfInputs, totalIterations, trial, netUI, team==1?0:1, this.net, this);
         }
         else
             opponent = netent;

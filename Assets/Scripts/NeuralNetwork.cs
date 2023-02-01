@@ -174,10 +174,10 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
             int neuronsInPreviousLayer = neurons[i - 1].Length;
             for (int j = 0; j < neurons[i].Length; j++)
             {
-                bool[] dneuronWeights = new double[neuronsInPreviousLayer];
+                bool[] dneuronWeights = new bool[neuronsInPreviousLayer];
                 for (int k = 0; k < neuronsInPreviousLayer; k++)
                     dneuronWeights[k] = UnityEngine.Random.Range(0, 100) <= 10;
-                dlayerWeightsList.Add(neuronWeights);
+                dlayerWeightsList.Add(dneuronWeights);
             }
             dweightsList.Add(dlayerWeightsList.ToArray());
         }
