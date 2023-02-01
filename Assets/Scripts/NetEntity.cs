@@ -206,10 +206,18 @@ public class NetEntity : MonoBehaviour
         return false;
     }
 
-    public bool Elapse()
+    public bool Elapse(bool isSecondary)
     {
         if (networkRunning == true)
         {
+        
+            // If this player is on team 1, get team 0's turn first
+            if(team == 1 && isSecondary == false){
+                // Prompt the other player network to move
+                opponent.gameBoard = gameBoard; // copy new game board to opponent
+                opponent.Elapse(true); // Get opponent move
+                gameBoard = opponent.gameBoard; // Update our gameboard
+            }
 
             double[] inputs = gameBoard;
 
@@ -252,16 +260,19 @@ public class NetEntity : MonoBehaviour
                 net.pendingFitness += -0.1f; // Give point bonus since they won
                 opponent.networkRunning = false;
                 opponent.pendingFitness += 0.1f; // Give opponent point penalty since they lost
+                boardDrawer.Draw(gameBoard);
                 return false;
             }
             
-            if(team == 1){
+            // If this player is on team 0, prompt team 1 to move their piece
+            if(team == 0 && isSecondary == false){
                 // Prompt the other player network to move
                 opponent.gameBoard = gameBoard; // copy new game board to opponent
-                opponent.Elapse(); // Get opponent move
+                opponent.Elapse(true); // Get opponent move
                 gameBoard = opponent.gameBoard; // Update our gameboard
             }
-
+            
+            boardDrawer.Draw(gameBoard);
 
             timeElapsed += 1;
 
