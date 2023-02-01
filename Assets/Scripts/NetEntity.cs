@@ -5,6 +5,7 @@ using System.IO;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Linq;
 
 [System.Serializable]
 public class Sense
@@ -227,17 +228,18 @@ public class NetEntity : MonoBehaviour
                 netUI.UpdateInputs(inputs);
                 netUI.UpdateOutputs(outputs);
             }
-            
+
+            List<double> outList = outputs.ToList();
             
             // Sort all outputs from least to greatest
-            var sorted = outputs
+            var sorted = outList
                 .Select((x, i) => new KeyValuePair<double, int>(x, i))
                 .OrderBy(x => x.Key)
                 .ToList();
             List<double> B = sorted.Select(x => x.Key).ToList();
             List<int> idx = sorted.Select(x => x.Value).ToList();
             
-            for(int i = idx.Length-1; i >= 0; i--){
+            for(int i = idx.Count-1; i >= 0; i--){
                 // Make sure the current game board location is empty, otherwise go to next greatest choice
                 if(gameBoard[idx[i]]==0.5d)
                 {
@@ -259,7 +261,7 @@ public class NetEntity : MonoBehaviour
                 networkRunning = false;
                 net.pendingFitness += -0.1f; // Give point bonus since they won
                 opponent.networkRunning = false;
-                opponent.pendingFitness += 0.1f; // Give opponent point penalty since they lost
+                opponent.net.pendingFitness += 0.1f; // Give opponent point penalty since they lost
                 boardDrawer.Draw(gameBoard);
                 return false;
             }

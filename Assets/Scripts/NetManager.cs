@@ -91,11 +91,11 @@ public class NetManager : MonoBehaviour
     private List<List<NeuralNetwork>> topGenomes;
 
     [ShowOnly] public int generationNumber = 1;
-    [ShowOnly] public double[] lastWorst = {100000000, 100000000};
-    [ShowOnly] public double[] lastBest = {100000000, 100000000};
-    double bestError[] = {100000000, 100000000};
-    public double bestEverError[] = {100000000, 100000000};
-    double worstError[] = {0, 0};
+    [ShowOnly] public double[] lastWorst = new double[]{100000000, 100000000};
+    [ShowOnly] public double[] lastBest = new double[] { 100000000, 100000000};
+    double[] bestError = new double[]{ 100000000, 100000000};
+    public double[] bestEverError = new double[] { 100000000, 100000000};
+    double[] worstError = new double[] { 0, 0};
 
     bool queuedForUpload = false;
     private List<List<NeuralNetwork>> nets;
@@ -297,13 +297,13 @@ public class NetManager : MonoBehaviour
                     using (FileStream fs3 = new FileStream("./Assets/dat/NetworkSaveData-0.bin", FileMode.Create))
                         bf3.Serialize(fs3, sd);
                     // Save all data into file
-                    SaveData sd = new SaveData();
+                    sd = new SaveData();
                     sd.droppedNeurons = persistenceNetwork[1].droppedNeurons;
                     sd.droppedWeights = persistenceNetwork[1].droppedWeights;
                     sd.weights = persistenceNetwork[1].weights;
                     sd.layers = persistenceNetwork[1].layers;
                     sd.mutVars = persistenceNetwork[1].mutatableVariables;
-                    BinaryFormatter bf3 = new BinaryFormatter();
+                    bf3 = new BinaryFormatter();
                     using (FileStream fs3 = new FileStream("./Assets/dat/NetworkSaveData-1.bin", FileMode.Create))
                         bf3.Serialize(fs3, sd);
 
@@ -343,15 +343,17 @@ public class NetManager : MonoBehaviour
                 // Find the top 3 *individual* genomes and add them to a `topGenomes` list
                 Debug.Log("lGenome: " + bestGenome[trainTeam]);
                 string lastGenome = bestGenome[trainTeam].Substring(0, 8);
-                topGenomes = new List<NeuralNetwork>();
-                topGenomes.Add(persistenceNetwork[trainTeam]);
+                topGenomes = new List<List<NeuralNetwork>>();
+                topGenomes.Add(new List<NeuralNetwork>());
+                topGenomes.Add(new List<NeuralNetwork>());
+                topGenomes[trainTeam].Add(persistenceNetwork[trainTeam]);
                 for (int i = nets[trainTeam].Count - 1; i >= 0; i--)
                 {
                     if (topGenomes.Count >= 3)
                         break;
                     if (nets[trainTeam][i].genome.Substring(0, 8) != lastGenome)
                     {
-                        topGenomes.Add(new NeuralNetwork(nets[trainTeam][i]));
+                        topGenomes[trainTeam].Add(new NeuralNetwork(nets[trainTeam][i]));
                         lastGenome = nets[trainTeam][i].genome.Substring(0, 8);
                     }
                 }
@@ -544,10 +546,10 @@ public class NetManager : MonoBehaviour
             {
                 for (int i = (int)(populationSize * 0.2 / topGenomes.Count) * g; i < (int)(populationSize * 0.2 / topGenomes.Count) * (g + 1); i++)
                 {
-                    nets[trainTeam][i] = new NeuralNetwork(topGenomes[g]);
+                    nets[trainTeam][i] = new NeuralNetwork(topGenomes[trainTeam][g]);
                     //nets[trainTeam][i].CopyWeights(topGenomes[g].weights);
                     //Array.Copy(topGenomes[g].mutatableVariables, nets[trainTeam][i].mutatableVariables, mutVarSize);
-                    nets[trainTeam][i].genome = topGenomes[g].genome;
+                    nets[trainTeam][i].genome = topGenomes[trainTeam][g].genome;
                     nets[trainTeam][i].Mutate();
                     nets[trainTeam][i].UpdateGenome();
                     nets[trainTeam][i].droppedNeurons = nets[trainTeam][i].MutateDroppedNeurons();
@@ -595,10 +597,10 @@ public class NetManager : MonoBehaviour
             {
                 for (int i = (int)(populationSize * 0.2 / topGenomes.Count) * g; i < (int)(populationSize * 0.2 / topGenomes.Count) * (g + 1); i++)
                 {
-                    nets[trainTeam][i] = new NeuralNetwork(topGenomes[g]);
+                    nets[trainTeam][i] = new NeuralNetwork(topGenomes[trainTeam][g]);
                     //nets[trainTeam][i].CopyWeights(topGenomes[g].weights);
                     //Array.Copy(topGenomes[g].mutatableVariables, nets[trainTeam][i].mutatableVariables, mutVarSize);
-                    nets[trainTeam][i].genome = topGenomes[g].genome;
+                    nets[trainTeam][i].genome = topGenomes[trainTeam][g].genome;
                     nets[trainTeam][i].Mutate();
                     nets[trainTeam][i].UpdateGenome();
                     nets[trainTeam][i].droppedNeurons = nets[trainTeam][i].MutateDroppedNeurons();
@@ -726,7 +728,7 @@ public class NetManager : MonoBehaviour
             persistenceNetwork[0].genome = bestGenome[0];
             persistenceNetwork[0].mutatableVariables[0] = 0.25f;
             persistenceNetwork[0].CopyWeights(persistenceNetwork[0].RandomizeWeights());
-            persistenceNetwork.startingNeuronPercent = startingNeuronPercent;
+            persistenceNetwork[0].startingNeuronPercent = startingNeuronPercent;
             //persistenceNetwork.InitDroppedNeurons();
             persistenceNetwork[0].droppedNeurons = persistenceNetwork[0].InitDroppedNeurons();
             persistenceNetwork[0].droppedWeights = persistenceNetwork[0].InitDroppedWeights();
