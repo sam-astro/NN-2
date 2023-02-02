@@ -270,8 +270,17 @@ public class NetEntity : MonoBehaviour
             if(team == 0 && isSecondary == false){
                 // Prompt the other player network to move
                 opponent.gameBoard = gameBoard; // copy new game board to opponent
-                opponent.Elapse(true); // Get opponent move
+                bool opp = opponent.Elapse(true); // Get opponent move
                 gameBoard = opponent.gameBoard; // Update our gameboard
+                if(opp == false) // If the opponent has won, finish game.
+                {
+                    networkRunning = false;
+                    net.pendingFitness += 0.1f; // Give point penalty since they lost
+                    opponent.networkRunning = false;
+                    opponent.net.pendingFitness += -0.1f; // Give opponent point bonus since they won
+                    boardDrawer.Draw(gameBoard);
+                    return false;
+                }
             }
             
             boardDrawer.Draw(gameBoard);
