@@ -160,13 +160,13 @@ public class NetEntity : MonoBehaviour
 
     private float finalErrorOffset = 0;
 
-    [ShowOnly] public string genome = "blankgen";
+    public string genome = "blankgenn";
     [ShowOnly] public double totalFitness;
     int totalIterations;
     [ShowOnly] public int trial;
     public float[] trialValues;
     
-    public double[] gameBoard = new double[9];
+    public double[] gameBoard = new double[9] { 0, 0, 0, 0, 0, 0, 0, 0, 0};
     
     int team = 0;
 
@@ -176,7 +176,7 @@ public class NetEntity : MonoBehaviour
 
     public GameObject bestCrown;
     
-    public NetEntity opponent = new NetEntity();
+    public NetEntity opponent;
 
     [HideInInspector] public NetUI netUI;
     public BoardDrawer boardDrawer;
@@ -283,7 +283,7 @@ public class NetEntity : MonoBehaviour
                 }
             }
             
-            boardDrawer.Draw(gameBoard);
+            //boardDrawer.Draw(gameBoard);
 
             timeElapsed += 1;
 
@@ -295,7 +295,7 @@ public class NetEntity : MonoBehaviour
         return false;
     }
 
-    public void Init(NeuralNetwork neti, int generation, int numberOfInputs, int totalIterations, int trial, NetUI netUI, int team, NeuralNetwork opponentNet, NetEntity netent)
+    public void Init(NeuralNetwork neti, int generation, int numberOfInputs, int totalIterations, int trial, NetUI netUI, int team, NeuralNetwork opponentNet, NetEntity netent, BoardDrawer boardDrawer)
     {
         transform.localPosition = Vector3.zero;
         transform.eulerAngles = Quaternion.Euler(0, 0, trialValues[trial]).eulerAngles;
@@ -313,13 +313,14 @@ public class NetEntity : MonoBehaviour
         this.weightsHash = net.weightsHash;
         this.netUI = netUI;
         this.team = team;
+        this.boardDrawer = boardDrawer;
         //net.error = 0;
         timeElapsed = 0;
         bestDistance = 10000;
         
         if(team == 0) {
             opponent = Instantiate(gameObject, transform).GetComponent<NetEntity>();
-            opponent.Init(opponentNet, generation, numberOfInputs, totalIterations, trial, netUI, 1, this.net, this);
+            opponent.Init(opponentNet, generation, numberOfInputs, totalIterations, trial, netUI, 1, this.net, this, boardDrawer);
         }
         else
             opponent = netent;

@@ -485,6 +485,7 @@ GameObject:
   - component: {fileID: 519420030}
   - component: {fileID: 519420033}
   - component: {fileID: 519420034}
+  - component: {fileID: 519420035}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -512,11 +513,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 02e2081876c99244fa317519acbd4d62, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  populationSize: 200
+  populationSize: 100
   layers: 0900000032000000140000003200000009000000
   learningRate: 0
   iterations: 0
-  maxIterations: 6000
+  maxIterations: 10
   mutVarSize: 1
   maxTrialsPerGeneration: 1
   trial: 0
@@ -530,6 +531,7 @@ MonoBehaviour:
   laser: {fileID: 510059493}
   cameraFollow: {fileID: 519420034}
   netUI: {fileID: 1242479535}
+  boardDrawer: {fileID: 519420035}
   startingNeuronPercent: 0
   amntLeft: 0
   bestGenome: []
@@ -631,6 +633,18 @@ MonoBehaviour:
   offset: {x: 5.4, y: 0, z: -10}
   matchX: 1
   matchY: 0
+--- !u!114 &519420035
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 519420028}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8eb781ba76829614aa772834120008fb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &558658628
 GameObject:
   m_ObjectHideFlags: 0

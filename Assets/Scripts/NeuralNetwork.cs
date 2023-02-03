@@ -32,7 +32,7 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
     public bool isBest = false;
 
     const string glyphs = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    public string genome = "";
+    public string genome = "blankgena";
 
     public string weightsHash = "";
 

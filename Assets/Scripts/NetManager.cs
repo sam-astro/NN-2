@@ -65,6 +65,8 @@ public class NetManager : MonoBehaviour
 
     bool optimizeAndShrinkNet = false;
 
+    public BoardDrawer boardDrawer;
+
     [Range(0, 100)]
     public int startingNeuronPercent = 97;
 
@@ -115,6 +117,9 @@ public class NetManager : MonoBehaviour
 
     private void Start()
     {
+        bestGenome = new string[2];
+        bestEverError = new double[2];
+
         InitEntityNeuralNetworks();
         CreateEntityBodies();
 
@@ -257,11 +262,13 @@ public class NetManager : MonoBehaviour
                         (bestEverError[0]).ToString() + "#" +
                         ((int)Time.realtimeSinceStartup + timeManager.offsetTime).ToString() + "#" +
                         bestGenome[0]);
-                    persistence = new StreamWriter("./Assets/dat/WeightSaveMeta-1.mta");
-                    persistence.WriteLine((generationNumber).ToString() + "#" +
+                    persistence.Close();
+                    StreamWriter persistence2 = new StreamWriter("./Assets/dat/WeightSaveMeta-1.mta");
+                    persistence2.WriteLine((generationNumber).ToString() + "#" +
                         (bestEverError[1]).ToString() + "#" +
                         ((int)Time.realtimeSinceStartup + timeManager.offsetTime).ToString() + "#" +
                         bestGenome[1]);
+                    persistence2.Close();
 
                     #region OLD SAVE SYSTEM
                     //// Save best weights
@@ -432,7 +439,7 @@ public class NetManager : MonoBehaviour
             {
                 cameraFollow.target = entityList[i].GetComponent<NetEntity>().mainSprites[0].transform;
             }
-            entityList[i].GetComponent<NetEntity>().Init(nets[trainTeam][i], generationNumber, layers[0], maxIterations, trial, netUI, 0, nets[trainTeam==0?1:0][i], null);
+            entityList[i].GetComponent<NetEntity>().Init(nets[trainTeam][i], generationNumber, layers[0], maxIterations, trial, netUI, 0, nets[trainTeam==0?1:0][i], null, boardDrawer);
         }
         //}
         //else
@@ -683,6 +690,7 @@ public class NetManager : MonoBehaviour
             for (int i = 0; i < populationSize; i++)
             {
                 // If no weights were loaded, create random network
+                Debug.Log(bestGenome.Length);
                 if (bestGenome[t] == "")
                 {
                     NeuralNetwork net = new NeuralNetwork(layers, null);
@@ -722,9 +730,9 @@ public class NetManager : MonoBehaviour
             }
         //nets[trainTeam][0].isBest = true;
 
-        if (bestGenome[trainTeam] == "")
+        if (bestGenome[0] == "")
         {
-            bestGenome[0] = nets[trainTeam][0].GenerateGenome();
+            bestGenome[0] = nets[0][0].GenerateGenome();
             persistenceNetwork[0].genome = bestGenome[0];
             persistenceNetwork[0].mutatableVariables[0] = 0.25f;
             persistenceNetwork[0].CopyWeights(persistenceNetwork[0].RandomizeWeights());
@@ -732,9 +740,16 @@ public class NetManager : MonoBehaviour
             //persistenceNetwork.InitDroppedNeurons();
             persistenceNetwork[0].droppedNeurons = persistenceNetwork[0].InitDroppedNeurons();
             persistenceNetwork[0].droppedWeights = persistenceNetwork[0].InitDroppedWeights();
-            
-            bestGenome[1] = nets[trainTeam][0].GenerateGenome();
-            persistenceNetwork[1] = persistenceNetwork[0];
+
+            bestGenome[1] = nets[1][0].GenerateGenome();
+            persistenceNetwork[1].genome = bestGenome[1];
+            persistenceNetwork[1].mutatableVariables[1] = 0.25f;
+            persistenceNetwork[1].CopyWeights(persistenceNetwork[1].RandomizeWeights());
+            persistenceNetwork[1].startingNeuronPercent = startingNeuronPercent;
+            //persistenceNetwork.InitDroppedNeurons();
+            persistenceNetwork[1].droppedNeurons = persistenceNetwork[1].InitDroppedNeurons();
+            persistenceNetwork[1].droppedWeights = persistenceNetwork[1].InitDroppedWeights();
+
             //persistenceNetwork[trainTeam].mutatableVariables = persistenceNetwork[trainTeam].RandomizeMutVars();
             //persistenceNetwork[trainTeam].RandomizeWeights();
         }

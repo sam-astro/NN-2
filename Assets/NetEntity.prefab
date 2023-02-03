@@ -1104,277 +1104,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7823a1df336f8c241aebcf7238cac853, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  senses:
-  - name: Sin of Time
-    distanceToObject: 0
-    horizontalDifference: 0
-    verticalDifference: 0
-    intersectingTrueFalse: 0
-    intersectingDistance: 0
-    timeElapsedAsSine: 1
-    rotationZ: 0
-    checkIfColliding: 0
-    xVelocity: 0
-    objectToSenseForTag: goal
-    objectToSenseFor: {fileID: 0}
-    intersectionMask:
-      serializedVersion: 2
-      m_Bits: 0
-    initialDistance: 0
-    sinMultiplier: 0.25
-    lastOutput: 0
-  - name: Rotation Z
-    distanceToObject: 0
-    horizontalDifference: 0
-    verticalDifference: 0
-    intersectingTrueFalse: 0
-    intersectingDistance: 0
-    timeElapsedAsSine: 0
-    rotationZ: 1
-    checkIfColliding: 0
-    xVelocity: 0
-    objectToSenseForTag: 
-    objectToSenseFor: {fileID: 2669643338255989059}
-    intersectionMask:
-      serializedVersion: 2
-      m_Bits: 0
-    initialDistance: 5
-    sinMultiplier: 10
-    lastOutput: 0
-  - name: LegRotationZ-A1
-    distanceToObject: 0
-    horizontalDifference: 0
-    verticalDifference: 0
-    intersectingTrueFalse: 0
-    intersectingDistance: 0
-    timeElapsedAsSine: 0
-    rotationZ: 1
-    checkIfColliding: 0
-    xVelocity: 0
-    objectToSenseForTag: 
-    objectToSenseFor: {fileID: 8800060005557718232}
-    intersectionMask:
-      serializedVersion: 2
-      m_Bits: 0
-    initialDistance: 5
-    sinMultiplier: 10
-    lastOutput: 0
-  - name: LegRotationZ-B1
-    distanceToObject: 0
-    horizontalDifference: 0
-    verticalDifference: 0
-    intersectingTrueFalse: 0
-    intersectingDistance: 0
-    timeElapsedAsSine: 0
-    rotationZ: 1
-    checkIfColliding: 0
-    xVelocity: 0
-    objectToSenseForTag: 
-    objectToSenseFor: {fileID: 6869453045741788976}
-    intersectionMask:
-      serializedVersion: 2
-      m_Bits: 0
-    initialDistance: 5
-    sinMultiplier: 10
-    lastOutput: 0
-  - name: LegRotationZ-A2
-    distanceToObject: 0
-    horizontalDifference: 0
-    verticalDifference: 0
-    intersectingTrueFalse: 0
-    intersectingDistance: 0
-    timeElapsedAsSine: 0
-    rotationZ: 1
-    checkIfColliding: 0
-    xVelocity: 0
-    objectToSenseForTag: 
-    objectToSenseFor: {fileID: 5693464044084005765}
-    intersectionMask:
-      serializedVersion: 2
-      m_Bits: 0
-    initialDistance: 5
-    sinMultiplier: 10
-    lastOutput: 0
-  - name: LegRotationZ-B2
-    distanceToObject: 0
-    horizontalDifference: 0
-    verticalDifference: 0
-    intersectingTrueFalse: 0
-    intersectingDistance: 0
-    timeElapsedAsSine: 0
-    rotationZ: 1
-    checkIfColliding: 0
-    xVelocity: 0
-    objectToSenseForTag: 
-    objectToSenseFor: {fileID: 5672827704509119320}
-    intersectionMask:
-      serializedVersion: 2
-      m_Bits: 0
-    initialDistance: 5
-    sinMultiplier: 10
-    lastOutput: 0
-  - name: GroundDistance1
-    distanceToObject: 0
-    horizontalDifference: 0
-    verticalDifference: 0
-    intersectingTrueFalse: 0
-    intersectingDistance: 1
-    timeElapsedAsSine: 0
-    rotationZ: 0
-    checkIfColliding: 0
-    xVelocity: 0
-    objectToSenseForTag: 
-    objectToSenseFor: {fileID: 3666513846738028067}
-    intersectionMask:
-      serializedVersion: 2
-      m_Bits: 64
-    initialDistance: 5
-    sinMultiplier: 10
-    lastOutput: 0
-  - name: GroundDistance2
-    distanceToObject: 0
-    horizontalDifference: 0
-    verticalDifference: 0
-    intersectingTrueFalse: 0
-    intersectingDistance: 1
-    timeElapsedAsSine: 0
-    rotationZ: 0
-    checkIfColliding: 0
-    xVelocity: 0
-    objectToSenseForTag: 
-    objectToSenseFor: {fileID: 3391282529441331521}
-    intersectionMask:
-      serializedVersion: 2
-      m_Bits: 64
-    initialDistance: 5
-    sinMultiplier: 10
-    lastOutput: 0
-  - name: GroundDistance8
-    distanceToObject: 0
-    horizontalDifference: 0
-    verticalDifference: 0
-    intersectingTrueFalse: 0
-    intersectingDistance: 1
-    timeElapsedAsSine: 0
-    rotationZ: 0
-    checkIfColliding: 0
-    xVelocity: 0
-    objectToSenseForTag: 
-    objectToSenseFor: {fileID: 2045146956392664397}
-    intersectionMask:
-      serializedVersion: 2
-      m_Bits: 64
-    initialDistance: 5
-    sinMultiplier: 10
-    lastOutput: 0
-  - name: LegCollidingA
-    distanceToObject: 0
-    horizontalDifference: 0
-    verticalDifference: 0
-    intersectingTrueFalse: 0
-    intersectingDistance: 0
-    timeElapsedAsSine: 0
-    rotationZ: 0
-    checkIfColliding: 1
-    xVelocity: 0
-    objectToSenseForTag: 
-    objectToSenseFor: {fileID: 5693464044084005765}
-    intersectionMask:
-      serializedVersion: 2
-      m_Bits: 0
-    initialDistance: 20
-    sinMultiplier: 0
-    lastOutput: 0
-  - name: LegCollidingB
-    distanceToObject: 0
-    horizontalDifference: 0
-    verticalDifference: 0
-    intersectingTrueFalse: 0
-    intersectingDistance: 0
-    timeElapsedAsSine: 0
-    rotationZ: 0
-    checkIfColliding: 1
-    xVelocity: 0
-    objectToSenseForTag: 
-    objectToSenseFor: {fileID: 5672827704509119320}
-    intersectionMask:
-      serializedVersion: 2
-      m_Bits: 0
-    initialDistance: 20
-    sinMultiplier: 0
-    lastOutput: 0
-  - name: DistanceToGoal
-    distanceToObject: 0
-    horizontalDifference: 0
-    verticalDifference: 0
-    intersectingTrueFalse: 0
-    intersectingDistance: 0
-    timeElapsedAsSine: 0
-    rotationZ: 0
-    checkIfColliding: 0
-    xVelocity: 0
-    objectToSenseForTag: 
-    objectToSenseFor: {fileID: 0}
-    intersectionMask:
-      serializedVersion: 2
-      m_Bits: 0
-    initialDistance: 20
-    sinMultiplier: 0
-    lastOutput: 0
-  - name: Body Colliding
-    distanceToObject: 0
-    horizontalDifference: 0
-    verticalDifference: 0
-    intersectingTrueFalse: 0
-    intersectingDistance: 0
-    timeElapsedAsSine: 0
-    rotationZ: 0
-    checkIfColliding: 1
-    xVelocity: 0
-    objectToSenseForTag: 
-    objectToSenseFor: {fileID: 2669643338255989059}
-    intersectionMask:
-      serializedVersion: 2
-      m_Bits: 0
-    initialDistance: 20
-    sinMultiplier: 0
-    lastOutput: 0
-  - name: LegCollidingA-Upper
-    distanceToObject: 0
-    horizontalDifference: 0
-    verticalDifference: 0
-    intersectingTrueFalse: 0
-    intersectingDistance: 0
-    timeElapsedAsSine: 0
-    rotationZ: 0
-    checkIfColliding: 1
-    xVelocity: 0
-    objectToSenseForTag: 
-    objectToSenseFor: {fileID: 8800060005557718232}
-    intersectionMask:
-      serializedVersion: 2
-      m_Bits: 0
-    initialDistance: 20
-    sinMultiplier: 0
-    lastOutput: 0
-  - name: LegCollidingB-Upper
-    distanceToObject: 0
-    horizontalDifference: 0
-    verticalDifference: 0
-    intersectingTrueFalse: 0
-    intersectingDistance: 0
-    timeElapsedAsSine: 0
-    rotationZ: 0
-    checkIfColliding: 1
-    xVelocity: 0
-    objectToSenseForTag: 
-    objectToSenseFor: {fileID: 6869453045741788976}
-    intersectionMask:
-      serializedVersion: 2
-      m_Bits: 0
-    initialDistance: 20
-    sinMultiplier: 0
-    lastOutput: 0
+  senses: []
   outputs: []
   networkRunning: 0
   generation: 0
@@ -1387,39 +1117,33 @@ MonoBehaviour:
   - {fileID: 7945994282329116785}
   - {fileID: 1186856167}
   - {fileID: 51837858}
-  hinges:
-  - {fileID: 6976762912665912751}
-  - {fileID: 1379863503603136244}
-  - {fileID: 4666247395395369256}
-  - {fileID: 6882022355614740317}
+  hinges: []
   randomizeSpriteColor: 1
-  bodyTouchingGroundIsBad: 1
-  upperLegsTouchingGroundIsBad: 1
-  touchingLaserIsBad: 1
-  rotationIsBad: 0
   rewardTimeAlive: 1
-  heightIsGood: 0
-  slowRotationIsBad: 0
-  distanceIsGood: 1
-  useAverageDistance: 0
-  directionChangeIsGood: 0
-  xVelocityIsGood: 0
-  outputAffectsSin: 1
-  directionTimes:
-  - 0
-  - 0
-  genome: 
+  genome: blankgen
   totalFitness: 0
   trial: 0
   trialValues:
   - 0
   - 20
   - -20
+  gameBoard:
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
   mutVars: []
   netID: 0
   weightsHash: 
   bestCrown: {fileID: 7733096843526706533}
+  opponent: {fileID: 0}
   netUI: {fileID: 0}
+  boardDrawer: {fileID: 0}
 --- !u!1 &7733096843526706533
 GameObject:
   m_ObjectHideFlags: 0
