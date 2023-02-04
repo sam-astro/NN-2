@@ -223,7 +223,7 @@ public class NetUI : MonoBehaviour
 
     public void UpdateInputs(double[] inputs)
     {
-        // For all nodes in the final layer, set equal to the corresponding output
+        // For all nodes in the final layer, set equal to the corresponding input
         for (int i = 0; i < inputs.Length; i++)
         {
             float a = (float)(inputs[i] + 1f) / 2f;

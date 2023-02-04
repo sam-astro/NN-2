@@ -166,9 +166,9 @@ public class NetEntity : MonoBehaviour
     [ShowOnly] public int trial;
     public float[] trialValues;
     
-    public double[] gameBoard = new double[9] { 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    
-    int team = 0;
+    public double[] gameBoard = new double[9];
+
+    [ShowOnly] public int team = 0;
 
     [ShowOnly] public double[] mutVars;
     [ShowOnly] public int netID;
@@ -207,6 +207,14 @@ public class NetEntity : MonoBehaviour
         return false;
     }
 
+    public bool IsDraw()
+    {
+        for (int i = 0; i < gameBoard.Length; i++)
+            if (gameBoard[i] == 0)
+                return false;
+        return true;
+    }
+
     public bool Elapse(bool isSecondary)
     {
         if (networkRunning == true)
@@ -241,7 +249,7 @@ public class NetEntity : MonoBehaviour
             
             for(int i = idx.Count-1; i >= 0; i--){
                 // Make sure the current game board location is empty, otherwise go to next greatest choice
-                if(gameBoard[idx[i]]==0.5d)
+                if(gameBoard[idx[i]]==0d)
                 {
                     // Place piece
                     gameBoard[idx[i]] = team == 1 ? 1 : -1;
@@ -252,35 +260,48 @@ public class NetEntity : MonoBehaviour
             
                 
             if (rewardTimeAlive)
-                net.pendingFitness += ((totalIterations - timeElapsed) / (float)totalIterations);
+                net.pendingFitness = ((totalIterations - timeElapsed) / (float)totalIterations);
             //bestDistance = senseVal;
             //}
 
             // Check if this network has won, and end the game if so.
-            if(HasWon(team)){
+            if (HasWon(team))
+            {
                 networkRunning = false;
-                net.pendingFitness += -0.1f; // Give point bonus since they won
+                net.pendingFitness += ((float)timeElapsed / (float)totalIterations); // Give point bonus since they won
                 opponent.networkRunning = false;
-                opponent.net.pendingFitness += 0.1f; // Give opponent point penalty since they lost
+                opponent.net.pendingFitness += 1f; // Give opponent point penalty since they lost
                 boardDrawer.Draw(gameBoard);
+                //Debug.Log("Team: " + team + " has won!");
                 return false;
             }
-            
+            // Else check if this game is a draw
+            else if (IsDraw())
+            {
+                networkRunning = false;
+                net.pendingFitness += -((float)timeElapsed / (float)totalIterations)/2f; // Give smaller point bonus since draw
+                opponent.networkRunning = false;
+                opponent.net.pendingFitness += -((float)timeElapsed / (float)totalIterations)/2f; // Give smaller point bonus since draw
+                boardDrawer.Draw(gameBoard);
+                //Debug.Log("Draw.");
+                return false;
+            }
+
             // If this player is on team 0, prompt team 1 to move their piece
-            if(team == 0 && isSecondary == false){
+            if (team == 0 && isSecondary == false){
                 // Prompt the other player network to move
                 opponent.gameBoard = gameBoard; // copy new game board to opponent
                 bool opp = opponent.Elapse(true); // Get opponent move
                 gameBoard = opponent.gameBoard; // Update our gameboard
-                if(opp == false) // If the opponent has won, finish game.
-                {
-                    networkRunning = false;
-                    net.pendingFitness += 0.1f; // Give point penalty since they lost
-                    opponent.networkRunning = false;
-                    opponent.net.pendingFitness += -0.1f; // Give opponent point bonus since they won
-                    boardDrawer.Draw(gameBoard);
-                    return false;
-                }
+                //if(opp == false && networkRunning) // If the opponent has won, finish game.
+                //{
+                //    networkRunning = false;
+                //    net.pendingFitness += 0.1f; // Give point penalty since they lost
+                //    opponent.networkRunning = false;
+                //    opponent.net.pendingFitness += -0.1f; // Give opponent point bonus since they won
+                //    //boardDrawer.Draw(gameBoard);
+                //    return false;
+                //}
             }
             
             //boardDrawer.Draw(gameBoard);
@@ -298,7 +319,7 @@ public class NetEntity : MonoBehaviour
     public void Init(NeuralNetwork neti, int generation, int numberOfInputs, int totalIterations, int trial, NetUI netUI, int team, NeuralNetwork opponentNet, NetEntity netent, BoardDrawer boardDrawer)
     {
         transform.localPosition = Vector3.zero;
-        transform.eulerAngles = Quaternion.Euler(0, 0, trialValues[trial]).eulerAngles;
+        //transform.eulerAngles = Quaternion.Euler(0, 0, trialValues[trial]).eulerAngles;
         this.net = neti;
         this.generation = generation;
         this.numberOfInputs = numberOfInputs;
@@ -306,7 +327,7 @@ public class NetEntity : MonoBehaviour
         this.totalRotationalDifference = 0;
         this.trial = trial;
         networkRunning = true;
-        this.net.fitness += this.net.pendingFitness;
+        //this.net.fitness += this.net.pendingFitness;
         this.net.pendingFitness = 0;
         this.genome = net.genome;
         this.netID = net.netID;
@@ -336,18 +357,18 @@ public class NetEntity : MonoBehaviour
             for (int i = 0; i < net.droppedNeurons.Length; i++)
                 for (int j = 0; j < net.droppedNeurons[i].Length; j++)
                     total += net.droppedNeurons[i][j] == true ? 1 : 0;
-            Debug.Log(total);
+            //Debug.Log(total);
         }
 
         // Show the crown if this is the best network
         bestCrown.SetActive(net.isBest);
         // Set the sprite layer to be the very front if this is the best network
-        if (net.isBest)
-            for (int i = 0; i < mainSprites.Length; i++)
-                mainSprites[i].sortingOrder = 1000;
-        else
-            for (int i = 0; i < mainSprites.Length; i++)
-                mainSprites[i].sortingOrder = netID;
+        //if (net.isBest)
+        //    for (int i = 0; i < mainSprites.Length; i++)
+        //        mainSprites[i].sortingOrder = 1000;
+        //else
+        //    for (int i = 0; i < mainSprites.Length; i++)
+        //        mainSprites[i].sortingOrder = netID;
 
         foreach (var s in senses)
             s.Initialize(mainSprites[0].gameObject);

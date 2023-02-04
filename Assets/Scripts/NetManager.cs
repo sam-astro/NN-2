@@ -25,11 +25,28 @@ class SaveData
     public int[] layers;
 }
 
+static class MyExtensions
+{
+    private static System.Random rng = new System.Random();
+    public static void Shuffle<T>(this IList<T> list)
+    {
+        int n = list.Count;
+        while (n > 1)
+        {
+            n--;
+            int k = rng.Next(n + 1);
+            T value = list[k];
+            list[k] = list[n];
+            list[n] = value;
+        }
+    }
+}
+
 public class NetManager : MonoBehaviour
 {
     public int populationSize = 100;
 
-    private int timeBetweenSave = 1;
+    private int timeBetweenSave = 10;
     private int timeBetweenGenerationProgress = 1;
     //private int waitBetweenTestResults = 1;
 
@@ -93,10 +110,10 @@ public class NetManager : MonoBehaviour
     private List<List<NeuralNetwork>> topGenomes;
 
     [ShowOnly] public int generationNumber = 1;
-    [ShowOnly] public double[] lastWorst = new double[]{100000000, 100000000};
-    [ShowOnly] public double[] lastBest = new double[] { 100000000, 100000000};
+    public double[] lastWorst = new double[]{100000000, 100000000};
+    public double[] lastBest = new double[] { 100000000, 100000000};
     double[] bestError = new double[]{ 100000000, 100000000};
-    public double[] bestEverError = new double[] { 100000000, 100000000};
+    public double[] bestEverError = new double[2] { 100000000, 100000000 };
     double[] worstError = new double[] { 0, 0};
 
     bool queuedForUpload = false;
@@ -118,7 +135,6 @@ public class NetManager : MonoBehaviour
     private void Start()
     {
         bestGenome = new string[2];
-        bestEverError = new double[2];
 
         InitEntityNeuralNetworks();
         CreateEntityBodies();
@@ -132,7 +148,7 @@ public class NetManager : MonoBehaviour
         // If the hist.csv file does not exist, create it and add data labels
         if (!File.Exists("./Assets/dat/hist.csv"))
             using (StreamWriter sw = File.AppendText("./Assets/dat/hist.csv"))
-                sw.WriteLine("generation, Top Error, Gen Error, Dropped %");
+                sw.WriteLine("generation, team A best, team A current, team B best, team B current, Dropped %");
     }
 
     public void FixedUpdate()
@@ -340,12 +356,12 @@ public class NetManager : MonoBehaviour
                     //skip0:
 
                     using (StreamWriter sw = File.AppendText("./Assets/dat/hist.csv"))
-                        sw.WriteLine((generationNumber).ToString() + ", " + bestEverError[trainTeam] + ", " + bestError[trainTeam]+", "+((float)bestDroppedNeuronsAmnt / (float)totalNeurons).ToString());
+                        sw.WriteLine((generationNumber).ToString() + ", " + bestEverError[0] + ", " + bestError[0] + ", " + bestEverError[1] + ", " + bestError[1] + ", "+((float)bestDroppedNeuronsAmnt / (float)totalNeurons).ToString());
 
                 }
                 else if (generationNumber % timeBetweenGenerationProgress == 0)
                     using (StreamWriter sw = File.AppendText("./Assets/dat/hist.csv"))
-                        sw.WriteLine((generationNumber).ToString() + ", " + bestEverError[trainTeam] + ", " + bestError[trainTeam] + ", " + ((float)bestDroppedNeuronsAmnt / (float)totalNeurons).ToString());
+                        sw.WriteLine((generationNumber).ToString() + ", " + bestEverError[0] + ", " + bestError[0] + ", " + bestEverError[1] + ", " + bestError[1] + ", " + ((float)bestDroppedNeuronsAmnt / (float)totalNeurons).ToString());
 
                 // Find the top 3 *individual* genomes and add them to a `topGenomes` list
                 Debug.Log("lGenome: " + bestGenome[trainTeam]);
@@ -356,7 +372,7 @@ public class NetManager : MonoBehaviour
                 topGenomes[trainTeam].Add(persistenceNetwork[trainTeam]);
                 for (int i = nets[trainTeam].Count - 1; i >= 0; i--)
                 {
-                    if (topGenomes.Count >= 3)
+                    if (topGenomes[trainTeam].Count >= 3)
                         break;
                     if (nets[trainTeam][i].genome.Substring(0, 8) != lastGenome)
                     {
@@ -395,9 +411,8 @@ public class NetManager : MonoBehaviour
         {
             iterations -= 1;
 
-            if (iterations % 10 == 0)
-                if (IterateNetEntities() == false || iterations <= 0)
-                    iterations = 0;
+            if (IterateNetEntities() == false || iterations <= 0)
+                iterations = 0;
         }
     }
 
@@ -431,6 +446,9 @@ public class NetManager : MonoBehaviour
         //{
         entityList = new List<GameObject>();
 
+        List<NeuralNetwork> shuffledOpponents = nets[trainTeam == 0 ? 1 : 0];
+        shuffledOpponents.Shuffle();
+
         for (int i = 0; i < populationSize; i++)
         {
             GameObject tempEntity = Instantiate(netEntityPrefab, spawnPoint);
@@ -439,7 +457,7 @@ public class NetManager : MonoBehaviour
             {
                 cameraFollow.target = entityList[i].GetComponent<NetEntity>().mainSprites[0].transform;
             }
-            entityList[i].GetComponent<NetEntity>().Init(nets[trainTeam][i], generationNumber, layers[0], maxIterations, trial, netUI, 0, nets[trainTeam==0?1:0][i], null, boardDrawer);
+            entityList[i].GetComponent<NetEntity>().Init(nets[trainTeam][i], generationNumber, layers[0], maxIterations, trial, netUI, 0, shuffledOpponents[i], null, boardDrawer);
         }
         //}
         //else
@@ -448,6 +466,7 @@ public class NetManager : MonoBehaviour
         //        entityList[i].GetComponent<NetEntity>().Init(nets[trainTeam][i], generationNumber);
         //    }
     }
+
 
     private bool IterateNetEntities()
     {
@@ -542,67 +561,66 @@ public class NetManager : MonoBehaviour
         ////bestMutVars = persistenceNetwork.mutatableVariables;
 
 
-
         // OLD SYSTEM:
         //
         // If using the optimizers, just create many versions of the best ever network and mutate slightly
         if (optimizeAndShrinkNet)
         {
-            // Create copies of top 3 genomes to replace the worst neural networks
-            for (int g = 0; g < topGenomes.Count; g++)
-            {
-                for (int i = (int)(populationSize * 0.2 / topGenomes.Count) * g; i < (int)(populationSize * 0.2 / topGenomes.Count) * (g + 1); i++)
-                {
-                    nets[trainTeam][i] = new NeuralNetwork(topGenomes[trainTeam][g]);
-                    //nets[trainTeam][i].CopyWeights(topGenomes[g].weights);
-                    //Array.Copy(topGenomes[g].mutatableVariables, nets[trainTeam][i].mutatableVariables, mutVarSize);
-                    nets[trainTeam][i].genome = topGenomes[trainTeam][g].genome;
-                    nets[trainTeam][i].Mutate();
-                    nets[trainTeam][i].UpdateGenome();
-                    nets[trainTeam][i].droppedNeurons = nets[trainTeam][i].MutateDroppedNeurons();
-                    nets[trainTeam][i].droppedWeights = nets[trainTeam][i].MutateDroppedWeights();
-                    nets[trainTeam][i].mutatableVariables = nets[trainTeam][i].MutateMutVars();
-                }
-            }
-            for (int i = (int)(populationSize * 0.2 / topGenomes.Count) * (topGenomes.Count + 1); i < (int)(populationSize * 0.5); i++)
-            {
-                nets[trainTeam][i] = new NeuralNetwork(persistenceNetwork[trainTeam]);
-                nets[trainTeam][i].droppedNeurons = nets[trainTeam][i].MutateDroppedNeurons();
-                nets[trainTeam][i].droppedWeights = nets[trainTeam][i].MutateDroppedWeights();
-                nets[trainTeam][i].genome = nets[trainTeam][i].GenerateGenome();
-                nets[trainTeam][i].mutatableVariables = nets[trainTeam][i].MutateMutVars();
-            }
-            // Continue using the best 50% of neural networks and mutate them a bit
-            for (int i = (int)(populationSize * 0.5); i < populationSize; i++)
-            {
-                if (nets[trainTeam][i].genome.Substring(0, 8) == bestGenome[trainTeam].Substring(0, 8) && // If it is the same genome as the best
-                    Array.IndexOf(nets[trainTeam][i].letters, nets[trainTeam][i].genome[8]) < 5 && // And if the mutation level is less than 5 away from the original
-                    i < populationSize - 11)                                   // And it is not in the top 10
-                                                                               // Then randomize it to make population more diverse
-                {
-                    nets[trainTeam][i].ResetGenome();
-                    nets[trainTeam][i].CopyWeights(nets[trainTeam][i].RandomizeWeights());
-                    nets[trainTeam][i].droppedNeurons = nets[trainTeam][i].RandomizeDroppedNeurons();
-                    nets[trainTeam][i].droppedWeights = nets[trainTeam][i].RandomizeDroppedWeights();
-                }
-                else
-                {
-                    nets[trainTeam][i] = new NeuralNetwork(nets[trainTeam][i]);
-                    nets[trainTeam][i].Mutate();
-                    nets[trainTeam][i].droppedNeurons = nets[trainTeam][i].MutateDroppedNeurons();
-                    nets[trainTeam][i].droppedWeights = nets[trainTeam][i].MutateDroppedWeights();
-                    nets[trainTeam][i].UpdateGenome();
-                    nets[trainTeam][i].mutatableVariables = nets[trainTeam][i].MutateMutVars();
-                }
-            }
+            //// Create copies of top 3 genomes to replace the worst neural networks
+            //for (int g = 0; g < topGenomes.Count; g++)
+            //{
+            //    for (int i = (int)(populationSize * 0.2 / topGenomes.Count) * g; i < (int)(populationSize * 0.2 / topGenomes.Count) * (g + 1); i++)
+            //    {
+            //        nets[trainTeam][i] = new NeuralNetwork(topGenomes[trainTeam][g]);
+            //        //nets[trainTeam][i].CopyWeights(topGenomes[g].weights);
+            //        //Array.Copy(topGenomes[g].mutatableVariables, nets[trainTeam][i].mutatableVariables, mutVarSize);
+            //        nets[trainTeam][i].genome = topGenomes[trainTeam][g].genome;
+            //        nets[trainTeam][i].Mutate();
+            //        nets[trainTeam][i].UpdateGenome();
+            //        nets[trainTeam][i].droppedNeurons = nets[trainTeam][i].MutateDroppedNeurons();
+            //        nets[trainTeam][i].droppedWeights = nets[trainTeam][i].MutateDroppedWeights();
+            //        nets[trainTeam][i].mutatableVariables = nets[trainTeam][i].MutateMutVars();
+            //    }
+            //}
+            //for (int i = (int)(populationSize * 0.2 / topGenomes.Count) * (topGenomes.Count + 1); i < (int)(populationSize * 0.5); i++)
+            //{
+            //    nets[trainTeam][i] = new NeuralNetwork(persistenceNetwork[trainTeam]);
+            //    nets[trainTeam][i].droppedNeurons = nets[trainTeam][i].MutateDroppedNeurons();
+            //    nets[trainTeam][i].droppedWeights = nets[trainTeam][i].MutateDroppedWeights();
+            //    nets[trainTeam][i].genome = nets[trainTeam][i].GenerateGenome();
+            //    nets[trainTeam][i].mutatableVariables = nets[trainTeam][i].MutateMutVars();
+            //}
+            //// Continue using the best 50% of neural networks and mutate them a bit
+            //for (int i = (int)(populationSize * 0.5); i < populationSize; i++)
+            //{
+            //    if (nets[trainTeam][i].genome.Substring(0, 8) == bestGenome[trainTeam].Substring(0, 8) && // If it is the same genome as the best
+            //        Array.IndexOf(nets[trainTeam][i].letters, nets[trainTeam][i].genome[8]) < 5 && // And if the mutation level is less than 5 away from the original
+            //        i < populationSize - 11)                                   // And it is not in the top 10
+            //                                                                   // Then randomize it to make population more diverse
+            //    {
+            //        nets[trainTeam][i].ResetGenome();
+            //        nets[trainTeam][i].CopyWeights(nets[trainTeam][i].RandomizeWeights());
+            //        nets[trainTeam][i].droppedNeurons = nets[trainTeam][i].RandomizeDroppedNeurons();
+            //        nets[trainTeam][i].droppedWeights = nets[trainTeam][i].RandomizeDroppedWeights();
+            //    }
+            //    else
+            //    {
+            //        nets[trainTeam][i] = new NeuralNetwork(nets[trainTeam][i]);
+            //        nets[trainTeam][i].Mutate();
+            //        nets[trainTeam][i].droppedNeurons = nets[trainTeam][i].MutateDroppedNeurons();
+            //        nets[trainTeam][i].droppedWeights = nets[trainTeam][i].MutateDroppedWeights();
+            //        nets[trainTeam][i].UpdateGenome();
+            //        nets[trainTeam][i].mutatableVariables = nets[trainTeam][i].MutateMutVars();
+            //    }
+            //}
         }
         // Otherwise, use normal distribution and randomization on population
         else
         {
             // Create copies of top 3 genomes to replace the worst neural networks
-            for (int g = 0; g < topGenomes.Count; g++)
+            for (int g = 0; g < topGenomes[trainTeam].Count; g++)
             {
-                for (int i = (int)(populationSize * 0.2 / topGenomes.Count) * g; i < (int)(populationSize * 0.2 / topGenomes.Count) * (g + 1); i++)
+                for (int i = (int)(populationSize * 0.2 / topGenomes[trainTeam].Count) * g; i < (int)(populationSize * 0.2 / topGenomes[trainTeam].Count) * (g + 1); i++)
                 {
                     nets[trainTeam][i] = new NeuralNetwork(topGenomes[trainTeam][g]);
                     //nets[trainTeam][i].CopyWeights(topGenomes[g].weights);
@@ -616,7 +634,7 @@ public class NetManager : MonoBehaviour
                 }
             }
             // Create create totally new neural networks with random weights
-            for (int i = (int)(populationSize * 0.2 / topGenomes.Count) * (topGenomes.Count + 1); i < (int)(populationSize * 0.5); i++)
+            for (int i = (int)(populationSize * 0.2 / topGenomes[trainTeam].Count) * (topGenomes[trainTeam].Count + 1); i < (int)(populationSize * 0.5); i++)
             {
                 nets[trainTeam][i] = new NeuralNetwork(persistenceNetwork[trainTeam]);
                 nets[trainTeam][i].weights = nets[trainTeam][i].RandomizeWeights();
@@ -707,6 +725,7 @@ public class NetManager : MonoBehaviour
                     net.startingNeuronPercent = startingNeuronPercent;
                     net.droppedNeurons = net.InitDroppedNeurons();
                     net.droppedWeights = net.InitDroppedWeights();
+                    net.genome = "blankgena";
 
                     nets[t].Add(net);
                 }
@@ -870,6 +889,8 @@ public class NetManager : MonoBehaviour
         }
         catch (Exception)
         {
+            bestGenome[0] = "blankgena";
+            bestGenome[1] = "blankgena";
             Debug.LogWarning("Failed to load network data, possible mismatch in size?");
         }
     }
