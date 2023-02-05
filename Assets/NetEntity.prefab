@@ -207,7 +207,7 @@ MonoBehaviour:
   - {fileID: 0}
   hinges: []
   randomizeSpriteColor: 0
-  rewardTimeAlive: 1
+  rewardTimeAlive: 0
   genome: blankgen
   totalFitness: 0
   trial: 0

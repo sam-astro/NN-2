@@ -165,7 +165,7 @@ public class NetEntity : MonoBehaviour
     int totalIterations;
     [ShowOnly] public int trial;
     public float[] trialValues;
-    
+
     public double[] gameBoard = new double[9];
 
     [ShowOnly] public int team = 0;
@@ -175,35 +175,38 @@ public class NetEntity : MonoBehaviour
     [ShowOnly] public string weightsHash;
 
     public GameObject bestCrown;
-    
+
     public NetEntity opponent;
 
     [HideInInspector] public NetUI netUI;
     public BoardDrawer boardDrawer;
-    
-    public bool HasWon(int team){
+
+    bool isMainPlayer = false;
+
+    public bool HasWon(int team)
+    {
         double piece = -1;
-        
-        if(team == 1)
+
+        if (team == 1)
             piece = 1;
-    
-        if(gameBoard[0] == piece && gameBoard[3] == piece && gameBoard[6] == piece)
+
+        if (gameBoard[0] == piece && gameBoard[3] == piece && gameBoard[6] == piece)
             return true;
-        if(gameBoard[1] == piece && gameBoard[4] == piece && gameBoard[7] == piece)
+        if (gameBoard[1] == piece && gameBoard[4] == piece && gameBoard[7] == piece)
             return true;
-        if(gameBoard[2] == piece && gameBoard[5] == piece && gameBoard[8] == piece)
+        if (gameBoard[2] == piece && gameBoard[5] == piece && gameBoard[8] == piece)
             return true;
-        if(gameBoard[0] == piece && gameBoard[1] == piece && gameBoard[2] == piece)
+        if (gameBoard[0] == piece && gameBoard[1] == piece && gameBoard[2] == piece)
             return true;
-        if(gameBoard[3] == piece && gameBoard[4] == piece && gameBoard[5] == piece)
+        if (gameBoard[3] == piece && gameBoard[4] == piece && gameBoard[5] == piece)
             return true;
-        if(gameBoard[6] == piece && gameBoard[7] == piece && gameBoard[8] == piece)
+        if (gameBoard[6] == piece && gameBoard[7] == piece && gameBoard[8] == piece)
             return true;
-        if(gameBoard[0] == piece && gameBoard[4] == piece && gameBoard[8] == piece)
+        if (gameBoard[0] == piece && gameBoard[4] == piece && gameBoard[8] == piece)
             return true;
-        if(gameBoard[2] == piece && gameBoard[4] == piece && gameBoard[6] == piece)
+        if (gameBoard[2] == piece && gameBoard[4] == piece && gameBoard[6] == piece)
             return true;
-            
+
         return false;
     }
 
@@ -219,13 +222,21 @@ public class NetEntity : MonoBehaviour
     {
         if (networkRunning == true)
         {
-        
+
             // If this player is on team 1, get team 0's turn first
-            if(team == 1 && isSecondary == false){
+            if (team == 1 && isSecondary == false)
+            {
                 // Prompt the other player network to move
                 opponent.gameBoard = gameBoard; // copy new game board to opponent
-                opponent.Elapse(true); // Get opponent move
+                bool b = opponent.Elapse(true); // Get opponent move
                 gameBoard = opponent.gameBoard; // Update our gameboard
+                if (isMainPlayer && net.isBest)
+                    boardDrawer.Draw(gameBoard);
+                if (b == false) // If other player has won, don't continue
+                {
+                    networkRunning = false;
+                    return false;
+                }
             }
 
             double[] inputs = gameBoard;
@@ -238,7 +249,7 @@ public class NetEntity : MonoBehaviour
             }
 
             List<double> outList = outputs.ToList();
-            
+
             // Sort all outputs from least to greatest
             var sorted = outList
                 .Select((x, i) => new KeyValuePair<double, int>(x, i))
@@ -246,21 +257,29 @@ public class NetEntity : MonoBehaviour
                 .ToList();
             List<double> B = sorted.Select(x => x.Key).ToList();
             List<int> idx = sorted.Select(x => x.Value).ToList();
-            
-            for(int i = idx.Count-1; i >= 0; i--){
-                // Make sure the current game board location is empty, otherwise go to next greatest choice
-                if(gameBoard[idx[i]]==0d)
+
+            net.pendingFitness = 0;
+
+            if (networkRunning)
+                for (int i = idx.Count - 1; i >= 0; i--)
                 {
-                    // Place piece
-                    gameBoard[idx[i]] = team == 1 ? 1 : -1;
-                    break;
+                    // Make sure the current game board location is empty, otherwise go to next greatest choice
+                    if (gameBoard[idx[i]] == 0d)
+                    {
+                        // Place piece
+                        gameBoard[idx[i]] = (team == 1) ? 1 : -1;
+                        if (isMainPlayer && net.isBest)
+                            boardDrawer.Draw(gameBoard);
+                        break;
+                    }
+                    else // Otherwise add penalty, since it is trying to place a piece in a bad position
+                        net.pendingFitness += 0.1f;
                 }
-            }
-                
-            
-                
+
+
+
             if (rewardTimeAlive)
-                net.pendingFitness = ((totalIterations - timeElapsed) / (float)totalIterations);
+                net.pendingFitness += ((totalIterations - timeElapsed) / (float)totalIterations);
             //bestDistance = senseVal;
             //}
 
@@ -268,31 +287,53 @@ public class NetEntity : MonoBehaviour
             if (HasWon(team))
             {
                 networkRunning = false;
-                net.pendingFitness += ((float)timeElapsed / (float)totalIterations); // Give point bonus since they won
+                net.pendingFitness += ((float)timeElapsed / (float)totalIterations); // Give point bonus since they won, based off of how few turns it took
                 opponent.networkRunning = false;
-                opponent.net.pendingFitness += 1f; // Give opponent point penalty since they lost
-                boardDrawer.Draw(gameBoard);
+                opponent.net.pendingFitness += (1.0f-((float)timeElapsed / (float)totalIterations)); // Give opponent point penalty since they lost
+                if (isMainPlayer && net.isBest)
+                    boardDrawer.Draw(gameBoard);
                 //Debug.Log("Team: " + team + " has won!");
                 return false;
             }
+            //// Else check if opponent network has won, and end the game if so.
+            //else if (HasWon(team == 1 ? 0 : 1))
+            //{
+            //    opponent.networkRunning = false;
+            //    opponent.net.pendingFitness += ((float)timeElapsed / (float)totalIterations); // Give point bonus since they won
+            //    networkRunning = false;
+            //    net.pendingFitness += 1f; // Give opponent point penalty since they lost
+            //    if (team == 0 && net.isBest)
+            //        boardDrawer.Draw(gameBoard);
+            //    //Debug.Log("Team: " + team + " has won!");
+            //    return false;
+            //}
             // Else check if this game is a draw
             else if (IsDraw())
             {
                 networkRunning = false;
-                net.pendingFitness += -((float)timeElapsed / (float)totalIterations)/2f; // Give smaller point bonus since draw
+                net.pendingFitness += ((float)timeElapsed / (float)totalIterations)+0.5f; // Give smaller point bonus since draw
                 opponent.networkRunning = false;
-                opponent.net.pendingFitness += -((float)timeElapsed / (float)totalIterations)/2f; // Give smaller point bonus since draw
-                boardDrawer.Draw(gameBoard);
+                opponent.net.pendingFitness += ((float)timeElapsed / (float)totalIterations)+0.5f; // Give smaller point bonus since draw
+                if (isMainPlayer && net.isBest)
+                    boardDrawer.Draw(gameBoard);
                 //Debug.Log("Draw.");
                 return false;
             }
 
             // If this player is on team 0, prompt team 1 to move their piece
-            if (team == 0 && isSecondary == false){
+            if (team == 0 && isSecondary == false && networkRunning)
+            {
                 // Prompt the other player network to move
                 opponent.gameBoard = gameBoard; // copy new game board to opponent
-                bool opp = opponent.Elapse(true); // Get opponent move
+                bool b = opponent.Elapse(true); // Get opponent move
                 gameBoard = opponent.gameBoard; // Update our gameboard
+                if (isMainPlayer && net.isBest)
+                    boardDrawer.Draw(gameBoard);
+                if (b == false) // If other player has won, don't continue
+                {
+                    networkRunning = false;
+                    return false;
+                }
                 //if(opp == false && networkRunning) // If the opponent has won, finish game.
                 //{
                 //    networkRunning = false;
@@ -303,8 +344,6 @@ public class NetEntity : MonoBehaviour
                 //    return false;
                 //}
             }
-            
-            //boardDrawer.Draw(gameBoard);
 
             timeElapsed += 1;
 
@@ -338,10 +377,12 @@ public class NetEntity : MonoBehaviour
         //net.error = 0;
         timeElapsed = 0;
         bestDistance = 10000;
-        
-        if(team == 0) {
+
+        if (netent == null)
+        {
             opponent = Instantiate(gameObject, transform).GetComponent<NetEntity>();
-            opponent.Init(opponentNet, generation, numberOfInputs, totalIterations, trial, netUI, 1, this.net, this, boardDrawer);
+            opponent.Init(opponentNet, generation, numberOfInputs, totalIterations, trial, netUI, team==0?1:0, this.net, this, boardDrawer);
+            isMainPlayer = true;
         }
         else
             opponent = netent;
@@ -370,8 +411,11 @@ public class NetEntity : MonoBehaviour
         //    for (int i = 0; i < mainSprites.Length; i++)
         //        mainSprites[i].sortingOrder = netID;
 
-        foreach (var s in senses)
-            s.Initialize(mainSprites[0].gameObject);
+        //foreach (var s in senses)
+        //    s.Initialize(mainSprites[0].gameObject);
+
+        if (team == 0 && net.isBest)
+            boardDrawer.Reset();
 
         if (randomizeSpriteColor)
         {

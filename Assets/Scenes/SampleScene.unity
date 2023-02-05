@@ -484,7 +484,6 @@ GameObject:
   - component: {fileID: 519420029}
   - component: {fileID: 519420030}
   - component: {fileID: 519420033}
-  - component: {fileID: 519420034}
   - component: {fileID: 519420035}
   m_Layer: 0
   m_Name: Main Camera
@@ -513,8 +512,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 02e2081876c99244fa317519acbd4d62, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  populationSize: 500
-  layers: 090000000500000005000000050000000500000009000000
+  populationSize: 600
+  layers: 090000000500000005000000050000001200000009000000
   learningRate: 0
   iterations: 0
   maxIterations: 10
@@ -529,10 +528,9 @@ MonoBehaviour:
   optimizeAndShrinkToggle: {fileID: 1110029626}
   timeManager: {fileID: 519420033}
   laser: {fileID: 510059493}
-  cameraFollow: {fileID: 519420034}
   netUI: {fileID: 1242479535}
   boardDrawer: {fileID: 519420035}
-  startingNeuronPercent: 56
+  startingNeuronPercent: 0
   amntLeft: 0
   bestGenome:
   - 
@@ -623,24 +621,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   timeText: {fileID: 1180795269}
   offsetTime: 0
---- !u!114 &519420034
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 519420028}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 68bf018c47245924caa488669f7cdc2d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  target: {fileID: 0}
-  backupTarget: {fileID: 510059496}
-  smoothSpeed: 1.42
-  offset: {x: 5.4, y: 0, z: -10}
-  matchX: 1
-  matchY: 0
 --- !u!114 &519420035
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -653,6 +633,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8eb781ba76829614aa772834120008fb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  tile: {fileID: 7482667652216324306, guid: 06351c601611aeb4cb0ab33ca1be380f, type: 3}
+  tileColors:
+  - {r: 0.46274513, g: 0.5882353, b: 0.3372549, a: 1}
+  - {r: 0.9333334, g: 0.9333334, b: 0.8235295, a: 1}
+  - {r: 0.9150943, g: 0.9150943, b: 0.44459772, a: 1}
+  pieceTypes:
+  - {fileID: 7482667652216324306, guid: 6a7dd532bd7c12c42ae62aa3c9001e62, type: 3}
+  - {fileID: 7482667652216324306, guid: 3cfd64728f87ff24badeb83e2769eb66, type: 3}
+  - {fileID: 7482667652216324306, guid: 5334bf8eed0ea4a488e6667b870968b8, type: 3}
+  piecePrefab: {fileID: 194488954438525951, guid: d8b1e091a5430d4448fe34ca2e0e935a, type: 3}
+  width: 3
 --- !u!1 &558658628
 GameObject:
   m_ObjectHideFlags: 0

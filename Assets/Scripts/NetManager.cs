@@ -75,7 +75,6 @@ public class NetManager : MonoBehaviour
 
     public LaserScript laser;
 
-    public CameraFollow cameraFollow;
 
 
     public NetUI netUI;
@@ -109,7 +108,7 @@ public class NetManager : MonoBehaviour
     [ShowOnly] public string bestHash = "";
     private List<List<NeuralNetwork>> topGenomes;
 
-    [ShowOnly] public int generationNumber = 1;
+    [ShowOnly] public int generationNumber = 0;
     public double[] lastWorst = new double[]{100000000, 100000000};
     public double[] lastBest = new double[] { 100000000, 100000000};
     double[] bestError = new double[]{ 100000000, 100000000};
@@ -334,8 +333,8 @@ public class NetManager : MonoBehaviour
                 }
 
                 // Change the best ever network data and score to beat if it matches any criteria below
-                if ((bestError[trainTeam] < bestEverError[trainTeam]&&!optimizeAndShrinkNet) || // If the error is better than the best ever
-                    generationNumber == 0||  // If this is the first generation
+                if (((bestError[trainTeam] < bestEverError[trainTeam]&&!optimizeAndShrinkNet) && // If the error is better than the best ever
+                    generationNumber > 1) ||  // If this is the first generation
 
                     // If the optimizeAndShrinkNet option is true, and the used
                     // neuron amount is less than the previous best, but the error
@@ -359,7 +358,7 @@ public class NetManager : MonoBehaviour
                         sw.WriteLine((generationNumber).ToString() + ", " + bestEverError[0] + ", " + bestError[0] + ", " + bestEverError[1] + ", " + bestError[1] + ", "+((float)bestDroppedNeuronsAmnt / (float)totalNeurons).ToString());
 
                 }
-                else if (generationNumber % timeBetweenGenerationProgress == 0)
+                else if (generationNumber % timeBetweenGenerationProgress == 0 && generationNumber > 1)
                     using (StreamWriter sw = File.AppendText("./Assets/dat/hist.csv"))
                         sw.WriteLine((generationNumber).ToString() + ", " + bestEverError[0] + ", " + bestError[0] + ", " + bestEverError[1] + ", " + bestError[1] + ", " + ((float)bestDroppedNeuronsAmnt / (float)totalNeurons).ToString());
 
@@ -447,17 +446,13 @@ public class NetManager : MonoBehaviour
         entityList = new List<GameObject>();
 
         List<NeuralNetwork> shuffledOpponents = nets[trainTeam == 0 ? 1 : 0];
-        shuffledOpponents.Shuffle();
+        //shuffledOpponents.Shuffle();
 
         for (int i = 0; i < populationSize; i++)
         {
             GameObject tempEntity = Instantiate(netEntityPrefab, spawnPoint);
             entityList.Add(tempEntity);
-            if (i == 0)
-            {
-                cameraFollow.target = entityList[i].GetComponent<NetEntity>().mainSprites[0].transform;
-            }
-            entityList[i].GetComponent<NetEntity>().Init(nets[trainTeam][i], generationNumber, layers[0], maxIterations, trial, netUI, 0, shuffledOpponents[i], null, boardDrawer);
+            entityList[i].GetComponent<NetEntity>().Init(nets[trainTeam][i], generationNumber, layers[0], maxIterations, trial, netUI, trainTeam, shuffledOpponents[i], null, boardDrawer);
         }
         //}
         //else
@@ -717,7 +712,7 @@ public class NetManager : MonoBehaviour
                     net.learningRate = learningRate;
                     net.layers = layers;
                     //net.mutVarSize = mutVarSize;
-                    net.ResetGenome();
+                    net.genome = net.GenerateGenome();
                     net.CopyWeights(net.RandomizeWeights());
                     //net.droppedNeurons = net.RandomizeDroppedNeurons();
                     //net.mutatableVariables = net.RandomizeMutVars();
@@ -725,7 +720,7 @@ public class NetManager : MonoBehaviour
                     net.startingNeuronPercent = startingNeuronPercent;
                     net.droppedNeurons = net.InitDroppedNeurons();
                     net.droppedWeights = net.InitDroppedWeights();
-                    net.genome = "blankgena";
+                    //net.genome = "blankgena";
 
                     nets[t].Add(net);
                 }
