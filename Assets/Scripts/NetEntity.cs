@@ -355,7 +355,7 @@ public class NetEntity : MonoBehaviour
         return false;
     }
 
-    public void Init(NeuralNetwork neti, int generation, int numberOfInputs, int totalIterations, int trial, NetUI netUI, int team, NeuralNetwork opponentNet, NetEntity netent, BoardDrawer boardDrawer)
+    public void Init(NeuralNetwork neti, int generation, int numberOfInputs, int totalIterations, int trial, NetUI[] netUIs, int team, NeuralNetwork opponentNet, NetEntity netent, BoardDrawer boardDrawer)
     {
         transform.localPosition = Vector3.zero;
         //transform.eulerAngles = Quaternion.Euler(0, 0, trialValues[trial]).eulerAngles;
@@ -371,7 +371,7 @@ public class NetEntity : MonoBehaviour
         this.genome = net.genome;
         this.netID = net.netID;
         this.weightsHash = net.weightsHash;
-        this.netUI = netUI;
+        this.netUI = netUIs[team];
         this.team = team;
         this.boardDrawer = boardDrawer;
         //net.error = 0;
@@ -381,7 +381,7 @@ public class NetEntity : MonoBehaviour
         if (netent == null)
         {
             opponent = Instantiate(gameObject, transform).GetComponent<NetEntity>();
-            opponent.Init(opponentNet, generation, numberOfInputs, totalIterations, trial, netUI, team==0?1:0, this.net, this, boardDrawer);
+            opponent.Init(opponentNet, generation, numberOfInputs, totalIterations, trial, netUIs, team==0?1:0, this.net, this, boardDrawer);
             isMainPlayer = true;
         }
         else

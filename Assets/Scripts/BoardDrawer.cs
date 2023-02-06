@@ -25,6 +25,7 @@ public class BoardDrawer : MonoBehaviour
             tmpObj.AddComponent<SpriteRenderer>();
             pieces[i] = tmpObj.GetComponent<SpriteRenderer>();
             pieces[i].sprite = pieceTypes[0];
+            pieces[i].sortingOrder = 10;
         }
         backgroundTiles = new SpriteRenderer[width * width];
         for (int y = 0; y < width; y++)

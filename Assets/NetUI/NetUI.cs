@@ -203,8 +203,8 @@ public class NetUI : MonoBehaviour
                             lines[i][j][k].endColor = c;
                             lines[i][j][k].startWidth = width;
                             lines[i][j][k].endWidth = width;
-                            //lines[i][j][k].sortingOrder = 1500 + ((int)(width * 500));
-                            lines[i][j][k].sortingOrder = 1500 + (UnityEngine.Random.Range(0, 500));
+                            lines[i][j][k].sortingOrder = 1500 - ((int)(width * 500));
+                            //lines[i][j][k].sortingOrder = 1500 + (UnityEngine.Random.Range(0, 500));
                         }
                     }
                 }

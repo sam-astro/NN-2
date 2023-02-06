@@ -77,7 +77,7 @@ public class NetManager : MonoBehaviour
 
 
 
-    public NetUI netUI;
+    public NetUI[] netUIs;
 
     bool optimizeAndShrinkNet = false;
 
@@ -452,7 +452,7 @@ public class NetManager : MonoBehaviour
         {
             GameObject tempEntity = Instantiate(netEntityPrefab, spawnPoint);
             entityList.Add(tempEntity);
-            entityList[i].GetComponent<NetEntity>().Init(nets[trainTeam][i], generationNumber, layers[0], maxIterations, trial, netUI, trainTeam, shuffledOpponents[i], null, boardDrawer);
+            entityList[i].GetComponent<NetEntity>().Init(nets[trainTeam][i], generationNumber, layers[0], maxIterations, trial, netUIs, trainTeam, shuffledOpponents[i], null, boardDrawer);
         }
         //}
         //else
