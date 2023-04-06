@@ -75,7 +75,7 @@ public class Sense
             val = Mathf.Sin(type * sinMultiplier);
         }
         else if (xVelocity)
-            val = objectToSenseFor.GetComponent<Rigidbody2D>().velocity.x / (float)type;
+            val = objectToSenseFor.GetComponent<Rigidbody>().velocity.x / (float)type;
 
         lastOutput = (float)val;
         return val;
@@ -122,7 +122,7 @@ public class Sense
                 throw;
             }
         else if (xVelocity)
-            val = objectToSenseFor.GetComponent<Rigidbody2D>().velocity.x / (float)4;
+            val = objectToSenseFor.GetComponent<Rigidbody>().velocity.x / (float)4;
 
         lastOutput = (float)val;
         return val;
@@ -148,8 +148,8 @@ public class NetEntity : MonoBehaviour
     float totalDistanceOverTime = 0;
     float totalXVelocity = 0;
 
-    public SpriteRenderer[] mainSprites;
-    public HingeJoint2D[] hinges;
+    public MeshRenderer[] modelPieces;
+    public HingeJoint[] hinges;
     public bool randomizeSpriteColor = true;
 
     float bestDistance = 10000;
@@ -206,9 +206,9 @@ public class NetEntity : MonoBehaviour
                 {
                     if (p == 7 || p == 8)
                         continue;
-                    inputs[p] = senses[p].GetSensorValue(mainSprites[0].gameObject);
+                    inputs[p] = senses[p].GetSensorValue(modelPieces[0].gameObject);
                 }
-                inputs[0] = senses[0].GetSensorValue(timeElapsed, mainSprites[0].gameObject);
+                inputs[0] = senses[0].GetSensorValue(timeElapsed, modelPieces[0].gameObject);
 
                 outputs = net.FeedForward(inputs);
                 if (net.isBest)
@@ -218,11 +218,12 @@ public class NetEntity : MonoBehaviour
                 }
             }
 
+            // Iterate through all of the servos, and change the speed accordingly to the outputs
             for (int i = 0; i < hinges.Length; i++)
             {
                 if (timeElapsed % 2 == 0)
                 {
-                    JointMotor2D changemotor = hinges[i].motor;
+                    JointMotor changemotor = hinges[i].motor;
                     changemotor.motorSpeed = ((float)outputs[i] - 0.5f) * 180.0f;
                     hinges[i].motor = changemotor;
                 }
@@ -279,16 +280,16 @@ public class NetEntity : MonoBehaviour
             //    double[] correct = { 1.0f };
             //    //net.BackProp(correct);
             //}
-            float height = (float)senses[6].GetSensorValue(mainSprites[0].gameObject);
+            float height = (float)senses[6].GetSensorValue(modelPieces[0].gameObject);
             totalheightDifference += 1f - height;
 
-            float d = (float)senses[11].GetSensorValue(mainSprites[4].gameObject);
-            float distance = (200f - (mainSprites[0].transform.position.x + 7.3f)) / 200f;
+            float d = (float)senses[11].GetSensorValue(modelPieces[4].gameObject);
+            float distance = (200f - (modelPieces[0].transform.position.x + 7.3f)) / 200f;
             totalDistanceOverTime += distance;
             if (distance < bestDistance)
                 bestDistance = distance;
 
-            float xVelocity = mainSprites[0].GetComponent<Rigidbody2D>().velocity.x;
+            float xVelocity = modelPieces[0].GetComponent<Rigidbody>().velocity.x;
             totalXVelocity += xVelocity;
 
             //if (senseVal < bestDistance)
@@ -319,22 +320,22 @@ public class NetEntity : MonoBehaviour
 
             if (bodyTouchingGroundIsBad)
                 // If body touched ground, end and turn invisible
-                if (senses[12].GetSensorValue(mainSprites[0].gameObject) == 1)
+                if (senses[12].GetSensorValue(modelPieces[0].gameObject) == 1)
                 {
                     networkRunning = false;
-                    for (int i = 0; i < mainSprites.Length; i++)
-                        Destroy(mainSprites[i].gameObject);
+                    for (int i = 0; i < modelPieces.Length; i++)
+                        Destroy(modelPieces[i].gameObject);
                     //net.pendingFitness += 0.3f;
                     //return false;
                 }
             if (upperLegsTouchingGroundIsBad)
                 // If upper leg parts touched ground, end and turn invisible
-                if (senses[13].GetSensorValue(mainSprites[0].gameObject) == 1 ||
-                    senses[14].GetSensorValue(mainSprites[0].gameObject) == 1)
+                if (senses[13].GetSensorValue(modelPieces[0].gameObject) == 1 ||
+                    senses[14].GetSensorValue(modelPieces[0].gameObject) == 1)
                 {
                     networkRunning = false;
-                    for (int i = 0; i < mainSprites.Length; i++)
-                        Destroy(mainSprites[i].gameObject);
+                    for (int i = 0; i < modelPieces.Length; i++)
+                        Destroy(modelPieces[i].gameObject);
                     //net.pendingFitness += 0.3f;
                     //return false;
                 }
@@ -346,8 +347,8 @@ public class NetEntity : MonoBehaviour
                     )
                 {
                     networkRunning = false;
-                    for (int i = 0; i < mainSprites.Length; i++)
-                        Destroy(mainSprites[i].gameObject);
+                    for (int i = 0; i < modelPieces.Length; i++)
+                        Destroy(modelPieces[i].gameObject);
                     //net.pendingFitness += 0.15f;
                     //return false;
                 }
@@ -406,24 +407,24 @@ public class NetEntity : MonoBehaviour
         // Show the crown if this is the best network
         bestCrown.SetActive(net.isBest);
         // Set the sprite layer to be the very front if this is the best network
-        if (net.isBest)
-            for (int i = 0; i < mainSprites.Length; i++)
-                mainSprites[i].sortingOrder = 1000;
-        else
-            for (int i = 0; i < mainSprites.Length; i++)
-                mainSprites[i].sortingOrder = netID;
+        //if (net.isBest)
+        //    for (int i = 0; i < mainSprites.Length; i++)
+        //        mainSprites[i].sortingOrder = 1000;
+        //else
+        //    for (int i = 0; i < mainSprites.Length; i++)
+        //        mainSprites[i].sortingOrder = netID;
 
         foreach (var s in senses)
-            s.Initialize(mainSprites[0].gameObject);
+            s.Initialize(modelPieces[0].gameObject);
 
-        if (randomizeSpriteColor)
-        {
-            Color col = new Color32((byte)UnityEngine.Random.Range(0, 256),
-                    (byte)UnityEngine.Random.Range(0, 256),
-                    (byte)UnityEngine.Random.Range(0, 256), 255);
-            for (int i = 0; i < mainSprites.Length; i++)
-                mainSprites[i].color = col;
-        }
+        //if (randomizeSpriteColor)
+        //{
+        //    Color col = new Color32((byte)UnityEngine.Random.Range(0, 256),
+        //            (byte)UnityEngine.Random.Range(0, 256),
+        //            (byte)UnityEngine.Random.Range(0, 256), 255);
+        //    for (int i = 0; i < mainSprites.Length; i++)
+        //        mainSprites[i].color = col;
+        //}
     }
 
     //public void End()
