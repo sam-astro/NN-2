@@ -167,10 +167,12 @@ public class NetEntity : MonoBehaviour
     public bool directionChangeIsGood = false;
     public bool xVelocityIsGood = false;
     public bool outputAffectsSin = false;
+    public bool feetOffGroundTimeIsBetter = false;
 
     private bool[] directions = { false, false }; // Array of directions of each motor
     public float[] directionTimes = { 0, 0 }; // Amount of time each direction has been used
     private float finalErrorOffset = 0;
+    private float feetOnGroundTime = 0;
 
     [ShowOnly] public string genome = "blankgen";
     [ShowOnly] public double totalFitness;
@@ -283,11 +285,21 @@ public class NetEntity : MonoBehaviour
             float height = (float)senses[6].GetSensorValue(modelPieces[0].gameObject);
             totalheightDifference += 1f - height;
 
-            float d = (float)senses[11].GetSensorValue(modelPieces[4].gameObject);
+            float d = (float)senses[11].GetSensorValue(modelPieces[0].gameObject);
             float distance = (200f - (modelPieces[0].transform.position.x + 7.3f)) / 200f;
             totalDistanceOverTime += distance;
             if (distance < bestDistance)
                 bestDistance = distance;
+            
+            // If any of the feet are on the ground, add 1 for each foot.
+            if(senses[17].GetSensorValue(modelPieces[0].gameObject) == 1)
+                feetOnGroundTime += 1;
+            if(senses[18].GetSensorValue(modelPieces[0].gameObject) == 1)
+                feetOnGroundTime += 1;
+            if(senses[19].GetSensorValue(modelPieces[0].gameObject) == 1)
+                feetOnGroundTime += 1;
+            if(senses[20].GetSensorValue(modelPieces[0].gameObject) == 1)
+                feetOnGroundTime += 1;
 
             float xVelocity = modelPieces[0].GetComponent<Rigidbody>().velocity.x;
             totalXVelocity += xVelocity;
@@ -314,6 +326,8 @@ public class NetEntity : MonoBehaviour
                 net.pendingFitness += totalheightDifference / (float)timeElapsed;
             if (xVelocityIsGood)
                 net.pendingFitness += 2.0f - (totalXVelocity / (float)timeElapsed);
+            if (feetOffGroundTimeIsBetter)  // Calculate average percent of the time feet are on ground
+                net.pendingFitness += (feetOnGroundTime/4f) / (float)timeElapsed * 2;
             //bestDistance = senseVal;
             //}
 
@@ -331,7 +345,9 @@ public class NetEntity : MonoBehaviour
             if (upperLegsTouchingGroundIsBad)
                 // If upper leg parts touched ground, end and turn invisible
                 if (senses[13].GetSensorValue(modelPieces[0].gameObject) == 1 ||
-                    senses[14].GetSensorValue(modelPieces[0].gameObject) == 1)
+                    senses[14].GetSensorValue(modelPieces[0].gameObject) == 1) ||
+                    senses[15].GetSensorValue(modelPieces[0].gameObject) == 1 ||
+                    senses[16].GetSensorValue(modelPieces[0].gameObject) == 1)
                 {
                     networkRunning = false;
                     for (int i = 0; i < modelPieces.Length; i++)
