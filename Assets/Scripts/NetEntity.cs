@@ -17,6 +17,7 @@ public class Sense
     public bool intersectingTrueFalse;
     public bool intersectingDistance;
     public bool timeElapsedAsSine;
+    public bool rotationX;
     public bool rotationZ;
     public bool checkIfColliding;
     public bool xVelocity;
@@ -107,6 +108,10 @@ public class Sense
             else
                 val = 1;
         }
+        else if (rotationX)
+            // Rotation normalized between -1 and 1
+            val = ((objectToSenseFor.transform.eulerAngles.x > 180 ? 180 - (objectToSenseFor.transform.eulerAngles.x - 180) : -objectToSenseFor.transform.eulerAngles.x)) / 180.0f;
+
         else if (rotationZ)
             // Rotation normalized between -1 and 1
             val = ((objectToSenseFor.transform.eulerAngles.z > 180 ? 180 - (objectToSenseFor.transform.eulerAngles.z - 180) : -objectToSenseFor.transform.eulerAngles.z)) / 180.0f;
@@ -114,11 +119,11 @@ public class Sense
         else if (checkIfColliding)
             try
             {
-                val = objectToSenseFor.GetComponent<IsColliding>().isColliding ? 1 : 0;
+                val = objectToSenseFor.GetComponent<IsColliding3D>().isColliding ? 1 : 0;
             }
-            catch (Exception)
+            catch (Exception e)
             {
-
+                Debug.LogError(e.ToString());
                 throw;
             }
         else if (xVelocity)
@@ -188,6 +193,8 @@ public class NetEntity : MonoBehaviour
 
     [HideInInspector] public NetUI netUI;
 
+    public Material invisibleMat;
+
     public bool Elapse()
     {
         if (networkRunning == true)
@@ -206,8 +213,8 @@ public class NetEntity : MonoBehaviour
 
                 for (int p = 0; p < inputs.Length; p++)
                 {
-                    if (p == 7 || p == 8)
-                        continue;
+                    //if (p == 7 || p == 8)
+                    //    continue;
                     inputs[p] = senses[p].GetSensorValue(modelPieces[0].gameObject);
                 }
                 inputs[0] = senses[0].GetSensorValue(timeElapsed, modelPieces[0].gameObject);
@@ -226,7 +233,7 @@ public class NetEntity : MonoBehaviour
                 if (timeElapsed % 2 == 0)
                 {
                     JointMotor changemotor = hinges[i].motor;
-                    changemotor.motorSpeed = ((float)outputs[i] - 0.5f) * 180.0f;
+                    changemotor.targetVelocity = ((float)outputs[i] - 0.5f) * 180.0f;
                     hinges[i].motor = changemotor;
                 }
 
@@ -234,7 +241,7 @@ public class NetEntity : MonoBehaviour
                 if (directionChangeIsGood)
                     if (i <= 1)
                     {
-                        bool direction = hinges[i].motor.motorSpeed > 0 ? true : false;
+                        bool direction = hinges[i].motor.targetVelocity > 0 ? true : false;
                         if (directions[i] == direction)
                         {  // It is still going in the same direction
                            //directionTimes[i] += 1+Mathf.Abs(hinges[i].motor.motorSpeed)/90.0f;
@@ -248,8 +255,8 @@ public class NetEntity : MonoBehaviour
                         }
                         if (slowRotationIsBad)
                             // If slow motor speed, also add penalty
-                            if (Mathf.Abs(hinges[i].motor.motorSpeed) < 20)
-                                directionTimes[i] += (20f - Mathf.Abs(hinges[i].motor.motorSpeed)) / 20f;
+                            if (Mathf.Abs(hinges[i].motor.targetVelocity) < 20)
+                                directionTimes[i] += (20f - Mathf.Abs(hinges[i].motor.targetVelocity)) / 20f;
                     }
             }
 
@@ -282,23 +289,31 @@ public class NetEntity : MonoBehaviour
             //    double[] correct = { 1.0f };
             //    //net.BackProp(correct);
             //}
-            float height = (float)senses[6].GetSensorValue(modelPieces[0].gameObject);
-            totalheightDifference += 1f - height;
+            //float height = (float)senses[6].GetSensorValue(modelPieces[0].gameObject);
+            //totalheightDifference += 1f - height;
 
-            float d = (float)senses[11].GetSensorValue(modelPieces[0].gameObject);
-            float distance = (200f - (modelPieces[0].transform.position.x + 7.3f)) / 200f;
+            //float d = (float)senses[11].GetSensorValue(modelPieces[0].gameObject);
+            //float distance = (200f - (modelPieces[0].transform.position.x + 7.3f)) / 200f;
+            //float distance = (200f - 
+            //    Mathf.Sqrt(Mathf.Pow(modelPieces[0].transform.localPosition.x, 2)+ 
+            //    Mathf.Pow(modelPieces[0].transform.localPosition.z, 2)))
+            //    / 200f;
+            //float distance = (200f -
+            //    (Mathf.Pow(modelPieces[0].transform.localPosition.x, 2)))
+            //    / 200f;
+            float distance = -modelPieces[0].transform.localPosition.x/100f;
             totalDistanceOverTime += distance;
             if (distance < bestDistance)
                 bestDistance = distance;
-            
+
             // If any of the feet are on the ground, add 1 for each foot.
-            if(senses[17].GetSensorValue(modelPieces[0].gameObject) == 1)
+            if (senses[15].GetSensorValue(modelPieces[0].gameObject) == 1)
                 feetOnGroundTime += 1;
-            if(senses[18].GetSensorValue(modelPieces[0].gameObject) == 1)
+            if (senses[16].GetSensorValue(modelPieces[0].gameObject) == 1)
                 feetOnGroundTime += 1;
-            if(senses[19].GetSensorValue(modelPieces[0].gameObject) == 1)
+            if (senses[17].GetSensorValue(modelPieces[0].gameObject) == 1)
                 feetOnGroundTime += 1;
-            if(senses[20].GetSensorValue(modelPieces[0].gameObject) == 1)
+            if (senses[18].GetSensorValue(modelPieces[0].gameObject) == 1)
                 feetOnGroundTime += 1;
 
             float xVelocity = modelPieces[0].GetComponent<Rigidbody>().velocity.x;
@@ -327,14 +342,14 @@ public class NetEntity : MonoBehaviour
             if (xVelocityIsGood)
                 net.pendingFitness += 2.0f - (totalXVelocity / (float)timeElapsed);
             if (feetOffGroundTimeIsBetter)  // Calculate average percent of the time feet are on ground
-                net.pendingFitness += (feetOnGroundTime/4f) / (float)timeElapsed * 2;
+                net.pendingFitness += (feetOnGroundTime / 4f) / (float)timeElapsed * 2;
             //bestDistance = senseVal;
             //}
 
 
             if (bodyTouchingGroundIsBad)
                 // If body touched ground, end and turn invisible
-                if (senses[12].GetSensorValue(modelPieces[0].gameObject) == 1)
+                if (senses[23].GetSensorValue(modelPieces[0].gameObject) == 1)
                 {
                     networkRunning = false;
                     for (int i = 0; i < modelPieces.Length; i++)
@@ -344,10 +359,10 @@ public class NetEntity : MonoBehaviour
                 }
             if (upperLegsTouchingGroundIsBad)
                 // If upper leg parts touched ground, end and turn invisible
-                if (senses[13].GetSensorValue(modelPieces[0].gameObject) == 1 ||
-                    senses[14].GetSensorValue(modelPieces[0].gameObject) == 1) ||
-                    senses[15].GetSensorValue(modelPieces[0].gameObject) == 1 ||
-                    senses[16].GetSensorValue(modelPieces[0].gameObject) == 1)
+                if (senses[19].GetSensorValue(modelPieces[0].gameObject) == 1 ||
+                    senses[20].GetSensorValue(modelPieces[0].gameObject) == 1 ||
+                    senses[21].GetSensorValue(modelPieces[0].gameObject) == 1 ||
+                    senses[22].GetSensorValue(modelPieces[0].gameObject) == 1)
                 {
                     networkRunning = false;
                     for (int i = 0; i < modelPieces.Length; i++)
@@ -355,19 +370,19 @@ public class NetEntity : MonoBehaviour
                     //net.pendingFitness += 0.3f;
                     //return false;
                 }
-            if (touchingLaserIsBad)
-                // If any body part touches the laser, end and turn invisible
-                if (senses[12].objectToSenseFor.GetComponent<IsColliding>().failed ||  // Body
-                    senses[9].objectToSenseFor.GetComponent<IsColliding>().failed ||   // Leg A
-                    senses[10].objectToSenseFor.GetComponent<IsColliding>().failed     // Leg B
-                    )
-                {
-                    networkRunning = false;
-                    for (int i = 0; i < modelPieces.Length; i++)
-                        Destroy(modelPieces[i].gameObject);
-                    //net.pendingFitness += 0.15f;
-                    //return false;
-                }
+            //if (touchingLaserIsBad)
+            //    // If any body part touches the laser, end and turn invisible
+            //    if (senses[12].objectToSenseFor.GetComponent<IsColliding3D>().failed ||  // Body
+            //        senses[9].objectToSenseFor.GetComponent<IsColliding3D>().failed ||   // Leg A
+            //        senses[10].objectToSenseFor.GetComponent<IsColliding3D>().failed     // Leg B
+            //        )
+            //    {
+            //        networkRunning = false;
+            //        for (int i = 0; i < modelPieces.Length; i++)
+            //            Destroy(modelPieces[i].gameObject);
+            //        //net.pendingFitness += 0.15f;
+            //        //return false;
+            //    }
 
 
             timeElapsed += 1;
@@ -380,7 +395,7 @@ public class NetEntity : MonoBehaviour
         return false;
     }
 
-    public void Init(NeuralNetwork neti, int generation, int numberOfInputs, int totalIterations, int trial, NetUI netUI)
+    public void Init(NeuralNetwork neti, int generation, int numberOfInputs, int totalIterations, int trial, NetUI netUI, bool visible)
     {
         transform.localPosition = Vector3.zero;
         transform.eulerAngles = Quaternion.Euler(0, 0, trialValues[trial]).eulerAngles;
@@ -432,6 +447,11 @@ public class NetEntity : MonoBehaviour
 
         foreach (var s in senses)
             s.Initialize(modelPieces[0].gameObject);
+
+
+        if (visible == false)
+            for (int i = 0; i < modelPieces.Length; i++)
+                modelPieces[i].material = invisibleMat;
 
         //if (randomizeSpriteColor)
         //{

@@ -51,6 +51,7 @@ public class NetManager : MonoBehaviour
     public TMP_Text genomeList;
     public Slider dropChanceSlider;
     public Toggle optimizeAndShrinkToggle;
+    public Toggle onlyShowBestToggle;
     int dropChance = 3;
 
     public TimeManager timeManager;
@@ -63,6 +64,7 @@ public class NetManager : MonoBehaviour
     public NetUI netUI;
 
     public bool optimizeAndShrinkNet = false;
+    public bool onlyShowBest = false;
 
     //double promptMin = 0;
     //double promptMax = 0;
@@ -241,6 +243,7 @@ public class NetManager : MonoBehaviour
                 worstError = nets[0].fitness;
 
                 optimizeAndShrinkNet = optimizeAndShrinkToggle.isOn;
+                onlyShowBest = onlyShowBestToggle.isOn;
 
                 if (generationNumber % timeBetweenSave == 0 && timeBetweenSave != -1)
                 {
@@ -404,16 +407,10 @@ public class NetManager : MonoBehaviour
             entityList.Add(tempEntity);
             if (i == 0)
             {
-                cameraFollow.target = entityList[i].GetComponent<NetEntity>().mainSprites[0].transform;
+                cameraFollow.target = entityList[i].GetComponent<NetEntity>().modelPieces[0].transform;
             }
-            entityList[i].GetComponent<NetEntity>().Init(nets[i], generationNumber, layers[0], maxIterations, trial, netUI);
+            entityList[i].GetComponent<NetEntity>().Init(nets[i], generationNumber, layers[0], maxIterations, trial, netUI, onlyShowBest?(i==0?true:false):true);
         }
-        //}
-        //else
-        //    for (int i = 0; i < entityList.Count; i++)
-        //    {
-        //        entityList[i].GetComponent<NetEntity>().Init(nets[i], generationNumber);
-        //    }
     }
 
     private bool IterateNetEntities()
