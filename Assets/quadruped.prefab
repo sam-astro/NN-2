@@ -120,7 +120,7 @@ HingeJoint:
   m_UseMotor: 1
   m_Motor:
     targetVelocity: 0
-    force: 30
+    force: 100
     freeSpin: 0
   m_UseLimits: 1
   m_Limits:
@@ -255,7 +255,7 @@ HingeJoint:
   m_UseMotor: 1
   m_Motor:
     targetVelocity: 0
-    force: 30
+    force: 100
     freeSpin: 0
   m_UseLimits: 1
   m_Limits:
@@ -405,12 +405,12 @@ HingeJoint:
   m_UseMotor: 1
   m_Motor:
     targetVelocity: 0
-    force: 20
+    force: 80
     freeSpin: 0
   m_UseLimits: 1
   m_Limits:
-    min: -10
-    max: 50
+    min: -50
+    max: 10
     bounciness: 0
     bounceMinVelocity: 0.2
     contactDistance: 0
@@ -542,7 +542,7 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2996455477547168749}
   serializedVersion: 2
-  m_Mass: 1
+  m_Mass: 2
   m_Drag: 0
   m_AngularDrag: 0.05
   m_UseGravity: 1
@@ -1115,17 +1115,16 @@ MonoBehaviour:
   touchingLaserIsBad: 0
   rotationIsBad: 0
   rewardTimeAlive: 1
-  heightIsGood: 1
+  heightIsGood: 0
   slowRotationIsBad: 0
   distanceIsGood: 1
   useAverageDistance: 0
   directionChangeIsGood: 0
-  xVelocityIsGood: 1
+  xVelocityIsGood: 0
   outputAffectsSin: 1
   feetOffGroundTimeIsBetter: 0
-  directionTimes:
-  - 0
-  - 0
+  aliveTimeWeight: 0.4
+  distanceWeight: 1
   genome: 
   totalFitness: 0
   trial: 0
@@ -1231,7 +1230,7 @@ SphereCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3657716221827600877}
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 13400000, guid: 42d7ccf6717fd664e9b372d47743b90b, type: 2}
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 2
@@ -1274,7 +1273,7 @@ HingeJoint:
   m_UseMotor: 1
   m_Motor:
     targetVelocity: 0
-    force: 20
+    force: 100
     freeSpin: 0
   m_UseLimits: 1
   m_Limits:
@@ -1396,7 +1395,7 @@ SphereCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4227830122940477898}
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 13400000, guid: 42d7ccf6717fd664e9b372d47743b90b, type: 2}
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 2
@@ -1439,7 +1438,7 @@ HingeJoint:
   m_UseMotor: 1
   m_Motor:
     targetVelocity: 0
-    force: 20
+    force: 100
     freeSpin: 0
   m_UseLimits: 1
   m_Limits:
@@ -1561,7 +1560,7 @@ SphereCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4699333341466197331}
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 13400000, guid: 42d7ccf6717fd664e9b372d47743b90b, type: 2}
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 2
@@ -1604,12 +1603,12 @@ HingeJoint:
   m_UseMotor: 1
   m_Motor:
     targetVelocity: 0
-    force: 20
+    force: 100
     freeSpin: 0
   m_UseLimits: 1
   m_Limits:
-    min: -30
-    max: 40
+    min: -49
+    max: 30
     bounciness: 0
     bounceMinVelocity: 0.2
     contactDistance: 0
@@ -1754,7 +1753,7 @@ HingeJoint:
   m_UseMotor: 1
   m_Motor:
     targetVelocity: 0
-    force: 30
+    force: 100
     freeSpin: 0
   m_UseLimits: 1
   m_Limits:
@@ -1904,12 +1903,12 @@ HingeJoint:
   m_UseMotor: 1
   m_Motor:
     targetVelocity: 0
-    force: 20
+    force: 80
     freeSpin: 0
   m_UseLimits: 1
   m_Limits:
-    min: -10
-    max: 50
+    min: -50
+    max: 10
     bounciness: 0
     bounceMinVelocity: 0.2
     contactDistance: 0
@@ -2069,7 +2068,7 @@ HingeJoint:
   m_UseMotor: 1
   m_Motor:
     targetVelocity: 0
-    force: 20
+    force: 80
     freeSpin: 0
   m_UseLimits: 1
   m_Limits:
@@ -2300,7 +2299,7 @@ HingeJoint:
   m_UseMotor: 1
   m_Motor:
     targetVelocity: 0
-    force: 30
+    force: 100
     freeSpin: 0
   m_UseLimits: 1
   m_Limits:
@@ -2450,7 +2449,7 @@ HingeJoint:
   m_UseMotor: 1
   m_Motor:
     targetVelocity: 0
-    force: 20
+    force: 80
     freeSpin: 0
   m_UseLimits: 1
   m_Limits:
@@ -2572,7 +2571,7 @@ SphereCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8500562570945985722}
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 13400000, guid: 42d7ccf6717fd664e9b372d47743b90b, type: 2}
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 2
@@ -2615,12 +2614,12 @@ HingeJoint:
   m_UseMotor: 1
   m_Motor:
     targetVelocity: 0
-    force: 20
+    force: 100
     freeSpin: 0
   m_UseLimits: 1
   m_Limits:
-    min: -30
-    max: 40
+    min: -49
+    max: 30
     bounciness: 0
     bounceMinVelocity: 0.2
     contactDistance: 0

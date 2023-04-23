@@ -13,6 +13,8 @@ public class CameraFollow : MonoBehaviour
     public float smoothSpeed = 0.125f;
     public Vector3 offset;
 
+    private Vector3 lastPos;
+
     public bool matchX = true;
     public bool matchY = true;
     #endregion
@@ -29,14 +31,27 @@ public class CameraFollow : MonoBehaviour
             Vector3 desiredPosition = newTargetPos + offset;
             Vector3 smoothedPosition = Vector3.Lerp(transform.position, desiredPosition, smoothSpeed * Time.deltaTime);
             transform.position = smoothedPosition;
+            lastPos = newTargetPos;
         }
-        else if(backupTarget!= null)
+        else if (backupTarget != null)
         {
             Vector3 newTargetPos = Vector3.zero;
             if (matchX)
                 newTargetPos.x = backupTarget.position.x;
             if (matchY)
                 newTargetPos.y = backupTarget.position.y;
+            Vector3 desiredPosition = newTargetPos + offset;
+            Vector3 smoothedPosition = Vector3.Lerp(transform.position, desiredPosition, smoothSpeed * Time.deltaTime);
+            transform.position = smoothedPosition;
+            lastPos = newTargetPos;
+        }
+        else
+        {
+            Vector3 newTargetPos = Vector3.zero;
+            if (matchX)
+                newTargetPos.x = lastPos.x;
+            if (matchY)
+                newTargetPos.y = lastPos.y;
             Vector3 desiredPosition = newTargetPos + offset;
             Vector3 smoothedPosition = Vector3.Lerp(transform.position, desiredPosition, smoothSpeed * Time.deltaTime);
             transform.position = smoothedPosition;

@@ -38,6 +38,7 @@ public class NetManager : MonoBehaviour
 
     public int iterations;
     public int maxIterations = 1000;
+    public int iterationsBetweenNetworkIteration = 10;
 
     public int mutVarSize = 1;
 
@@ -52,7 +53,7 @@ public class NetManager : MonoBehaviour
     public Slider dropChanceSlider;
     public Toggle optimizeAndShrinkToggle;
     public Toggle onlyShowBestToggle;
-    int dropChance = 3;
+    public int dropChance = 0;
 
     public TimeManager timeManager;
 
@@ -119,6 +120,9 @@ public class NetManager : MonoBehaviour
         generationText.text = generationNumber.ToString() + " : " + trial.ToString();
 
         totalNeurons = persistenceNetwork.CountTotalNeurons();
+
+
+        dropChanceSlider.value = dropChance;
 
         // If the hist.csv file does not exist, create it and add data labels
         if (!File.Exists("./Assets/dat/hist.csv"))
@@ -321,7 +325,7 @@ public class NetManager : MonoBehaviour
                         sw.WriteLine((generationNumber).ToString() + ", " + bestEverError + ", " + bestError + ", " + ((float)bestDroppedNeuronsAmnt / (float)totalNeurons).ToString());
 
                 // Find the top 3 *individual* genomes and add them to a `topGenomes` list
-                Debug.Log("lGenome: " + bestGenome);
+                //Debug.Log("lGenome: " + bestGenome);
                 string lastGenome = bestGenome.Substring(0, 8);
                 topGenomes = new List<NeuralNetwork>();
                 topGenomes.Add(persistenceNetwork);
@@ -365,7 +369,7 @@ public class NetManager : MonoBehaviour
         {
             iterations -= 1;
 
-            if (iterations % 10 == 0)
+            if (iterations % iterationsBetweenNetworkIteration == 0)
                 if (IterateNetEntities() == false || iterations <= 0)
                     iterations = 0;
         }
@@ -409,7 +413,7 @@ public class NetManager : MonoBehaviour
             {
                 cameraFollow.target = entityList[i].GetComponent<NetEntity>().modelPieces[0].transform;
             }
-            entityList[i].GetComponent<NetEntity>().Init(nets[i], generationNumber, layers[0], maxIterations, trial, netUI, onlyShowBest?(i==0?true:false):true);
+            entityList[i].GetComponent<NetEntity>().Init(nets[i], generationNumber, layers[0], maxIterations, iterationsBetweenNetworkIteration, trial, netUI, onlyShowBest?(i==0?true:false):true);
         }
     }
 
@@ -523,7 +527,7 @@ public class NetManager : MonoBehaviour
                     nets[i].genome = topGenomes[g].genome;
                     nets[i].Mutate();
                     nets[i].UpdateGenome();
-                    nets[i].droppedNeurons = nets[i].MutateDroppedNeurons();
+                    nets[i].droppedNeurons = nets[i].MutateDroppedNeurons(dropChance);
                     nets[i].mutatableVariables = nets[i].MutateMutVars();
                 }
             }
@@ -531,7 +535,7 @@ public class NetManager : MonoBehaviour
             {
                 nets[i] = new NeuralNetwork(persistenceNetwork);
                 nets[i].droppedNeurons = persistenceNetwork.droppedNeurons;
-                nets[i].droppedNeurons = nets[i].MutateDroppedNeurons();
+                nets[i].droppedNeurons = nets[i].MutateDroppedNeurons(dropChance);
                 nets[i].genome = persistenceNetwork.genome;
                 nets[i].mutatableVariables = nets[i].MutateMutVars();
                 nets[i].UpdateGenome();
@@ -540,7 +544,7 @@ public class NetManager : MonoBehaviour
             for (int i = (int)(populationSize * 0.5); i < populationSize; i++)
             {
                 nets[i] = new NeuralNetwork(nets[i]);
-                nets[i].droppedNeurons = nets[i].MutateDroppedNeurons();
+                nets[i].droppedNeurons = nets[i].MutateDroppedNeurons(dropChance);
                 nets[i].UpdateGenome();
                 nets[i].mutatableVariables = nets[i].MutateMutVars();
             }
@@ -559,7 +563,7 @@ public class NetManager : MonoBehaviour
                     nets[i].genome = topGenomes[g].genome;
                     nets[i].Mutate();
                     nets[i].UpdateGenome();
-                    nets[i].droppedNeurons = nets[i].MutateDroppedNeurons();
+                    nets[i].droppedNeurons = nets[i].MutateDroppedNeurons(dropChance);
                     nets[i].mutatableVariables = nets[i].MutateMutVars();
                 }
             }
@@ -568,7 +572,7 @@ public class NetManager : MonoBehaviour
             {
                 nets[i] = new NeuralNetwork(persistenceNetwork);
                 nets[i].weights = nets[i].RandomizeWeights();
-                nets[i].droppedNeurons = nets[i].RandomizeDroppedNeurons();
+                nets[i].droppedNeurons = nets[i].RandomizeDroppedNeurons(dropChance);
                 nets[i].genome = nets[i].GenerateGenome();
                 nets[i].mutatableVariables = nets[i].MutateMutVars();
             }
@@ -582,13 +586,13 @@ public class NetManager : MonoBehaviour
                 {
                     nets[i].ResetGenome();
                     nets[i].CopyWeights(nets[i].RandomizeWeights());
-                    nets[i].droppedNeurons = nets[i].RandomizeDroppedNeurons();
+                    nets[i].droppedNeurons = nets[i].RandomizeDroppedNeurons(dropChance);
                 }
                 else
                 {
                     nets[i] = new NeuralNetwork(nets[i]);
                     nets[i].Mutate();
-                    nets[i].droppedNeurons = nets[i].MutateDroppedNeurons();
+                    nets[i].droppedNeurons = nets[i].MutateDroppedNeurons(dropChance);
                     nets[i].UpdateGenome();
                     nets[i].mutatableVariables = nets[i].MutateMutVars();
                 }
@@ -641,7 +645,7 @@ public class NetManager : MonoBehaviour
                 //net.mutVarSize = mutVarSize;
                 net.ResetGenome();
                 net.CopyWeights(net.RandomizeWeights());
-                net.droppedNeurons = net.RandomizeDroppedNeurons();
+                net.droppedNeurons = net.RandomizeDroppedNeurons(dropChance);
                 //net.mutatableVariables = net.RandomizeMutVars();
                 net.mutatableVariables[0] = 0.25f;
 
@@ -672,7 +676,7 @@ public class NetManager : MonoBehaviour
             persistenceNetwork.genome = bestGenome;
             persistenceNetwork.mutatableVariables[0] = 0.25f;
             persistenceNetwork.CopyWeights(persistenceNetwork.RandomizeWeights());
-            persistenceNetwork.droppedNeurons = persistenceNetwork.RandomizeDroppedNeurons();
+            persistenceNetwork.droppedNeurons = persistenceNetwork.RandomizeDroppedNeurons(dropChance);
             //persistenceNetwork.mutatableVariables = persistenceNetwork.RandomizeMutVars();
             //persistenceNetwork.RandomizeWeights();
         }

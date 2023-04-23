@@ -199,12 +199,12 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
         return weightsList.ToArray();
     }
 
-    public bool[][] RandomizeDroppedNeurons()
+    public bool[][] RandomizeDroppedNeurons(int dChance)
     {
         bool[][] drTemp = droppedNeurons;
         for (int i = 1; i < droppedNeurons.Length - 1; i++)
             for (int j = 0; j < droppedNeurons[i].Length; j++)
-                drTemp[i][j] = UnityEngine.Random.Range(0, 100) <= 10;
+                drTemp[i][j] = UnityEngine.Random.Range(0, 100) <= dChance;
         droppedNeurons = drTemp;
         return drTemp;
     }
@@ -525,7 +525,7 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
     /// <summary>
     /// Mutate neural network dropped neurons
     /// </summary>
-    public bool[][] MutateDroppedNeurons()
+    public bool[][] MutateDroppedNeurons(int dChance)
     {
         bool[][] drTemp = droppedNeurons;
         // randomly change the dropped neurons
@@ -535,7 +535,7 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
                 double randomNumber = UnityEngine.Random.Range(0, 100) + 1;
 
                 // If number is in 4%, toggle neuron
-                if (randomNumber <= dropChance)
+                if (randomNumber <= dChance)
                     drTemp[i][j] = !drTemp[i][j];
             }
         //droppedNeurons = drTemp;

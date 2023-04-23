@@ -5,6 +5,7 @@ using System.IO;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using UnityEditor.Build;
 
 [System.Serializable]
 public class Sense
@@ -110,11 +111,11 @@ public class Sense
         }
         else if (rotationX)
             // Rotation normalized between -1 and 1
-            val = ((objectToSenseFor.transform.eulerAngles.x > 180 ? 180 - (objectToSenseFor.transform.eulerAngles.x - 180) : -objectToSenseFor.transform.eulerAngles.x)) / 180.0f;
+            val = ((objectToSenseFor.transform.localRotation.eulerAngles.x > 180 ? 180 - (objectToSenseFor.transform.localRotation.eulerAngles.x - 180) : -objectToSenseFor.transform.localRotation.eulerAngles.x)) / 180.0f;
 
         else if (rotationZ)
             // Rotation normalized between -1 and 1
-            val = ((objectToSenseFor.transform.eulerAngles.z > 180 ? 180 - (objectToSenseFor.transform.eulerAngles.z - 180) : -objectToSenseFor.transform.eulerAngles.z)) / 180.0f;
+            val = ((objectToSenseFor.transform.localRotation.eulerAngles.z > 180 ? 180 - (objectToSenseFor.transform.localRotation.eulerAngles.z - 180) : -objectToSenseFor.transform.localRotation.eulerAngles.z)) / 180.0f;
         //Debug.Log(((obj.transform.eulerAngles.z>180? 180-(obj.transform.eulerAngles.z-180): obj.transform.eulerAngles.z)) / 180.0f);
         else if (checkIfColliding)
             try
@@ -147,6 +148,7 @@ public class NetEntity : MonoBehaviour
     public int numberOfInputs;
 
     int timeElapsed = 0;
+    int iterationsBetweenNetworkIteration = 0;
 
     float totalRotationalDifference = 0;
     float totalheightDifference = 0;
@@ -157,7 +159,8 @@ public class NetEntity : MonoBehaviour
     public HingeJoint[] hinges;
     public bool randomizeSpriteColor = true;
 
-    float bestDistance = 10000;
+    float bestDistance = -10000;
+    float bestHeight = -10;
 
     [Header("Fitness Modifiers")]
     public bool bodyTouchingGroundIsBad = false;
@@ -174,8 +177,14 @@ public class NetEntity : MonoBehaviour
     public bool outputAffectsSin = false;
     public bool feetOffGroundTimeIsBetter = false;
 
-    private bool[] directions = { false, false }; // Array of directions of each motor
-    public float[] directionTimes = { 0, 0 }; // Amount of time each direction has been used
+    [Range(0.1f, 10f)]
+    public float aliveTimeWeight = 1f;
+
+    [Range(0.1f, 10f)]
+    public float distanceWeight = 0.5f;
+
+    private bool[] directions = { false, false, false, false, false, false, false, false, false, false, false, false }; // Array of directions of each motor
+    private float[] directionTimes = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }; // Amount of time each direction has been used
     private float finalErrorOffset = 0;
     private float feetOnGroundTime = 0;
 
@@ -195,10 +204,29 @@ public class NetEntity : MonoBehaviour
 
     public Material invisibleMat;
 
+    private float startMeasure;
+
     public bool Elapse()
     {
         if (networkRunning == true)
         {
+            // Every 10 times this function is called, measure the distance between this and the last position.
+            if ((timeElapsed / iterationsBetweenNetworkIteration) % 10 == 0 && timeElapsed/iterationsBetweenNetworkIteration >= 50)
+            {
+                // If this is not the first time measuring, then compare with the last position, and fail if it hasn't moved enough
+                if (timeElapsed != 0)
+                    if (Mathf.Abs(startMeasure- modelPieces[0].transform.localPosition.x) < 0.3f)
+                        return Fail(0.05f);
+
+
+                startMeasure = modelPieces[0].transform.localPosition.x;
+            }
+
+            if (modelPieces[0].transform.localPosition.x <= -2f)
+                return Fail(0.05f);
+
+            if (modelPieces[0].transform.localPosition.z >= 0.2f|| modelPieces[0].transform.localPosition.z <= -0.2f)
+                return Fail(0.025f);
 
             //string weightLengths = "";
             //for (int i = 0; i < net.weights.Length; i++)
@@ -207,39 +235,60 @@ public class NetEntity : MonoBehaviour
             //}
             //Debug.Log(weightLengths);
 
-            if (timeElapsed % 2 == 0)
+            //if (timeElapsed % 2 == 0)
+            //{
+            double[] inputs = new double[numberOfInputs];
+
+            for (int p = 0; p < inputs.Length; p++)
             {
-                double[] inputs = new double[numberOfInputs];
-
-                for (int p = 0; p < inputs.Length; p++)
-                {
-                    //if (p == 7 || p == 8)
-                    //    continue;
-                    inputs[p] = senses[p].GetSensorValue(modelPieces[0].gameObject);
-                }
-                inputs[0] = senses[0].GetSensorValue(timeElapsed, modelPieces[0].gameObject);
-
-                outputs = net.FeedForward(inputs);
-                if (net.isBest)
-                {
-                    netUI.UpdateInputs(inputs);
-                    netUI.UpdateOutputs(outputs);
-                }
+                if (p == 1 || p == 2)
+                    continue;
+                inputs[p] = senses[p].GetSensorValue(modelPieces[0].gameObject);
             }
+            inputs[0] = senses[0].GetSensorValue(timeElapsed / iterationsBetweenNetworkIteration, modelPieces[0].gameObject);
+
+            //float rotX = ((modelPieces[0].transform.eulerAngles.x > 180 ? 180 - (modelPieces[0].transform.eulerAngles.x - 180) : -modelPieces[0].transform.eulerAngles.x)) / 180.0f;
+            //float rotZ = ((modelPieces[0].transform.eulerAngles.z > 180 ? 180 - (modelPieces[0].transform.eulerAngles.z - 180) : -modelPieces[0].transform.eulerAngles.z)) / 180.0f;
+            //senses[1].lastOutput = rotX;
+            //inputs[1] = rotX;
+            //senses[2].lastOutput = rotZ;
+            //inputs[2] = rotZ;
+
+            //inputs[1] = 1;
+            //inputs[2] = 1;
+
+            senses[1].lastOutput = modelPieces[0].transform.position.y / 10f;
+            inputs[1] = modelPieces[0].transform.position.y / 10f;
+            //senses[2].lastOutput = ((modelPieces[0].transform.localRotation.eulerAngles.x > 360.0f ? 360.0f - (modelPieces[0].transform.localRotation.eulerAngles.x - 360.0f) : -modelPieces[0].transform.localRotation.eulerAngles.x)) / 360.0f;
+            //inputs[2] = ((modelPieces[0].transform.localRotation.eulerAngles.x > 360.0f ? 360.0f - (modelPieces[0].transform.localRotation.eulerAngles.x - 360.0f) : -modelPieces[0].transform.localRotation.eulerAngles.x)) / 360.0f;
+
+            senses[2].lastOutput = ((modelPieces[0].transform.localRotation.eulerAngles.x + 90f > 180f ? 180f - (modelPieces[0].transform.localRotation.eulerAngles.x + 90f - 180f) : -modelPieces[0].transform.localRotation.eulerAngles.x + 90f)) / 180f;
+            inputs[2] = ((modelPieces[0].transform.localRotation.eulerAngles.x + 90f > 180f ? 180f - (modelPieces[0].transform.localRotation.eulerAngles.x + 90f - 180f) : -modelPieces[0].transform.localRotation.eulerAngles.x + 90f)) / 180f;
+
+            outputs = net.FeedForward(inputs);
+            if (net.isBest)
+            {
+                netUI.UpdateInputs(inputs);
+                netUI.UpdateOutputs(outputs);
+            }
+            //}
 
             // Iterate through all of the servos, and change the speed accordingly to the outputs
             for (int i = 0; i < hinges.Length; i++)
             {
-                if (timeElapsed % 2 == 0)
-                {
-                    JointMotor changemotor = hinges[i].motor;
-                    changemotor.targetVelocity = ((float)outputs[i] - 0.5f) * 180.0f;
-                    hinges[i].motor = changemotor;
-                }
+                //if (timeElapsed % 2 == 0)
+                //{
+                JointMotor changemotor = hinges[i].motor;
+                changemotor.targetVelocity = ((float)outputs[i] - 0.5f) * 180.0f * 2;
+                //changemotor.targetVelocity = 0.3f * 180.0f * 2;
+                if ((i % 2) != 0)
+                    changemotor.targetVelocity *= -1;
+                hinges[i].motor = changemotor;
+                //}
 
                 // Get direction and see if it changed for joints
                 if (directionChangeIsGood)
-                    if (i <= 1)
+                    if (i >= 4)
                     {
                         bool direction = hinges[i].motor.targetVelocity > 0 ? true : false;
                         if (directions[i] == direction)
@@ -260,91 +309,8 @@ public class NetEntity : MonoBehaviour
                     }
             }
 
-            //// Set the sin multiplier based off of output 4
-            //if (outputAffectsSin)
-            //    senses[0].sinMultiplier = 5f * (float)outputs[4];
+            CalculatePendingFitness();
 
-            if (rotationIsBad)
-                totalRotationalDifference += Mathf.Abs(senses[1].lastOutput);
-
-            // if (senses[2].GetSensorValue(gameObject) <= 0.25d) // If touching ground
-            // {
-            //     if (Mathf.Abs((float)outputs[0]) > 0.25f)
-            //         transform.position += transform.right / ((1.0f - (float)outputs[0]) * 100.0f);
-            // }
-            // else
-            //     transform.position -= new Vector3(0, 0.01f);
-
-
-            ////transform.position += new Vector3((float)outputs[0]*2.0f-1.0f, (float)outputs[1] * 2.0f - 1.0f) / 100.0f;
-            //Vector3 directionVector = new Vector2((float)Math.Cos((float)outputs[0] * 6.28319f), (float)Math.Sin((float)outputs[0] * 6.28319f));
-            //transform.position += directionVector / 100.0f;
-
-            //Vector3 dir = (transform.position - senses[0].objectToSenseFor.position).normalized;
-            //net.AddFitness(Vector3.Distance(dir, directionVector));
-            //net.error += (senses[0].GetSensorValue(0, gameObject));
-
-            //if (timeElapsed % 50 == 0)
-            //{
-            //    double[] correct = { 1.0f };
-            //    //net.BackProp(correct);
-            //}
-            //float height = (float)senses[6].GetSensorValue(modelPieces[0].gameObject);
-            //totalheightDifference += 1f - height;
-
-            //float d = (float)senses[11].GetSensorValue(modelPieces[0].gameObject);
-            //float distance = (200f - (modelPieces[0].transform.position.x + 7.3f)) / 200f;
-            //float distance = (200f - 
-            //    Mathf.Sqrt(Mathf.Pow(modelPieces[0].transform.localPosition.x, 2)+ 
-            //    Mathf.Pow(modelPieces[0].transform.localPosition.z, 2)))
-            //    / 200f;
-            //float distance = (200f -
-            //    (Mathf.Pow(modelPieces[0].transform.localPosition.x, 2)))
-            //    / 200f;
-            float distance = -modelPieces[0].transform.localPosition.x/100f;
-            totalDistanceOverTime += distance;
-            if (distance < bestDistance)
-                bestDistance = distance;
-
-            // If any of the feet are on the ground, add 1 for each foot.
-            if (senses[15].GetSensorValue(modelPieces[0].gameObject) == 1)
-                feetOnGroundTime += 1;
-            if (senses[16].GetSensorValue(modelPieces[0].gameObject) == 1)
-                feetOnGroundTime += 1;
-            if (senses[17].GetSensorValue(modelPieces[0].gameObject) == 1)
-                feetOnGroundTime += 1;
-            if (senses[18].GetSensorValue(modelPieces[0].gameObject) == 1)
-                feetOnGroundTime += 1;
-
-            float xVelocity = modelPieces[0].GetComponent<Rigidbody>().velocity.x;
-            totalXVelocity += xVelocity;
-
-            //if (senseVal < bestDistance)
-            //{
-            net.pendingFitness = 0;
-            if (distanceIsGood)
-                if (useAverageDistance)
-                    net.pendingFitness += (totalDistanceOverTime / (float)timeElapsed) +
-                        (distance / 2.0f);
-                else
-                    net.pendingFitness += (bestDistance / 2.0f) +
-                        (distance / 2.0f);
-            if (directionChangeIsGood)
-                net.pendingFitness += finalErrorOffset +
-                    Mathf.Pow(directionTimes[0], 2) / (float)(totalIterations * totalIterations) +
-                    Mathf.Pow(directionTimes[1], 2) / (float)(totalIterations * totalIterations);
-            if (rotationIsBad)
-                net.pendingFitness += totalRotationalDifference / (float)timeElapsed;
-            if (rewardTimeAlive)
-                net.pendingFitness += ((totalIterations - timeElapsed) / (float)totalIterations);
-            if (heightIsGood)
-                net.pendingFitness += totalheightDifference / (float)timeElapsed;
-            if (xVelocityIsGood)
-                net.pendingFitness += 2.0f - (totalXVelocity / (float)timeElapsed);
-            if (feetOffGroundTimeIsBetter)  // Calculate average percent of the time feet are on ground
-                net.pendingFitness += (feetOnGroundTime / 4f) / (float)timeElapsed * 2;
-            //bestDistance = senseVal;
-            //}
 
 
             if (bodyTouchingGroundIsBad)
@@ -384,8 +350,7 @@ public class NetEntity : MonoBehaviour
             //        //return false;
             //    }
 
-
-            timeElapsed += 1;
+            timeElapsed += iterationsBetweenNetworkIteration;
 
 
             totalFitness = net.fitness + net.pendingFitness;
@@ -395,7 +360,104 @@ public class NetEntity : MonoBehaviour
         return false;
     }
 
-    public void Init(NeuralNetwork neti, int generation, int numberOfInputs, int totalIterations, int trial, NetUI netUI, bool visible)
+    private bool Fail(float penalty)
+    {
+        CalculatePendingFitness();
+        net.pendingFitness += penalty;
+        return false;
+    }
+
+    private void CalculatePendingFitness()
+    {
+        if (rotationIsBad)
+            totalRotationalDifference += Mathf.Abs(senses[1].lastOutput);
+
+        // if (senses[2].GetSensorValue(gameObject) <= 0.25d) // If touching ground
+        // {
+        //     if (Mathf.Abs((float)outputs[0]) > 0.25f)
+        //         transform.position += transform.right / ((1.0f - (float)outputs[0]) * 100.0f);
+        // }
+        // else
+        //     transform.position -= new Vector3(0, 0.01f);
+
+
+        ////transform.position += new Vector3((float)outputs[0]*2.0f-1.0f, (float)outputs[1] * 2.0f - 1.0f) / 100.0f;
+        //Vector3 directionVector = new Vector2((float)Math.Cos((float)outputs[0] * 6.28319f), (float)Math.Sin((float)outputs[0] * 6.28319f));
+        //transform.position += directionVector / 100.0f;
+
+        //Vector3 dir = (transform.position - senses[0].objectToSenseFor.position).normalized;
+        //net.AddFitness(Vector3.Distance(dir, directionVector));
+        //net.error += (senses[0].GetSensorValue(0, gameObject));
+
+        //if (timeElapsed % 50 == 0)
+        //{
+        //    double[] correct = { 1.0f };
+        //    //net.BackProp(correct);
+        //}
+        float height = modelPieces[0].transform.position.y;
+        totalheightDifference += -height;
+        if (height > bestHeight)
+            bestHeight = height;
+
+        //float d = (float)senses[11].GetSensorValue(modelPieces[0].gameObject);
+        //float distance = (200f - (modelPieces[0].transform.position.x + 7.3f)) / 200f;
+        //float distance = (200f - 
+        //    Mathf.Sqrt(Mathf.Pow(modelPieces[0].transform.localPosition.x, 2)+ 
+        //    Mathf.Pow(modelPieces[0].transform.localPosition.z, 2)))
+        //    / 200f;
+        //float distance = (200f -
+        //    (Mathf.Pow(modelPieces[0].transform.localPosition.x, 2)))
+        //    / 200f;
+        float distance = modelPieces[0].transform.localPosition.x;
+        //totalDistanceOverTime += Mathf.Clamp(distance, -100000f, 0);
+        totalDistanceOverTime += distance;
+        if (distance > bestDistance)
+            bestDistance = distance;
+
+        // If any of the feet are on the ground, add 1 for each foot.
+        if (senses[15].GetSensorValue(modelPieces[0].gameObject) == 1)
+            feetOnGroundTime += 1;
+        if (senses[16].GetSensorValue(modelPieces[0].gameObject) == 1)
+            feetOnGroundTime += 1;
+        if (senses[17].GetSensorValue(modelPieces[0].gameObject) == 1)
+            feetOnGroundTime += 1;
+        if (senses[18].GetSensorValue(modelPieces[0].gameObject) == 1)
+            feetOnGroundTime += 1;
+
+        float xVelocity = modelPieces[0].GetComponent<Rigidbody>().velocity.x;
+        totalXVelocity += xVelocity;
+
+        //if (senseVal < bestDistance)
+        //{
+        net.pendingFitness = 0;
+        if (distanceIsGood)
+            if (useAverageDistance)
+                //net.pendingFitness += (totalDistanceOverTime / (float)timeElapsed) + (distance / 2.0f);
+                net.pendingFitness += totalDistanceOverTime / (float)timeElapsed* distanceWeight;
+            else
+                //net.pendingFitness += (bestDistance < 0 ? -1 : 1) * Mathf.Pow(Mathf.Abs(bestDistance) + 1f, 2f) * distanceWeight;
+                //net.pendingFitness += -bestDistance * distanceWeight;
+                net.pendingFitness += -modelPieces[0].transform.localPosition.x*0.1f * distanceWeight;
+        if (directionChangeIsGood)
+        {
+            net.pendingFitness += finalErrorOffset;
+            for (int i = 0; i < directionTimes.Length; i++)
+                net.pendingFitness += Mathf.Pow(directionTimes[i], 2) / (float)(totalIterations * totalIterations);
+        }
+        if (rotationIsBad)
+            net.pendingFitness += totalRotationalDifference / (float)timeElapsed;
+        if (rewardTimeAlive)
+            net.pendingFitness += ((totalIterations - timeElapsed) / (float)totalIterations) * aliveTimeWeight;
+        if (heightIsGood)
+            //net.pendingFitness += totalheightDifference / (float)timeElapsed;
+            net.pendingFitness += -bestHeight / 2f;
+        if (xVelocityIsGood)
+            net.pendingFitness += 2.0f - (totalXVelocity / (float)timeElapsed);
+        if (feetOffGroundTimeIsBetter)  // Calculate average percent of the time feet are on ground
+            net.pendingFitness += (feetOnGroundTime / 4f) / (float)timeElapsed * 2;
+    }
+
+    public void Init(NeuralNetwork neti, int generation, int numberOfInputs, int totalIterations, int iterationsBetweenNetworkIteration, int trial, NetUI netUI, bool visible)
     {
         transform.localPosition = Vector3.zero;
         transform.eulerAngles = Quaternion.Euler(0, 0, trialValues[trial]).eulerAngles;
@@ -412,16 +474,17 @@ public class NetEntity : MonoBehaviour
         this.netID = net.netID;
         this.weightsHash = net.weightsHash;
         this.netUI = netUI;
+        this.iterationsBetweenNetworkIteration = iterationsBetweenNetworkIteration;
         //net.error = 0;
         timeElapsed = 0;
-        bestDistance = 10000;
+        //bestDistance = 10000;
 
         // Set the sin multiplier based off of mutVar 0
         if (outputAffectsSin)
             senses[0].sinMultiplier = (float)net.mutatableVariables[0];
         //senses[0].sinMultiplier = 2.0f * (float)net.mutatableVariables[0];
 
-        //mutVars = net.mutatableVariables;
+        mutVars = net.mutatableVariables;
         if (net.isBest)
         {
             netUI.RemakeDrawing(net.droppedNeurons);
@@ -432,7 +495,7 @@ public class NetEntity : MonoBehaviour
             for (int i = 0; i < net.droppedNeurons.Length; i++)
                 for (int j = 0; j < net.droppedNeurons[i].Length; j++)
                     total += net.droppedNeurons[i][j] == true ? 1 : 0;
-            Debug.Log(total);
+            //Debug.Log(total);
         }
 
         // Show the crown if this is the best network

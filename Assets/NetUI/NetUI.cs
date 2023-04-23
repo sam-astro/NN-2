@@ -40,7 +40,7 @@ public class NetUI : MonoBehaviour
         finalHeight = height;
 
         // Scale the entire thing so it fits within the screen
-        transform.localScale = new Vector3(7f / finalHeight, 7f / finalHeight, 7f / finalHeight);
+        //transform.localScale = new Vector3(7f / finalHeight, 7f / finalHeight, 7f / finalHeight);
     }
 
     public void RemakeDrawing(bool[][] droppedNeurons)
@@ -49,8 +49,10 @@ public class NetUI : MonoBehaviour
 
         DestroyAll();
 
+        originalScale = transform.localScale;
+
         // Scale the entire thing to original scale
-        transform.localScale = originalScale;
+        //transform.localScale = originalScale;
 
         // Size node array
         CreateNodesArray();
@@ -62,7 +64,7 @@ public class NetUI : MonoBehaviour
         InitLines();
 
         // Scale the entire thing so it fits back within the screen
-        transform.localScale = new Vector3(7f / finalHeight, 7f / finalHeight, 7f / finalHeight);
+        //transform.localScale = new Vector3(7f / finalHeight, 7f / finalHeight, 7f / finalHeight);
     }
 
     void DestroyAll()
@@ -95,28 +97,32 @@ public class NetUI : MonoBehaviour
         // Generate grid of nodes and lines
         float curX = 0;
         float curY = 0;
+        float width = nodes.Length * 0.6f;
         // For each layer, add a column of nodes
         for (int i = 0; i < nodes.Length; i++)
         {
-            float shiftDistance = (i == 0 || i == nodes.Length - 1) ? 0.6f : 0.2f;
-            curY = -(nodes[i].Length * shiftDistance / 2f);
-            if (nodes[i].Length * shiftDistance > height)
-                height = nodes[i].Length * shiftDistance;
-            float scaleAmount = (i == 0 || i == nodes.Length - 1) ? 0.4f : 0.1f;
+            float shiftDistance = (i == 0 || i == nodes.Length - 1) ? 0.6f : 0.6f;
+            float shiftDistanceY = (i == 0 || i == nodes.Length - 1) ? 0.6f : 0.1f;
+            curY = -(nodes[i].Length * shiftDistanceY / 2f);
+            if (nodes[i].Length * shiftDistanceY > height)
+                height = nodes[i].Length * shiftDistanceY;
+            float scaleAmount = ((i == 0 || i == nodes.Length - 1) ? 0.4f : 0.2f);
             for (int j = 0; j < nodes[i].Length; j++) // For each neuron add a node
             {
                 // if the neuron is not dropped, then create it
                 if (droppedNeurons == null || droppedNeurons[i][j] == false)
                 {
-                    nodes[i][j] = Instantiate(nodePrefab, new Vector3((curX + shiftDistance) + transform.position.x, curY + transform.position.y, -0.7f), Quaternion.identity).GetComponent<SpriteRenderer>();
-                    nodes[i][j].transform.localScale = new Vector3(scaleAmount, scaleAmount, scaleAmount);
+                    nodes[i][j] = Instantiate(nodePrefab, new Vector3((curX + shiftDistance) + transform.localPosition.x - (width / 2f), curY + transform.localPosition.y, -0.7f), transform.rotation).GetComponent<SpriteRenderer>();
                     nodes[i][j].gameObject.hideFlags = HideFlags.HideInHierarchy;
                     nodes[i][j].transform.parent = transform;
+                    nodes[i][j].transform.localPosition = new Vector3((curX + shiftDistance) + transform.localPosition.x - (width / 2f), curY + transform.localPosition.y, -0.7f);
+                    nodes[i][j].transform.localScale = new Vector3(scaleAmount, scaleAmount, scaleAmount);
+
                 }
                 else
                 {
                 }
-                curY += shiftDistance;
+                curY += shiftDistanceY;
             }
             if (i == nodes.Length - 1)
                 break;
@@ -166,8 +172,9 @@ public class NetUI : MonoBehaviour
                     if (droppedNeurons == null || (droppedNeurons[i][j] == false &&
                         droppedNeurons[i - 1][k] == false))
                     {
-                        lines[i - 1][j][k] = Instantiate(linePrefab, new Vector3(0, 0, -0.7f), Quaternion.identity).GetComponent<LineRenderer>();
+                        lines[i - 1][j][k] = Instantiate(linePrefab, new Vector3(0, 0, 0), Quaternion.identity).GetComponent<LineRenderer>();
                         lines[i - 1][j][k].transform.parent = transform;
+                        //lines[i - 1][j][k].transform.localPosition = new Vector3((curX + shiftDistance) + transform.position.x, curY + transform.position.y, -0.7f);
                         lines[i - 1][j][k].gameObject.hideFlags = HideFlags.HideInHierarchy;
                         LineRenderer lr = lines[i - 1][j][k];
                         lr.SetPosition(0, nodes[i - 1][k].transform.position);
@@ -197,12 +204,12 @@ public class NetUI : MonoBehaviour
                             //Color c = weights[i][j][k] > 0 ? Color.red : Color.blue;
                             //if (weights[i][j][k] == 0)
                             //    c = Color.clear;
-                            Color c = grNegPos.Evaluate(Mathf.Clamp(((float)weights[i][j][k]+1f)/2f, 0f, 1f));
-                            float width = Mathf.Abs((float)weights[i][j][k]) / 10f+0.03f;
+                            Color c = grNegPos.Evaluate(Mathf.Clamp(((float)weights[i][j][k] + 1f) / 2f, 0f, 1f));
+                            float width = Mathf.Abs((float)weights[i][j][k]) / 10f + 0.03f;
                             lines[i][j][k].startColor = c;
                             lines[i][j][k].endColor = c;
-                            lines[i][j][k].startWidth = width;
-                            lines[i][j][k].endWidth = width;
+                            lines[i][j][k].startWidth = width * originalScale.x;
+                            lines[i][j][k].endWidth = width * originalScale.x;
                             //lines[i][j][k].sortingOrder = 1500 + ((int)(width * 500));
                             lines[i][j][k].sortingOrder = 1500 + (UnityEngine.Random.Range(0, 500));
                         }
