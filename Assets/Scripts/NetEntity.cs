@@ -213,10 +213,10 @@ public class NetEntity : MonoBehaviour
             // Every 10 times this function is called, measure the distance between this and the last position.
             if ((timeElapsed / iterationsBetweenNetworkIteration) % 10 == 0 && timeElapsed/iterationsBetweenNetworkIteration >= 50)
             {
-                // If this is not the first time measuring, then compare with the last position, and fail if it hasn't moved enough
-                if (timeElapsed != 0)
-                    if (Mathf.Abs(startMeasure- modelPieces[0].transform.localPosition.x) < 0.3f)
-                        return Fail(0.05f);
+                //// If this is not the first time measuring, then compare with the last position, and fail if it hasn't moved enough
+                //if (timeElapsed != 0)
+                //    if (Mathf.Abs(startMeasure - modelPieces[0].transform.localPosition.x) < 0.3f)
+                //        return Fail(0.05f);
 
 
                 startMeasure = modelPieces[0].transform.localPosition.x;
@@ -279,7 +279,7 @@ public class NetEntity : MonoBehaviour
                 //if (timeElapsed % 2 == 0)
                 //{
                 JointMotor changemotor = hinges[i].motor;
-                changemotor.targetVelocity = ((float)outputs[i] - 0.5f) * 180.0f * 2;
+                changemotor.targetVelocity = ((float)outputs[i] - 0.5f) * 180.0f * 4;
                 //changemotor.targetVelocity = 0.3f * 180.0f * 2;
                 if ((i % 2) != 0)
                     changemotor.targetVelocity *= -1;
@@ -318,10 +318,7 @@ public class NetEntity : MonoBehaviour
                 if (senses[23].GetSensorValue(modelPieces[0].gameObject) == 1)
                 {
                     networkRunning = false;
-                    for (int i = 0; i < modelPieces.Length; i++)
-                        Destroy(modelPieces[i].gameObject);
-                    //net.pendingFitness += 0.3f;
-                    //return false;
+                    return Fail(0.3f);
                 }
             if (upperLegsTouchingGroundIsBad)
                 // If upper leg parts touched ground, end and turn invisible
@@ -331,10 +328,7 @@ public class NetEntity : MonoBehaviour
                     senses[22].GetSensorValue(modelPieces[0].gameObject) == 1)
                 {
                     networkRunning = false;
-                    for (int i = 0; i < modelPieces.Length; i++)
-                        Destroy(modelPieces[i].gameObject);
-                    //net.pendingFitness += 0.3f;
-                    //return false;
+                    return Fail(0.3f);
                 }
             //if (touchingLaserIsBad)
             //    // If any body part touches the laser, end and turn invisible
@@ -364,6 +358,9 @@ public class NetEntity : MonoBehaviour
     {
         CalculatePendingFitness();
         net.pendingFitness += penalty;
+        networkRunning = false;
+        for (int i = 0; i < modelPieces.Length; i++)
+            Destroy(modelPieces[i].gameObject);
         return false;
     }
 
@@ -433,7 +430,7 @@ public class NetEntity : MonoBehaviour
         if (distanceIsGood)
             if (useAverageDistance)
                 //net.pendingFitness += (totalDistanceOverTime / (float)timeElapsed) + (distance / 2.0f);
-                net.pendingFitness += totalDistanceOverTime / (float)timeElapsed* distanceWeight;
+                net.pendingFitness += -totalDistanceOverTime / (float)timeElapsed* distanceWeight;
             else
                 //net.pendingFitness += (bestDistance < 0 ? -1 : 1) * Mathf.Pow(Mathf.Abs(bestDistance) + 1f, 2f) * distanceWeight;
                 //net.pendingFitness += -bestDistance * distanceWeight;
@@ -452,7 +449,7 @@ public class NetEntity : MonoBehaviour
             //net.pendingFitness += totalheightDifference / (float)timeElapsed;
             net.pendingFitness += -bestHeight / 2f;
         if (xVelocityIsGood)
-            net.pendingFitness += 2.0f - (totalXVelocity / (float)timeElapsed);
+            net.pendingFitness += 1.0f-(totalXVelocity / (float)timeElapsed);
         if (feetOffGroundTimeIsBetter)  // Calculate average percent of the time feet are on ground
             net.pendingFitness += (feetOnGroundTime / 4f) / (float)timeElapsed * 2;
     }

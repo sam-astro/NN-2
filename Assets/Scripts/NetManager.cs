@@ -413,7 +413,7 @@ public class NetManager : MonoBehaviour
             {
                 cameraFollow.target = entityList[i].GetComponent<NetEntity>().modelPieces[0].transform;
             }
-            entityList[i].GetComponent<NetEntity>().Init(nets[i], generationNumber, layers[0], maxIterations, iterationsBetweenNetworkIteration, trial, netUI, onlyShowBest?(i==0?true:false):true);
+            entityList[i].GetComponent<NetEntity>().Init(nets[i], generationNumber, layers[0], maxIterations, iterationsBetweenNetworkIteration, trial, netUI, onlyShowBest ? (i == 0 ? true : false) : true);
         }
     }
 
@@ -425,67 +425,90 @@ public class NetManager : MonoBehaviour
         amntLeft = amnt;
         return amnt != 0;
     }
-    
+
     double[][][] SplitGenomes(NeuralNetwork parentA, NeuralNetwork parentB)
     {
-        double[][][] outWeights;
+        double[][][] outWeights = persistenceNetwork.weights;
         int secLength = 1;
         bool copyFromSide = false; // False => parentA    True => parentB
-        for(int x = 0; x < parentA.weights.Length; x++){
-            for(int y = 0; y < parentA.weights[x].Length; y++){
-                for(int z = 0; z < parentA.weights[x][y].Length; z++, secLength--){
-                    bool isMutation = UnityEngine.Random.Range(0,100) == 0;
-                    
-                    if(secLength <= 0){
-                        secLength = UnityEngine.Random.Range(1,15);
-                        copyFromSide = UnityEngine.Random.Range(0,2) == 1;
+        for (int x = 0; x < parentA.weights.Length; x++)
+        {
+            for (int y = 0; y < parentA.weights[x].Length; y++)
+            {
+                for (int z = 0; z < parentA.weights[x][y].Length; z++, secLength--)
+                {
+                    bool isMutation = UnityEngine.Random.Range(0, 100) == 0;
+
+                    if (secLength <= 0)
+                    {
+                        secLength = UnityEngine.Random.Range(1, 15);
+                        copyFromSide = UnityEngine.Random.Range(0, 2) == 1;
                     }
-                
-                    if(copyFromSide == false)
+
+                    if (copyFromSide == false)
                         outWeights[x][y][z] = parentA.weights[x][y][z];
                     else
                         outWeights[x][y][z] = parentB.weights[x][y][z];
-                        
-                    if(isMutation)
+
+                    if (isMutation)
                         outWeights[x][y][z] = UnityEngine.Random.Range(-0.5f, 0.5f);
                 }
             }
         }
+        return outWeights;
     }
-    
+
     void FindParents()
     {
-        for(int i = 0; i < populationSize; i++){
-            int numOfCandidates = UnityEngine.Random.Range(1, populationSize/2);
-            
+        for (int i = 0; i < populationSize; i++)
+        {
+            int numOfCandidates = UnityEngine.Random.Range(1, populationSize / 2);
+
             int bestNet = 0;
-            float bestScore = 1000f;
-            
+            double bestScore = 1000d;
+
             int parentA = 0;
             int parentB = 0;
-            
-            for(int j = 0; j < numOfCandidates; j++){
+
+            for (int j = 0; j < numOfCandidates; j++)
+            {
                 int whichNet = UnityEngine.Random.Range(0, populationSize);
-                if(nets[whichNet].fitness < bestScore){
+                if (nets[whichNet].fitness < bestScore)
+                {
                     bestScore = nets[whichNet].fitness;
                     bestNet = whichNet;
                 }
             }
             parentA = bestNet;
-            
+
             bestNet = 0;
             bestScore = 1000f;
-            
-            for(int j = 0; j < numOfCandidates; j++){
+
+            for (int j = 0; j < numOfCandidates; j++)
+            {
                 int whichNet = UnityEngine.Random.Range(0, populationSize);
-                if(nets[whichNet].fitness < bestScore){
+                if (nets[whichNet].fitness < bestScore)
+                {
                     bestScore = nets[whichNet].fitness;
                     bestNet = whichNet;
                 }
             }
             parentB = bestNet;
-            
+
             double[][][] outWeights = SplitGenomes(nets[parentA], nets[parentB]);
+        }
+
+        // Keep the best 3 networks
+        for (int g = 0; g < topGenomes.Count; g++)
+        {
+            nets[g] = new NeuralNetwork(topGenomes[g]);
+            //nets[i].CopyWeights(topGenomes[g].weights);
+            //Array.Copy(topGenomes[g].mutatableVariables, nets[i].mutatableVariables, mutVarSize);
+            nets[g].genome = topGenomes[g].genome;
+            nets[g].Mutate();
+            nets[g].UpdateGenome();
+            nets[g].droppedNeurons = nets[g].MutateDroppedNeurons(dropChance);
+            nets[g].mutatableVariables = nets[g].MutateMutVars();
         }
     }
 

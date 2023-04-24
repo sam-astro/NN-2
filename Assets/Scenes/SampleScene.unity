@@ -685,7 +685,7 @@ MonoBehaviour:
   layers: 1300000064000000640000000c000000
   learningRate: 0
   iterations: 0
-  maxIterations: 4000
+  maxIterations: 2500
   iterationsBetweenNetworkIteration: 10
   mutVarSize: 1
   maxTrialsPerGeneration: 1
@@ -4356,7 +4356,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3280043892790962900, guid: fb5d22f3080c9ba41ac0438124f587f3, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: fb5d22f3080c9ba41ac0438124f587f3, type: 3}
