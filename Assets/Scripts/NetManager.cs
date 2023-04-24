@@ -421,6 +421,69 @@ public class NetManager : MonoBehaviour
         amntLeft = amnt;
         return amnt != 0;
     }
+    
+    double[][][] SplitGenomes(NeuralNetwork parentA, NeuralNetwork parentB)
+    {
+        double[][][] outWeights;
+        int secLength = 1;
+        bool copyFromSide = false; // False => parentA    True => parentB
+        for(int x = 0; x < parentA.weights.Length; x++){
+            for(int y = 0; y < parentA.weights[x].Length; y++){
+                for(int z = 0; z < parentA.weights[x][y].Length; z++, secLength--){
+                    bool isMutation = UnityEngine.Random.Range(0,100) == 0;
+                    
+                    if(secLength <= 0){
+                        secLength = UnityEngine.Random.Range(1,15);
+                        copyFromSide = UnityEngine.Random.Range(0,2) == 1;
+                    }
+                
+                    if(copyFromSide == false)
+                        outWeights[x][y][z] = parentA.weights[x][y][z];
+                    else
+                        outWeights[x][y][z] = parentB.weights[x][y][z];
+                        
+                    if(isMutation)
+                        outWeights[x][y][z] = UnityEngine.Random.Range(-0.5f, 0.5f);
+                }
+            }
+        }
+    }
+    
+    void FindParents()
+    {
+        for(int i = 0; i < populationSize; i++){
+            int numOfCandidates = UnityEngine.Random.Range(1, populationSize/2);
+            
+            int bestNet = 0;
+            float bestScore = 1000f;
+            
+            int parentA = 0;
+            int parentB = 0;
+            
+            for(int j = 0; j < numOfCandidates; j++){
+                int whichNet = UnityEngine.Random.Range(0, populationSize);
+                if(nets[whichNet].fitness < bestScore){
+                    bestScore = nets[whichNet].fitness;
+                    bestNet = whichNet;
+                }
+            }
+            parentA = bestNet;
+            
+            bestNet = 0;
+            bestScore = 1000f;
+            
+            for(int j = 0; j < numOfCandidates; j++){
+                int whichNet = UnityEngine.Random.Range(0, populationSize);
+                if(nets[whichNet].fitness < bestScore){
+                    bestScore = nets[whichNet].fitness;
+                    bestNet = whichNet;
+                }
+            }
+            parentB = bestNet;
+            
+            double[][][] outWeights = SplitGenomes(nets[parentA], nets[parentB]);
+        }
+    }
 
     void Finalizer()
     {
