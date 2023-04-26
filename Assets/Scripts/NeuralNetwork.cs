@@ -18,7 +18,7 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
     public double fitness; //fitness of the network
     public double pendingFitness; // pending trial fitness of the network
 
-    private float mutationFactor;
+    public float mutationFactor;
 
     public double[] mutatableVariables; // List of mutatable doubles, similar to weights but can be used in any way by the agent
     public int mutVarSize = 1;
@@ -503,6 +503,46 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
         }
     }
 
+    /// <summary>
+    /// Mutate single neural network weight
+    /// </summary>
+    public double FixedSingleMutate(double inw)
+    {
+        double weight = inw;
+
+        //mutate weight value 
+        double randomNumber = UnityEngine.Random.Range(0, 100);
+
+        if (randomNumber <= 2f)
+        { //if 3
+          //randomly increase by 0% to 1%
+            double factor = UnityEngine.Random.Range(0, 100) / 10000.0f;
+            weight += factor;
+        }
+        else if (randomNumber <= 4f)
+        { //if 4
+          //randomly decrease by 0% to 1%
+            double factor = UnityEngine.Random.Range(-100, 100) / 10000.0f;
+            weight -= factor;
+        }
+        else if (randomNumber <= 8f)
+        { //if 5
+          //randomly increase or decrease weight by tiny amount
+            double factor = UnityEngine.Random.Range(-1000, 1000) / 100.0f / 1000f;
+            weight += factor;
+        }
+        //else
+        //{
+        //    //pick random weight between -1 and 1
+        //    weight = new Random().Next(-100, 100) / 100.0f;
+        //}
+
+        if (randomNumber <= 8f)
+            mutationFactor += 26f / (float)weights.Length / (float)weights[i].Length / (float)weights[i][j].Length;
+
+        return weight;
+    }
+
     public int CountDroppedNeurons()
     {
         // Count total dropped neurons
@@ -590,6 +630,53 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
         }
 
         return mutArTemp;
+    }
+
+
+    public double[] FixedSingleMutateMutVars(double inm)
+    {
+        double mut = inm;
+    
+        //mutate weight value 
+        double randomNumber = UnityEngine.Random.Range(0, 100);
+
+        if (randomNumber <= 2f)
+        {
+            //randomly increase by 0% to 1%
+            double factor = UnityEngine.Random.Range(0, 100) / 10000.0f;
+            mut += factor;
+        }
+        else if (randomNumber <= 4f)
+        {
+            //randomly decrease by 0% to 1%
+            double factor = UnityEngine.Random.Range(-100, 100) / 10000.0f;
+            mut -= factor;
+        }
+        else if (randomNumber <= 8f)
+        {
+            //randomly increase or decrease weight by tiny amount
+            double factor = UnityEngine.Random.Range(-1000, 1000) / 100.0f / 1000f;
+            mut += factor;
+        }
+        else if (randomNumber <= 10f)
+        {
+            //randomly increase or decrease weight by larger amount
+            double factor = UnityEngine.Random.Range(-1000, 1000) / 100.0f / 100f;
+            mut += factor;
+        }
+        else if (randomNumber <= 11f)
+        {
+            //randomly increase or decrease weight by even larger amount
+            double factor = UnityEngine.Random.Range(-1000, 1000) / 100.0f / 10f;
+            mut += factor;
+        }
+        else if (randomNumber <= 11.2f)
+        {
+            //pick random weight between -1 and 1
+            mut += UnityEngine.Random.Range(-1f, 1f);
+        }
+
+        return mut;
     }
 
     public void UpdateGenome()
