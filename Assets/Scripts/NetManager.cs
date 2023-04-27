@@ -479,10 +479,10 @@ public class NetManager : MonoBehaviour
         // Create new offspring to fill the population
         for (int i = 0; i < populationSize; i++)
         {
-            int numOfCandidates = UnityEngine.Random.Range(1, populationSize / 2);
+            int numOfCandidates = UnityEngine.Random.Range(3, 9);
 
             int bestNet = 0;
-            double bestScore = 1000d;
+            double bestScore = 100000d;
 
             // The indexes of the winning parents
             int parentA = 0;
@@ -493,7 +493,7 @@ public class NetManager : MonoBehaviour
             {
                 // Randomly select a network from the population
                 int whichNet = UnityEngine.Random.Range(0, populationSize);
-                // Compare this netork with the best one randomly selected so far
+                // Compare this network with the best one randomly selected so far
                 if (nets[whichNet].fitness < bestScore)
                 {
                     bestScore = nets[whichNet].fitness;
@@ -501,9 +501,12 @@ public class NetManager : MonoBehaviour
                 }
             }
             parentA = bestNet;
+            
 
+            numOfCandidates = UnityEngine.Random.Range(3, 9);
+            
             bestNet = 0;
-            bestScore = 1000f;
+            bestScore = 100000d;
 
             // Compare `numOfCandidates` number of candidates for parent B
             for (int j = 0; j < numOfCandidates; j++)
