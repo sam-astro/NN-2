@@ -1114,12 +1114,12 @@ MonoBehaviour:
   upperLegsTouchingGroundIsBad: 1
   touchingLaserIsBad: 0
   rotationIsBad: 0
-  rewardTimeAlive: 1
+  rewardTimeAlive: 0
   heightIsGood: 0
   slowRotationIsBad: 0
   distanceIsGood: 1
   useAverageDistance: 0
-  directionChangeIsGood: 1
+  directionChangeIsGood: 0
   xVelocityIsGood: 0
   outputAffectsSin: 1
   feetOffGroundTimeIsBetter: 0

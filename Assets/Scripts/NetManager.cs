@@ -428,7 +428,7 @@ public class NetManager : MonoBehaviour
 
     NeuralNetwork SplitGenomes(NeuralNetwork parentA, NeuralNetwork parentB)
     {
-        NeuralNetwork outNet = persistenceNetwork;
+        NeuralNetwork outNet = new NeuralNetwork(persistenceNetwork);
         //double[][][] outWeights = persistenceNetwork.weights;
         int secLength = 1;
         bool copyFromSide = false; // False => parentA    True => parentB
@@ -438,11 +438,11 @@ public class NetManager : MonoBehaviour
             {
                 for (int z = 0; z < parentA.weights[x][y].Length; z++, secLength--)
                 {
-                    bool isMutation = UnityEngine.Random.Range(0, 100) == 0;
+                    bool isMutation = UnityEngine.Random.Range(0, 20) == 0;
 
                     if (secLength <= 0)
                     {
-                        secLength = UnityEngine.Random.Range(1, 15);
+                        secLength = UnityEngine.Random.Range(5, 30);
                         copyFromSide = UnityEngine.Random.Range(0, 2) == 1;
                     }
 
@@ -452,25 +452,26 @@ public class NetManager : MonoBehaviour
                         outNet.weights[x][y][z] = parentB.weights[x][y][z];
 
                     if (isMutation)
-                        outNet.weights[x][y][z] = parentA.FixedSingleMutate(outNet.weights[x][y][z]);
+                        outNet.weights[x][y][z] = outNet.FixedSingleMutate(outNet.weights[x][y][z]);
                 }
             }
         }
         // Also pass on the mutatable variables
-        for (int x = 0; x < parentA.mutatableVariables.Length; x++){
+        for (int x = 0; x < parentA.mutatableVariables.Length; x++)
+        {
             bool isMutation = UnityEngine.Random.Range(0, 100) == 0;
 
             copyFromSide = UnityEngine.Random.Range(0, 2) == 1;
 
             if (copyFromSide == false)
-                outNet.mutatableVariables[x][y][z] = parentA.mutatableVariables[x][y][z];
+                outNet.mutatableVariables[x] = parentA.mutatableVariables[x];
             else
-                outNet.mutatableVariables[x][y][z] = parentB.mutatableVariables[x][y][z];
+                outNet.mutatableVariables[x] = parentB.mutatableVariables[x];
 
             if (isMutation)
-                outNet.mutatableVariables[x][y][z] = parentA.FixedSingleMutateMutVars(outNet.mutatableVariables[x][y][z]);
+                outNet.mutatableVariables[x] = outNet.FixedSingleMutateMutVars(outNet.mutatableVariables[x]);
         }
-        
+
         return outNet;
     }
 
@@ -479,15 +480,15 @@ public class NetManager : MonoBehaviour
         // Create new offspring to fill the population
         for (int i = 0; i < populationSize; i++)
         {
-            int numOfCandidates = UnityEngine.Random.Range(3, 9);
+            int numOfCandidates = UnityEngine.Random.Range(2, 5);
 
             int bestNet = 0;
             double bestScore = 100000d;
 
             // The indexes of the winning parents
-            int parentA = 0;
-            int parentB = 0;
-            
+            int parentA = UnityEngine.Random.Range(0, populationSize);
+            int parentB = UnityEngine.Random.Range(0, populationSize);
+
             // Compare `numOfCandidates` number of candidates for parent A
             for (int j = 0; j < numOfCandidates; j++)
             {
@@ -503,7 +504,7 @@ public class NetManager : MonoBehaviour
             parentA = bestNet;
             
 
-            numOfCandidates = UnityEngine.Random.Range(3, 9);
+            numOfCandidates = UnityEngine.Random.Range(2, 5);
             
             bestNet = 0;
             bestScore = 100000d;
@@ -513,11 +514,16 @@ public class NetManager : MonoBehaviour
             {
                 // Randomly select a network from the population
                 int whichNet = UnityEngine.Random.Range(0, populationSize);
-                // Compare this netork with the best one randomly selected so far
-                if (nets[whichNet].fitness < bestScore)
+                // Compare this network with the best one randomly selected so far
+                if (nets[whichNet].fitness < bestScore && whichNet != parentA)
                 {
                     bestScore = nets[whichNet].fitness;
                     bestNet = whichNet;
+                }
+                else if(whichNet == parentA)
+                {
+                    j -= 1;
+                    continue;
                 }
             }
             parentB = bestNet;
@@ -526,29 +532,31 @@ public class NetManager : MonoBehaviour
             nets[i].genome = nets[i].GenerateGenome();
         }
 
-        // Keep the best 3 networks
-        for (int g = 0; g < topGenomes.Count; g++)
-        {
-            nets[g] = new NeuralNetwork(topGenomes[g]);
-            //nets[i].CopyWeights(topGenomes[g].weights);
-            //Array.Copy(topGenomes[g].mutatableVariables, nets[i].mutatableVariables, mutVarSize);
-            nets[g].genome = topGenomes[g].genome;
-            nets[g].Mutate();
-            nets[g].UpdateGenome();
-            nets[g].droppedNeurons = nets[g].MutateDroppedNeurons(dropChance);
-            nets[g].mutatableVariables = nets[g].MutateMutVars();
-        }
-        
+        //// Keep the best 3 networks
+        //for (int g = 0; g < topGenomes.Count; g++)
+        //{
+        //    nets[g + 1] = new NeuralNetwork(topGenomes[g]);
+        //    //nets[i].CopyWeights(topGenomes[g].weights);
+        //    //Array.Copy(topGenomes[g].mutatableVariables, nets[i].mutatableVariables, mutVarSize);
+        //    nets[g + 1].genome = topGenomes[g].genome;
+        //    nets[g + 1].Mutate();
+        //    nets[g + 1].UpdateGenome();
+        //    nets[g + 1].droppedNeurons = nets[g + 1].MutateDroppedNeurons(dropChance);
+        //    nets[g + 1].mutatableVariables = nets[g + 1].MutateMutVars();
+        //}
+
         for (int i = 0; i < populationSize; i++)
         {
             nets[i].isBest = false;
             nets[i].netID = i;
+            nets[i].fitness = 0;
+            //nets[i].ResetGenome();
         }
-        nets[0] = new NeuralNetwork(persistenceNetwork);
-        nets[0].droppedNeurons = persistenceNetwork.droppedNeurons;
-        nets[0].mutatableVariables = persistenceNetwork.mutatableVariables;
-        nets[0].genome = persistenceNetwork.genome;
-        nets[0].isBest = true;
+        //nets[0] = new NeuralNetwork(persistenceNetwork);
+        //nets[0].droppedNeurons = persistenceNetwork.droppedNeurons;
+        //nets[0].mutatableVariables = persistenceNetwork.mutatableVariables;
+        //nets[0].genome = persistenceNetwork.genome;
+        //nets[0].isBest = true;
     }
 
     void Finalizer()
@@ -556,9 +564,9 @@ public class NetManager : MonoBehaviour
         // Use the new system for parent finding and offspring
         FindParents();
         return;
-    
-    
-    
+
+
+
         //// Create copies of top 3 genomes to replace the worst neural networks
         //for (int g = 0; g < topGenomes.Count; g++)
         //{

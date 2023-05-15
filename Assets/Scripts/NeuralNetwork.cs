@@ -537,8 +537,8 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
         //    weight = new Random().Next(-100, 100) / 100.0f;
         //}
 
-        if (randomNumber <= 8f)
-            mutationFactor += 26f / (float)weights.Length / (float)weights[i].Length / (float)weights[i][j].Length;
+        //if (randomNumber <= 8f)
+        //    mutationFactor += 26f / (float)weights.Length / (float)weights[i].Length / (float)weights[i][j].Length;
 
         return weight;
     }
@@ -633,7 +633,7 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
     }
 
 
-    public double[] FixedSingleMutateMutVars(double inm)
+    public double FixedSingleMutateMutVars(double inm)
     {
         double mut = inm;
     
